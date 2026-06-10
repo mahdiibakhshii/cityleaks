@@ -9,6 +9,7 @@ import { Camera } from './Camera';
 import { TileMap } from './TileMap';
 import { CollisionMask } from './CollisionMask';
 import { PathLayer } from './PathLayer';
+import { GuideLayer } from './GuideLayer';
 import { NoteLayer } from './NoteLayer';
 import { NoteUI } from './NoteUI';
 import { Player } from './Player';
@@ -24,6 +25,7 @@ export class Game {
   private tileMap: TileMap;
   private collisionMask: CollisionMask;
   private pathLayer: PathLayer;
+  private guideLayer: GuideLayer;
   private noteLayer: NoteLayer;
   private noteUI: NoteUI;
   private player: Player;
@@ -61,6 +63,11 @@ export class Game {
     // Shared persistent path overlay (sits above the map, below players).
     this.pathLayer = new PathLayer();
     this.scene.add(this.pathLayer.mesh);
+
+    // Walkability guide: soft white glow over open streets near the player,
+    // surfaced on wall contact (above paths, below characters).
+    this.guideLayer = new GuideLayer();
+    this.scene.add(this.guideLayer.group);
 
     // Sticky-note icons (above paths, below players) + their DOM UI.
     this.noteLayer = new NoteLayer();
@@ -177,9 +184,13 @@ export class Game {
     // 1. Input → move local player with collision, then lay our own trail
     //    immediately (the server delta confirms the same cell moments later).
     const direction = this.input.getDirection();
-    this.player.update(direction, dt, this.collisionMask);
+    const hitWall = this.player.update(direction, dt, this.collisionMask);
     this.pathLayer.markWorld(this.player.x, this.player.y);
     this.pathLayer.update(dt); // advance the water shimmer/foam animation
+
+    // 1b. Walkability guide: glow the open streets near the player whenever a
+    //     wall is touched, then fade out (manages its own tiles + opacity).
+    this.guideLayer.update(this.player.x, this.player.y, dt, hitWall);
 
     // 2. Throttled position send.
     if (this.network) {
@@ -236,6 +247,7 @@ export class Game {
     this.running = false;
     window.removeEventListener('resize', this.onResize);
     this.input.dispose();
+    this.guideLayer.dispose();
     this.noteUI.dispose();
     this.network?.dispose();
   }

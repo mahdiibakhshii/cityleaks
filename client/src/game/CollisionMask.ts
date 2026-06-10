@@ -176,6 +176,10 @@ export class CollisionMask {
 /**
  * Move with axis-separated wall sliding: try full move, then X-only, then
  * Y-only. Gives smooth sliding along walls instead of dead-stopping.
+ *
+ * `blocked` reports that the full intended move was NOT possible — i.e. the
+ * circle touched a wall this step (whether it then slid or fully stopped). The
+ * caller uses this to surface the walkability guide on any wall contact.
  */
 export function moveWithSliding(
   currentX: number,
@@ -184,15 +188,15 @@ export function moveWithSliding(
   dy: number,
   radius: number,
   mask: CollisionMask
-): { x: number; y: number } {
+): { x: number; y: number; blocked: boolean } {
   if (mask.isCircleWalkable(currentX + dx, currentY + dy, radius)) {
-    return { x: currentX + dx, y: currentY + dy };
+    return { x: currentX + dx, y: currentY + dy, blocked: false };
   }
   if (dx !== 0 && mask.isCircleWalkable(currentX + dx, currentY, radius)) {
-    return { x: currentX + dx, y: currentY };
+    return { x: currentX + dx, y: currentY, blocked: true };
   }
   if (dy !== 0 && mask.isCircleWalkable(currentX, currentY + dy, radius)) {
-    return { x: currentX, y: currentY + dy };
+    return { x: currentX, y: currentY + dy, blocked: true };
   }
-  return { x: currentX, y: currentY };
+  return { x: currentX, y: currentY, blocked: true };
 }

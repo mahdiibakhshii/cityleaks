@@ -44,18 +44,25 @@ export class Player {
     this.sprite.mesh.position.set(x, -y, PLAYER_Z);
   }
 
-  /** Move according to an input direction, resolving collisions against the mask. */
-  update(direction: { x: number; y: number }, dt: number, mask: CollisionMask): void {
+  /**
+   * Move according to an input direction, resolving collisions against the mask.
+   * Returns true when the player was actively moving but hit a wall this step
+   * (used to surface the walkability guide on any wall contact).
+   */
+  update(direction: { x: number; y: number }, dt: number, mask: CollisionMask): boolean {
     const moving = direction.x !== 0 || direction.y !== 0;
+    let hitWall = false;
     if (moving) {
       const dx = direction.x * PLAYER.SPEED * dt;
       const dy = direction.y * PLAYER.SPEED * dt;
       const next = moveWithSliding(this.x, this.y, dx, dy, PLAYER.RADIUS, mask);
       this.x = next.x;
       this.y = next.y;
+      hitWall = next.blocked;
       this.sprite.mesh.position.set(this.x, -this.y, PLAYER_Z);
     }
     const facing = direction.x > 0 ? true : direction.x < 0 ? false : undefined;
     this.sprite.animate(dt, moving, facing);
+    return hitWall;
   }
 }

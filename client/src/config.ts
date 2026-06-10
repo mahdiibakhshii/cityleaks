@@ -109,6 +109,25 @@ export const PATH = {
   FOAM_ALPHA_BOOST: 0.18, // Edge cells are a touch more opaque than interiors.
 };
 
+// Walkability guide: a soft white glow that highlights the open (walkable)
+// streets in a halo around the player whenever they bump into a building, then
+// fades out. Reads the same mask PNG tiles as collision (alpha < threshold =
+// walkable) and renders them with a radial falloff + global fade.
+export const GUIDE = {
+  COLOR: 0xffffff, // Soft white glow over walkable streets.
+  MAX_ALPHA: 0.38, // Peak opacity of a walkable cell at the player's feet.
+  // Halo radius (world units) around the player; the glow fades to nothing at
+  // the edge. ~1/3 of the shorter view span — a useful patch without flooding.
+  RADIUS: 320,
+  // Fade timing (seconds): how fast it appears, how long it lingers after the
+  // last wall contact, and how slowly it fades back out.
+  FADE_IN: 0.18,
+  HOLD: 1.4,
+  FADE_OUT: 0.9,
+  // Draw order: just above the leak paths (0.3), below every character.
+  Z: 0.4,
+};
+
 // Sticky notes: anonymous text pinned to a map location. An always-visible icon
 // marks each note; walking within REVEAL_RADIUS shows the text fullscreen.
 export const NOTE = {
