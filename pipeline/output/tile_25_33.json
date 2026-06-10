@@ -1,0 +1,31 @@
+{
+  "tileId": "25_33",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 250.0,
+    "z": 330.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1445927053",
+      "points": [
+        {
+          "x": 248.51,
+          "z": 328.291
+        },
+        {
+          "x": 257.689,
+          "z": 345.445
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Weintraubengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

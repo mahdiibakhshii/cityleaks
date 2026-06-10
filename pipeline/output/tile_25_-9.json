@@ -1,0 +1,47 @@
+{
+  "tileId": "25_-9",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 250.0,
+    "z": -90.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29067451",
+      "points": [
+        {
+          "x": 257.521,
+          "z": -83.122
+        },
+        {
+          "x": 256.705,
+          "z": -88.151
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Wolfgang-Schmitz-Promenade"
+    },
+    {
+      "id": "osm_way_165778784",
+      "points": [
+        {
+          "x": 256.705,
+          "z": -88.151
+        },
+        {
+          "x": 261.15,
+          "z": -88.66
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5,
+      "name": "Rotenturmufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

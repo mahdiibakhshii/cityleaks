@@ -1,0 +1,111 @@
+{
+  "tileId": "45_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 450.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_236760131",
+      "points": [
+        {
+          "x": 450.744,
+          "z": -94.057
+        },
+        {
+          "x": 452.861,
+          "z": -93.185
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1167095976",
+      "points": [
+        {
+          "x": 456.303,
+          "z": -97.014
+        },
+        {
+          "x": 456.662,
+          "z": -93.828
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Hintere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_1413295156",
+      "points": [
+        {
+          "x": 462.435,
+          "z": -98.271
+        },
+        {
+          "x": 456.303,
+          "z": -97.014
+        },
+        {
+          "x": 448.114,
+          "z": -99.497
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1413295158",
+      "points": [
+        {
+          "x": 452.861,
+          "z": -93.185
+        },
+        {
+          "x": 456.662,
+          "z": -93.828
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1431166640",
+      "points": [
+        {
+          "x": 456.662,
+          "z": -93.828
+        },
+        {
+          "x": 460.783,
+          "z": -94.076
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1431166641",
+      "points": [
+        {
+          "x": 456.662,
+          "z": -93.828
+        },
+        {
+          "x": 456.755,
+          "z": -91.547
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Hintere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

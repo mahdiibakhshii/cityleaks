@@ -1,0 +1,31 @@
+{
+  "tileId": "-13_-52",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -130.0,
+    "z": -520.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_285559321",
+      "points": [
+        {
+          "x": -130.469,
+          "z": -515.75
+        },
+        {
+          "x": -129.045,
+          "z": -508.953
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Dr.-Karl-Lueger-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

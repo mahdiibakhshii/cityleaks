@@ -1,0 +1,51 @@
+{
+  "tileId": "-25_14",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -250.0,
+    "z": 140.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_30085564",
+      "points": [
+        {
+          "x": -248.872,
+          "z": 139.179
+        },
+        {
+          "x": -247.575,
+          "z": 152.2
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Lilienbrunngasse"
+    },
+    {
+      "id": "osm_way_355120254",
+      "points": [
+        {
+          "x": -238.637,
+          "z": 145.645
+        },
+        {
+          "x": -241.722,
+          "z": 147.38
+        },
+        {
+          "x": -243.577,
+          "z": 148.425
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Gredlerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

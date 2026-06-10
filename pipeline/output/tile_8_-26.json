@@ -1,0 +1,46 @@
+{
+  "tileId": "8_-26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 80.0,
+    "z": -260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_116531155",
+      "points": [
+        {
+          "x": 72.531,
+          "z": -258.029
+        },
+        {
+          "x": 88.236,
+          "z": -258.969
+        }
+      ],
+      "highway": "service",
+      "width": 4.0,
+      "name": "Georg-Coch-Platz"
+    },
+    {
+      "id": "osm_way_351541100",
+      "points": [
+        {
+          "x": 77.656,
+          "z": -250.454
+        },
+        {
+          "x": 87.529,
+          "z": -256.024
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

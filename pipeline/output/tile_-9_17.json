@@ -1,0 +1,46 @@
+{
+  "tileId": "-9_17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -90.0,
+    "z": 170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230483963",
+      "points": [
+        {
+          "x": -86.705,
+          "z": 176.612
+        },
+        {
+          "x": -85.859,
+          "z": 180.007
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    },
+    {
+      "id": "osm_way_762006360",
+      "points": [
+        {
+          "x": -83.483,
+          "z": 180.517
+        },
+        {
+          "x": -77.915,
+          "z": 179.138
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,47 @@
+{
+  "tileId": "14_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 140.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29068220",
+      "points": [
+        {
+          "x": 144.932,
+          "z": -90.631
+        },
+        {
+          "x": 142.712,
+          "z": -102.701
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Julius-Raab-Platz"
+    },
+    {
+      "id": "osm_way_36561888",
+      "points": [
+        {
+          "x": 144.932,
+          "z": -90.631
+        },
+        {
+          "x": 153.801,
+          "z": -91.638
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Uraniastraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

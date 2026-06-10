@@ -1,0 +1,63 @@
+{
+  "tileId": "-8_20",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -80.0,
+    "z": 200.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_222621755",
+      "points": [
+        {
+          "x": -78.695,
+          "z": 208.098
+        },
+        {
+          "x": -78.096,
+          "z": 210.755
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    },
+    {
+      "id": "osm_way_230483963",
+      "points": [
+        {
+          "x": -80.22,
+          "z": 201.989
+        },
+        {
+          "x": -78.695,
+          "z": 208.098
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    },
+    {
+      "id": "osm_way_355120253",
+      "points": [
+        {
+          "x": -81.078,
+          "z": 206.71
+        },
+        {
+          "x": -78.695,
+          "z": 208.098
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Gredlerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

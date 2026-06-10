@@ -1,0 +1,31 @@
+{
+  "tileId": "6_-9",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 60.0,
+    "z": -90.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_795511576",
+      "points": [
+        {
+          "x": 60.737,
+          "z": -87.732
+        },
+        {
+          "x": 72.92,
+          "z": -87.935
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,47 @@
+{
+  "tileId": "-13_-8",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -130.0,
+    "z": -80.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024749",
+      "points": [
+        {
+          "x": -133.089,
+          "z": -74.57
+        },
+        {
+          "x": -118.854,
+          "z": -84.332
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Postgasse"
+    },
+    {
+      "id": "osm_way_553127695",
+      "points": [
+        {
+          "x": -133.089,
+          "z": -74.57
+        },
+        {
+          "x": -111.691,
+          "z": -77.71
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

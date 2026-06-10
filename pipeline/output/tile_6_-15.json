@@ -1,0 +1,31 @@
+{
+  "tileId": "6_-15",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 60.0,
+    "z": -150.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1314581800",
+      "points": [
+        {
+          "x": 33.512,
+          "z": -163.958
+        },
+        {
+          "x": 91.85,
+          "z": -135.57
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Wiesingerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,47 @@
+{
+  "tileId": "-8_24",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -80.0,
+    "z": 240.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_222621755",
+      "points": [
+        {
+          "x": -73.227,
+          "z": 233.824
+        },
+        {
+          "x": -70.481,
+          "z": 249.294
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    },
+    {
+      "id": "osm_way_354850548",
+      "points": [
+        {
+          "x": -71.81,
+          "z": 249.637
+        },
+        {
+          "x": -70.481,
+          "z": 249.294
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Negerlegasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

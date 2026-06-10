@@ -1,0 +1,46 @@
+{
+  "tileId": "-18_19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -180.0,
+    "z": 190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29234612",
+      "points": [
+        {
+          "x": -173.483,
+          "z": 200.693
+        },
+        {
+          "x": -173.78,
+          "z": 199.042
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schoellerhofgasse"
+    },
+    {
+      "id": "osm_way_1006809256",
+      "points": [
+        {
+          "x": -166.649,
+          "z": 197.936
+        },
+        {
+          "x": -173.78,
+          "z": 199.042
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

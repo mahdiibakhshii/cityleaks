@@ -1,0 +1,50 @@
+{
+  "tileId": "8_-35",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 80.0,
+    "z": -350.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26420444",
+      "points": [
+        {
+          "x": 86.751,
+          "z": -342.516
+        },
+        {
+          "x": 86.01,
+          "z": -346.743
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Stubenring"
+    },
+    {
+      "id": "osm_way_473367772",
+      "points": [
+        {
+          "x": 89.06,
+          "z": -348.979
+        },
+        {
+          "x": 86.01,
+          "z": -346.743
+        },
+        {
+          "x": 80.115,
+          "z": -342.936
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

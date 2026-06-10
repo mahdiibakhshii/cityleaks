@@ -1,0 +1,50 @@
+{
+  "tileId": "40_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 400.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_10363296",
+      "points": [
+        {
+          "x": 409.23,
+          "z": -103.368
+        },
+        {
+          "x": 405.771,
+          "z": -103.174
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Radetzkystraße"
+    },
+    {
+      "id": "osm_way_962624242",
+      "points": [
+        {
+          "x": 405.929,
+          "z": -99.191
+        },
+        {
+          "x": 405.827,
+          "z": -101.75
+        },
+        {
+          "x": 405.771,
+          "z": -103.174
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

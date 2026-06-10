@@ -1,0 +1,35 @@
+{
+  "tileId": "-12_46",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -120.0,
+    "z": 460.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29274200",
+      "points": [
+        {
+          "x": -114.268,
+          "z": 461.021
+        },
+        {
+          "x": -115.084,
+          "z": 465.499
+        },
+        {
+          "x": -116.096,
+          "z": 471.006
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Karmeliterplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

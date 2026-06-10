@@ -1,0 +1,35 @@
+{
+  "tileId": "29_52",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 290.0,
+    "z": 520.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_33836512",
+      "points": [
+        {
+          "x": 291.891,
+          "z": 521.519
+        },
+        {
+          "x": 295.358,
+          "z": 526.251
+        },
+        {
+          "x": 299.127,
+          "z": 532.301
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Zirkusgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

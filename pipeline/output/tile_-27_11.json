@@ -1,0 +1,61 @@
+{
+  "tileId": "-27_11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -270.0,
+    "z": 110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024409",
+      "points": [
+        {
+          "x": -268.66,
+          "z": 103.046
+        },
+        {
+          "x": -260.023,
+          "z": 118.255
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Lilienbrunngasse"
+    },
+    {
+      "id": "osm_way_336544467",
+      "points": [
+        {
+          "x": -264.052,
+          "z": 120.451
+        },
+        {
+          "x": -260.023,
+          "z": 118.255
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    },
+    {
+      "id": "osm_way_473322438",
+      "points": [
+        {
+          "x": -264.052,
+          "z": 120.451
+        },
+        {
+          "x": -268.842,
+          "z": 114.862
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

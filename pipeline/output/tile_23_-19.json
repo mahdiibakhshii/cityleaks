@@ -1,0 +1,47 @@
+{
+  "tileId": "23_-19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 230.0,
+    "z": -190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25427884",
+      "points": [
+        {
+          "x": 230.102,
+          "z": -183.502
+        },
+        {
+          "x": 238.021,
+          "z": -190.353
+        }
+      ],
+      "highway": "residential",
+      "width": 9.5,
+      "name": "Reischachstraße"
+    },
+    {
+      "id": "osm_way_1174346638",
+      "points": [
+        {
+          "x": 240.876,
+          "z": -188.8
+        },
+        {
+          "x": 238.021,
+          "z": -190.353
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schallautzerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

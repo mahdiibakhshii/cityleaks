@@ -1,0 +1,110 @@
+{
+  "tileId": "32_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 320.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_10363296",
+      "points": [
+        {
+          "x": 333.661,
+          "z": -107.032
+        },
+        {
+          "x": 324.809,
+          "z": -108.615
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Radetzkystraße"
+    },
+    {
+      "id": "osm_way_73337736",
+      "points": [
+        {
+          "x": 327.535,
+          "z": -101.95
+        },
+        {
+          "x": 323.41,
+          "z": -101.891
+        },
+        {
+          "x": 321.944,
+          "z": -101.784
+        },
+        {
+          "x": 319.109,
+          "z": -101.591
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.1
+    },
+    {
+      "id": "osm_way_354850560",
+      "points": [
+        {
+          "x": 324.021,
+          "z": -110.642
+        },
+        {
+          "x": 324.809,
+          "z": -108.615
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_354850563",
+      "points": [
+        {
+          "x": 324.809,
+          "z": -108.615
+        },
+        {
+          "x": 325.356,
+          "z": -107.193
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_354850567",
+      "points": [
+        {
+          "x": 325.356,
+          "z": -107.193
+        },
+        {
+          "x": 326.134,
+          "z": -105.422
+        },
+        {
+          "x": 327.535,
+          "z": -101.95
+        },
+        {
+          "x": 328.737,
+          "z": -98.949
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

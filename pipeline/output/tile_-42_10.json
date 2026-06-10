@@ -1,0 +1,31 @@
+{
+  "tileId": "-42_10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -420.0,
+    "z": 100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_629255348",
+      "points": [
+        {
+          "x": -421.49,
+          "z": 115.463
+        },
+        {
+          "x": -398.762,
+          "z": 90.709
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Freda-Meissner-Blau-Promenade"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

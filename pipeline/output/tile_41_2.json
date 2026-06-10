@@ -1,0 +1,46 @@
+{
+  "tileId": "41_2",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 410.0,
+    "z": 20.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_101259538",
+      "points": [
+        {
+          "x": 411.438,
+          "z": 26.678
+        },
+        {
+          "x": 412.488,
+          "z": 30.266
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_399877914",
+      "points": [
+        {
+          "x": 412.681,
+          "z": 5.598
+        },
+        {
+          "x": 426.031,
+          "z": 38.304
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5,
+      "name": "Weißgerberufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

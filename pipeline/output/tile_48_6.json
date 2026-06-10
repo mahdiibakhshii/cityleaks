@@ -1,0 +1,31 @@
+{
+  "tileId": "48_6",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 480.0,
+    "z": 60.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_539014521",
+      "points": [
+        {
+          "x": 476.401,
+          "z": 60.794
+        },
+        {
+          "x": 491.763,
+          "z": 67.298
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Dampfschiffstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

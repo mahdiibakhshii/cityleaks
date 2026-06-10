@@ -1,0 +1,46 @@
+{
+  "tileId": "-27_-19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -270.0,
+    "z": -190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4952869",
+      "points": [
+        {
+          "x": -268.254,
+          "z": -183.618
+        },
+        {
+          "x": -257.525,
+          "z": -189.341
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Fleischmarkt"
+    },
+    {
+      "id": "osm_way_222428319",
+      "points": [
+        {
+          "x": -268.394,
+          "z": -177.473
+        },
+        {
+          "x": -268.254,
+          "z": -183.618
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

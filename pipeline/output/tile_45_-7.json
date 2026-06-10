@@ -1,0 +1,31 @@
+{
+  "tileId": "45_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 450.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1431166641",
+      "points": [
+        {
+          "x": 456.755,
+          "z": -91.547
+        },
+        {
+          "x": 458.634,
+          "z": -45.817
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Hintere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,67 @@
+{
+  "tileId": "-32_-1",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -320.0,
+    "z": -10.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_229033665",
+      "points": [
+        {
+          "x": -319.785,
+          "z": -0.58
+        },
+        {
+          "x": -318.951,
+          "z": -1.088
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_354850544",
+      "points": [
+        {
+          "x": -317.946,
+          "z": -1.637
+        },
+        {
+          "x": -316.017,
+          "z": -2.692
+        },
+        {
+          "x": -307.986,
+          "z": -7.54
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_1023937354",
+      "points": [
+        {
+          "x": -318.951,
+          "z": -1.088
+        },
+        {
+          "x": -317.946,
+          "z": -1.637
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

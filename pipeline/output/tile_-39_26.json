@@ -1,0 +1,62 @@
+{
+  "tileId": "-39_26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -390.0,
+    "z": 260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_164288578",
+      "points": [
+        {
+          "x": -386.414,
+          "z": 262.184
+        },
+        {
+          "x": -382.389,
+          "z": 267.726
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Hollandstraße"
+    },
+    {
+      "id": "osm_way_1212004922",
+      "points": [
+        {
+          "x": -386.414,
+          "z": 262.184
+        },
+        {
+          "x": -392.082,
+          "z": 273.734
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1212004923",
+      "points": [
+        {
+          "x": -390.193,
+          "z": 257.88
+        },
+        {
+          "x": -386.414,
+          "z": 262.184
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Hollandstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

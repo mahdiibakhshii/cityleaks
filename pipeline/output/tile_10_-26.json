@@ -1,0 +1,70 @@
+{
+  "tileId": "10_-26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 100.0,
+    "z": -260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9067293",
+      "points": [
+        {
+          "x": 101.741,
+          "z": -256.614
+        },
+        {
+          "x": 107.474,
+          "z": -257.611
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Georg-Coch-Platz"
+    },
+    {
+      "id": "osm_way_26420444",
+      "points": [
+        {
+          "x": 101.741,
+          "z": -256.614
+        },
+        {
+          "x": 101.073,
+          "z": -261.206
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Stubenring"
+    },
+    {
+      "id": "osm_way_1394215137",
+      "points": [
+        {
+          "x": 107.827,
+          "z": -255.37
+        },
+        {
+          "x": 107.767,
+          "z": -255.749
+        },
+        {
+          "x": 107.474,
+          "z": -257.611
+        },
+        {
+          "x": 107.214,
+          "z": -259.273
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-47_-15",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -470.0,
+    "z": -150.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4952872",
+      "points": [
+        {
+          "x": -488.951,
+          "z": -167.669
+        },
+        {
+          "x": -448.166,
+          "z": -121.299
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Rotgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

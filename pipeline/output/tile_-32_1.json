@@ -1,0 +1,47 @@
+{
+  "tileId": "-32_1",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -320.0,
+    "z": 10.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9801481",
+      "points": [
+        {
+          "x": -320.398,
+          "z": 9.993
+        },
+        {
+          "x": -319.406,
+          "z": 12.657
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marienbrücke"
+    },
+    {
+      "id": "osm_way_263062087",
+      "points": [
+        {
+          "x": -319.406,
+          "z": 12.657
+        },
+        {
+          "x": -317.783,
+          "z": 15.422
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marienbrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

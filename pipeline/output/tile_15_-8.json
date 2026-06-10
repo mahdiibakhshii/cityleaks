@@ -1,0 +1,77 @@
+{
+  "tileId": "15_-8",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 150.0,
+    "z": -80.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26088759",
+      "points": [
+        {
+          "x": 147.677,
+          "z": -78.007
+        },
+        {
+          "x": 157.319,
+          "z": -80.279
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_47120687",
+      "points": [
+        {
+          "x": 160.02,
+          "z": -77.54
+        },
+        {
+          "x": 157.977,
+          "z": -76.376
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Uraniastraße"
+    },
+    {
+      "id": "osm_way_358966127",
+      "points": [
+        {
+          "x": 157.977,
+          "z": -76.376
+        },
+        {
+          "x": 150.153,
+          "z": -67.767
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Uraniastraße"
+    },
+    {
+      "id": "osm_way_1292424504",
+      "points": [
+        {
+          "x": 157.319,
+          "z": -80.279
+        },
+        {
+          "x": 160.02,
+          "z": -77.54
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,35 @@
+{
+  "tileId": "3_-44",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 30.0,
+    "z": -440.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8030144",
+      "points": [
+        {
+          "x": 41.315,
+          "z": -438.816
+        },
+        {
+          "x": 34.528,
+          "z": -435.003
+        },
+        {
+          "x": 29.62,
+          "z": -432.767
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Falkestraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

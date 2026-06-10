@@ -1,0 +1,63 @@
+{
+  "tileId": "29_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 290.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_5105728",
+      "points": [
+        {
+          "x": 287.314,
+          "z": -105.9
+        },
+        {
+          "x": 293.23,
+          "z": -111.697
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Radetzkybrücke"
+    },
+    {
+      "id": "osm_way_9800405",
+      "points": [
+        {
+          "x": 293.787,
+          "z": -105.072
+        },
+        {
+          "x": 298.507,
+          "z": -104.308
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Obere Weißgerberstraße"
+    },
+    {
+      "id": "osm_way_297525585",
+      "points": [
+        {
+          "x": 287.314,
+          "z": -105.9
+        },
+        {
+          "x": 293.787,
+          "z": -105.072
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Radetzkybrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-41_-40",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -410.0,
+    "z": -400.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25375537",
+      "points": [
+        {
+          "x": -407.858,
+          "z": -393.696
+        },
+        {
+          "x": -405.729,
+          "z": -391.423
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Essiggasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

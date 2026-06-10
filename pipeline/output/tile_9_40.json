@@ -1,0 +1,47 @@
+{
+  "tileId": "9_40",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 90.0,
+    "z": 400.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29275429",
+      "points": [
+        {
+          "x": 100.741,
+          "z": 410.229
+        },
+        {
+          "x": 90.957,
+          "z": 409.686
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schmelzgasse"
+    },
+    {
+      "id": "osm_way_509806352",
+      "points": [
+        {
+          "x": 94.898,
+          "z": 393.002
+        },
+        {
+          "x": 100.741,
+          "z": 410.229
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Große Mohrengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

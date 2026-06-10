@@ -1,0 +1,31 @@
+{
+  "tileId": "18_-42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 180.0,
+    "z": -420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_203868701",
+      "points": [
+        {
+          "x": 189.305,
+          "z": -417.575
+        },
+        {
+          "x": 188.294,
+          "z": -418.794
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Fritz-Wotruba-Promenade"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

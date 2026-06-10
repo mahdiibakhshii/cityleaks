@@ -1,0 +1,47 @@
+{
+  "tileId": "-28_-31",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -280.0,
+    "z": -310.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_346399779",
+      "points": [
+        {
+          "x": -272.407,
+          "z": -303.514
+        },
+        {
+          "x": -286.458,
+          "z": -313.55
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Schönlaterngasse"
+    },
+    {
+      "id": "osm_way_548145007",
+      "points": [
+        {
+          "x": -269.279,
+          "z": -301.779
+        },
+        {
+          "x": -272.407,
+          "z": -303.514
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Schönlaterngasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

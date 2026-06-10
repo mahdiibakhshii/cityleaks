@@ -1,0 +1,50 @@
+{
+  "tileId": "16_-9",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 160.0,
+    "z": -90.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_47120687",
+      "points": [
+        {
+          "x": 171.049,
+          "z": -83.401
+        },
+        {
+          "x": 165.479,
+          "z": -81.544
+        },
+        {
+          "x": 162.746,
+          "z": -79.536
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Uraniastraße"
+    },
+    {
+      "id": "osm_way_1384154653",
+      "points": [
+        {
+          "x": 162.746,
+          "z": -79.536
+        },
+        {
+          "x": 160.508,
+          "z": -81.945
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

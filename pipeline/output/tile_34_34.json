@@ -1,0 +1,50 @@
+{
+  "tileId": "34_34",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 340.0,
+    "z": 340.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_34486737",
+      "points": [
+        {
+          "x": 352.872,
+          "z": 344.437
+        },
+        {
+          "x": 345.079,
+          "z": 342.685
+        },
+        {
+          "x": 340.48,
+          "z": 344.737
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0,
+      "name": "Passage Jägerzeile"
+    },
+    {
+      "id": "osm_way_1467574798",
+      "points": [
+        {
+          "x": 340.48,
+          "z": 344.737
+        },
+        {
+          "x": 342.177,
+          "z": 346.201
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

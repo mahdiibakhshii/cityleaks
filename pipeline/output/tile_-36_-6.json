@@ -1,0 +1,51 @@
+{
+  "tileId": "-36_-6",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -360.0,
+    "z": -60.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_44005502",
+      "points": [
+        {
+          "x": -353.888,
+          "z": -53.158
+        },
+        {
+          "x": -351.697,
+          "z": -49.383
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Rotenturmstraße"
+    },
+    {
+      "id": "osm_way_352166817",
+      "points": [
+        {
+          "x": -353.888,
+          "z": -53.158
+        },
+        {
+          "x": -351.259,
+          "z": -54.333
+        },
+        {
+          "x": -349.222,
+          "z": -55.209
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

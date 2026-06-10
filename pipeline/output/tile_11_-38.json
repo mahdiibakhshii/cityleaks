@@ -1,0 +1,81 @@
+{
+  "tileId": "11_-38",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 110.0,
+    "z": -380.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_190494847",
+      "points": [
+        {
+          "x": 109.659,
+          "z": -376.215
+        },
+        {
+          "x": 112.287,
+          "z": -370.653
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_552417857",
+      "points": [
+        {
+          "x": 120.243,
+          "z": -374.623
+        },
+        {
+          "x": 112.287,
+          "z": -370.653
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Oskar-Kokoschka-Platz"
+    },
+    {
+      "id": "osm_way_1066762173",
+      "points": [
+        {
+          "x": 120.243,
+          "z": -374.623
+        },
+        {
+          "x": 111.906,
+          "z": -377.986
+        },
+        {
+          "x": 108.099,
+          "z": -379.523
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1275252086",
+      "points": [
+        {
+          "x": 120.243,
+          "z": -374.623
+        },
+        {
+          "x": 116.576,
+          "z": -383.962
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Stubenring"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-49_1",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -490.0,
+    "z": 10.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_123412917",
+      "points": [
+        {
+          "x": -480.426,
+          "z": 15.434
+        },
+        {
+          "x": -484.007,
+          "z": 9.177
+        }
+      ],
+      "highway": "steps",
+      "width": 2.0,
+      "name": "Ruprechtsstiege"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

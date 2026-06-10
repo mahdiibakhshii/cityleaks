@@ -1,0 +1,31 @@
+{
+  "tileId": "-16_17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -160.0,
+    "z": 170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_355120253",
+      "points": [
+        {
+          "x": -179.839,
+          "z": 165.223
+        },
+        {
+          "x": -120.896,
+          "z": 188.339
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Gredlerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

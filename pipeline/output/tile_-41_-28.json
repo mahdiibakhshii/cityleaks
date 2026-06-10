@@ -1,0 +1,31 @@
+{
+  "tileId": "-41_-28",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -410.0,
+    "z": -280.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29066138",
+      "points": [
+        {
+          "x": -393.503,
+          "z": -280.223
+        },
+        {
+          "x": -417.142,
+          "z": -271.94
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Sonnenfelsgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

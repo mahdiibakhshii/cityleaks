@@ -1,0 +1,31 @@
+{
+  "tileId": "-10_13",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -100.0,
+    "z": 130.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230483963",
+      "points": [
+        {
+          "x": -100.275,
+          "z": 126.636
+        },
+        {
+          "x": -94.022,
+          "z": 147.117
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

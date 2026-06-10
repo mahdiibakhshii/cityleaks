@@ -1,0 +1,74 @@
+{
+  "tileId": "23_31",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 230.0,
+    "z": 310.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_286964400",
+      "points": [
+        {
+          "x": 229.747,
+          "z": 312.243
+        },
+        {
+          "x": 231.19,
+          "z": 314.215
+        },
+        {
+          "x": 235.024,
+          "z": 315.852
+        },
+        {
+          "x": 242.227,
+          "z": 319.017
+        },
+        {
+          "x": 229.747,
+          "z": 312.243
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Nestroyplatz"
+    },
+    {
+      "id": "osm_way_286964401",
+      "points": [
+        {
+          "x": 235.024,
+          "z": 315.852
+        },
+        {
+          "x": 234.049,
+          "z": 317.602
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_526740513",
+      "points": [
+        {
+          "x": 234.049,
+          "z": 317.602
+        },
+        {
+          "x": 241.974,
+          "z": 321.48
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Weintraubengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

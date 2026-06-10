@@ -1,0 +1,31 @@
+{
+  "tileId": "-12_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -120.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1071580802",
+      "points": [
+        {
+          "x": -114.885,
+          "z": -99.282
+        },
+        {
+          "x": -117.462,
+          "z": -115.95
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Postgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

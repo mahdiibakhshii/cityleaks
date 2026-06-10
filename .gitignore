@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+client/dist/
+server/dist/
+
+# Runtime data (persisted leak grid + sticky notes) — lives only on the server,
+# never in git, so deploys (git pull) don't clobber the live grid/notes.
+server/data/
+
+# NOTE: client/public/tiles/ IS committed — the server serves these. Regenerate
+# from originals with tools/split_tiles.py only when the source map changes.
+
+# Large source images (map + mask) — keep them out of git (regen tiles locally)
+tools/originals/*
+!tools/originals/README.txt
+
+# Discarded Unity prototype (1.9 GB) — superseded by the web client
+CityLeaksUnity/
+
+# Python venv for the tile tools
+.venv/
+
+# Local agent / editor state
+.claude/
+
+# Logs / env
+*.log
+.env
+.DS_Store

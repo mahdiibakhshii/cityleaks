@@ -1,0 +1,46 @@
+{
+  "tileId": "18_36",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 180.0,
+    "z": 360.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_200689828",
+      "points": [
+        {
+          "x": 192.226,
+          "z": 366.069
+        },
+        {
+          "x": 185.413,
+          "z": 372.217
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schrottgießergasse"
+    },
+    {
+      "id": "osm_way_981033825",
+      "points": [
+        {
+          "x": 185.62,
+          "z": 357.411
+        },
+        {
+          "x": 192.226,
+          "z": 366.069
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

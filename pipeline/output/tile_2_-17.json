@@ -1,0 +1,47 @@
+{
+  "tileId": "2_-17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 20.0,
+    "z": -170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_116531158",
+      "points": [
+        {
+          "x": 23.154,
+          "z": -169.003
+        },
+        {
+          "x": 33.512,
+          "z": -163.958
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Wiesingerstraße"
+    },
+    {
+      "id": "osm_way_1314581872",
+      "points": [
+        {
+          "x": 21.174,
+          "z": -156.431
+        },
+        {
+          "x": 23.154,
+          "z": -169.003
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Biberstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

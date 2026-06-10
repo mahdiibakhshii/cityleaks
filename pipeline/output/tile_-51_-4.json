@@ -1,0 +1,31 @@
+{
+  "tileId": "-51_-4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -510.0,
+    "z": -40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_867960598",
+      "points": [
+        {
+          "x": -509.145,
+          "z": -34.512
+        },
+        {
+          "x": -494.198,
+          "z": -40.949
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Ruprechtsplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

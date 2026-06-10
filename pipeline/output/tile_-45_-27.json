@@ -1,0 +1,31 @@
+{
+  "tileId": "-45_-27",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -450.0,
+    "z": -270.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26565519",
+      "points": [
+        {
+          "x": -441.839,
+          "z": -267.234
+        },
+        {
+          "x": -445.432,
+          "z": -267.832
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Lugeck"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

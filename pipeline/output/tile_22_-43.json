@@ -1,0 +1,77 @@
+{
+  "tileId": "22_-43",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 220.0,
+    "z": -430.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_10126619",
+      "points": [
+        {
+          "x": 227.21,
+          "z": -426.465
+        },
+        {
+          "x": 226.079,
+          "z": -425.941
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marxergasse"
+    },
+    {
+      "id": "osm_way_81309248",
+      "points": [
+        {
+          "x": 227.21,
+          "z": -426.465
+        },
+        {
+          "x": 230.08,
+          "z": -420.343
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_417857919",
+      "points": [
+        {
+          "x": 226.079,
+          "z": -425.941
+        },
+        {
+          "x": 225.479,
+          "z": -425.663
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Kleine Marxerbrücke"
+    },
+    {
+      "id": "osm_way_1431166643",
+      "points": [
+        {
+          "x": 224.648,
+          "z": -431.926
+        },
+        {
+          "x": 227.21,
+          "z": -426.465
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

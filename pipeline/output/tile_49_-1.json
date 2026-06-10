@@ -1,0 +1,31 @@
+{
+  "tileId": "49_-1",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 490.0,
+    "z": -10.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_10504931",
+      "points": [
+        {
+          "x": 458.151,
+          "z": -18.253
+        },
+        {
+          "x": 522.449,
+          "z": 7.436
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Obere Weißgerberstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

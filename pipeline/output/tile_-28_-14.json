@@ -1,0 +1,47 @@
+{
+  "tileId": "-28_-14",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -280.0,
+    "z": -140.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9225464",
+      "points": [
+        {
+          "x": -278.446,
+          "z": -133.669
+        },
+        {
+          "x": -279.661,
+          "z": -141.729
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0,
+      "name": "Hafnersteig"
+    },
+    {
+      "id": "osm_way_186174716",
+      "points": [
+        {
+          "x": -278.816,
+          "z": -127.961
+        },
+        {
+          "x": -278.446,
+          "z": -133.669
+        }
+      ],
+      "highway": "steps",
+      "width": 2.0,
+      "name": "Hafnersteig"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

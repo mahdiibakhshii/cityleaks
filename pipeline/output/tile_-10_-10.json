@@ -1,0 +1,30 @@
+{
+  "tileId": "-10_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -100.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1024378995",
+      "points": [
+        {
+          "x": -115.276,
+          "z": -89.505
+        },
+        {
+          "x": -76.016,
+          "z": -92.502
+        }
+      ],
+      "highway": "busway",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

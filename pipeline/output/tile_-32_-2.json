@@ -1,0 +1,30 @@
+{
+  "tileId": "-32_-2",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -320.0,
+    "z": -20.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_777241641",
+      "points": [
+        {
+          "x": -309.928,
+          "z": -14.479
+        },
+        {
+          "x": -310.28,
+          "z": -15.542
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

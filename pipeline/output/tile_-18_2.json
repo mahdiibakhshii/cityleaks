@@ -1,0 +1,31 @@
+{
+  "tileId": "-18_2",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -180.0,
+    "z": 20.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_357504701",
+      "points": [
+        {
+          "x": -165.366,
+          "z": 22.924
+        },
+        {
+          "x": -182.546,
+          "z": 26.596
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Schlagbrückenufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

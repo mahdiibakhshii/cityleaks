@@ -1,0 +1,46 @@
+{
+  "tileId": "-49_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -490.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4952913",
+      "points": [
+        {
+          "x": -500.44,
+          "z": -55.914
+        },
+        {
+          "x": -473.989,
+          "z": -64.424
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Seitenstettengasse"
+    },
+    {
+      "id": "osm_way_867322307",
+      "points": [
+        {
+          "x": -474.881,
+          "z": -67.754
+        },
+        {
+          "x": -486.499,
+          "z": -64.237
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,66 @@
+{
+  "tileId": "-8_-9",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -80.0,
+    "z": -90.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_116531166",
+      "points": [
+        {
+          "x": -70.061,
+          "z": -91.383
+        },
+        {
+          "x": -70.548,
+          "z": -82.042
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Dominikanerbastei"
+    },
+    {
+      "id": "osm_way_417483830",
+      "points": [
+        {
+          "x": -75.794,
+          "z": -81.691
+        },
+        {
+          "x": -75.953,
+          "z": -89.388
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_553127695",
+      "points": [
+        {
+          "x": -80.802,
+          "z": -81.314
+        },
+        {
+          "x": -75.794,
+          "z": -81.691
+        },
+        {
+          "x": -70.548,
+          "z": -82.042
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

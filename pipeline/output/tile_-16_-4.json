@@ -1,0 +1,31 @@
+{
+  "tileId": "-16_-4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -160.0,
+    "z": -40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230483960",
+      "points": [
+        {
+          "x": -153.519,
+          "z": -48.82
+        },
+        {
+          "x": -147.479,
+          "z": -28.877
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Schwedenbrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

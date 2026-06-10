@@ -1,0 +1,31 @@
+{
+  "tileId": "27_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 270.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_47120686",
+      "points": [
+        {
+          "x": 294.624,
+          "z": -97.541
+        },
+        {
+          "x": 264.244,
+          "z": -94.152
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Radetzkybrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

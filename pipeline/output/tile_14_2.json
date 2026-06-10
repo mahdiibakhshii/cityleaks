@@ -1,0 +1,65 @@
+{
+  "tileId": "14_2",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 140.0,
+    "z": 20.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_146984833",
+      "points": [
+        {
+          "x": 151.288,
+          "z": 26.47
+        },
+        {
+          "x": 147.465,
+          "z": 25.856
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Untere Donaustraße"
+    },
+    {
+      "id": "osm_way_1384151547",
+      "points": [
+        {
+          "x": 146.991,
+          "z": 30.718
+        },
+        {
+          "x": 147.465,
+          "z": 25.856
+        },
+        {
+          "x": 147.968,
+          "z": 20.64
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1384151548",
+      "points": [
+        {
+          "x": 147.968,
+          "z": 20.64
+        },
+        {
+          "x": 151.793,
+          "z": 19.463
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,35 @@
+{
+  "tileId": "16_4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 160.0,
+    "z": 40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_204274838",
+      "points": [
+        {
+          "x": 161.758,
+          "z": 49.595
+        },
+        {
+          "x": 161.999,
+          "z": 47.365
+        },
+        {
+          "x": 162.991,
+          "z": 38.077
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Aspernbrückengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

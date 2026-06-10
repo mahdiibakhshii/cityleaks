@@ -1,0 +1,47 @@
+{
+  "tileId": "8_-36",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 80.0,
+    "z": -360.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26420444",
+      "points": [
+        {
+          "x": 86.01,
+          "z": -346.743
+        },
+        {
+          "x": 83.305,
+          "z": -356.654
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Stubenring"
+    },
+    {
+      "id": "osm_way_1320671232",
+      "points": [
+        {
+          "x": 83.305,
+          "z": -356.654
+        },
+        {
+          "x": 90.524,
+          "z": -360.137
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Rosenbursenstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

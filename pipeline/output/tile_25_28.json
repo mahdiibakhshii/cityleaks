@@ -1,0 +1,62 @@
+{
+  "tileId": "25_28",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 250.0,
+    "z": 280.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_43287904",
+      "points": [
+        {
+          "x": 257.954,
+          "z": 295.729
+        },
+        {
+          "x": 243.328,
+          "z": 283.08
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_200689824",
+      "points": [
+        {
+          "x": 256.959,
+          "z": 284.148
+        },
+        {
+          "x": 249.208,
+          "z": 277.983
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Praterstraße"
+    },
+    {
+      "id": "osm_way_286964400",
+      "points": [
+        {
+          "x": 257.954,
+          "z": 295.729
+        },
+        {
+          "x": 243.328,
+          "z": 283.08
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Nestroyplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

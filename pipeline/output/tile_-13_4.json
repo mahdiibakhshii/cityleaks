@@ -1,0 +1,85 @@
+{
+  "tileId": "-13_4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -130.0,
+    "z": 40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9292382",
+      "points": [
+        {
+          "x": -126.191,
+          "z": 43.674
+        },
+        {
+          "x": -119.586,
+          "z": 44.971
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Praterstraße"
+    },
+    {
+      "id": "osm_way_230483961",
+      "points": [
+        {
+          "x": -127.663,
+          "z": 37.933
+        },
+        {
+          "x": -126.191,
+          "z": 43.674
+        },
+        {
+          "x": -125.638,
+          "z": 48.075
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    },
+    {
+      "id": "osm_way_437864413",
+      "points": [
+        {
+          "x": -128.205,
+          "z": 48.24
+        },
+        {
+          "x": -125.638,
+          "z": 48.075
+        },
+        {
+          "x": -120.838,
+          "z": 48.528
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1052758525",
+      "points": [
+        {
+          "x": -120.838,
+          "z": 48.528
+        },
+        {
+          "x": -119.586,
+          "z": 44.971
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,65 @@
+{
+  "tileId": "12_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 120.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_28172964",
+      "points": [
+        {
+          "x": 128.74,
+          "z": -97.237
+        },
+        {
+          "x": 128.726,
+          "z": -101.829
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_236757556",
+      "points": [
+        {
+          "x": 118.092,
+          "z": -88.668
+        },
+        {
+          "x": 124.053,
+          "z": -93.252
+        },
+        {
+          "x": 128.74,
+          "z": -97.237
+        }
+      ],
+      "highway": "secondary_link",
+      "width": 4.0,
+      "name": "Julius-Raab-Platz"
+    },
+    {
+      "id": "osm_way_759595290",
+      "points": [
+        {
+          "x": 129.573,
+          "z": -89.439
+        },
+        {
+          "x": 128.74,
+          "z": -97.237
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

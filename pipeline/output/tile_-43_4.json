@@ -1,0 +1,31 @@
+{
+  "tileId": "-43_4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -430.0,
+    "z": 40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1024589781",
+      "points": [
+        {
+          "x": -423.726,
+          "z": 37.784
+        },
+        {
+          "x": -433.158,
+          "z": 45.353
+        }
+      ],
+      "highway": "busway",
+      "width": 4.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

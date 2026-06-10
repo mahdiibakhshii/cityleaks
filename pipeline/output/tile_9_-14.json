@@ -1,0 +1,46 @@
+{
+  "tileId": "9_-14",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 90.0,
+    "z": -140.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_473363100",
+      "points": [
+        {
+          "x": 97.668,
+          "z": -134.331
+        },
+        {
+          "x": 100.208,
+          "z": -140.845
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1275252082",
+      "points": [
+        {
+          "x": 91.85,
+          "z": -135.57
+        },
+        {
+          "x": 97.668,
+          "z": -134.331
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Wiesingerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,46 @@
+{
+  "tileId": "21_-42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 210.0,
+    "z": -420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_417857919",
+      "points": [
+        {
+          "x": 225.479,
+          "z": -425.663
+        },
+        {
+          "x": 200.043,
+          "z": -413.791
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Kleine Marxerbrücke"
+    },
+    {
+      "id": "osm_way_818543868",
+      "points": [
+        {
+          "x": 203.728,
+          "z": -405.897
+        },
+        {
+          "x": 229.722,
+          "z": -418.193
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

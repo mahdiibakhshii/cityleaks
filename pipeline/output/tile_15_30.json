@@ -1,0 +1,31 @@
+{
+  "tileId": "15_30",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 150.0,
+    "z": 300.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9867424",
+      "points": [
+        {
+          "x": 160.582,
+          "z": 303.96
+        },
+        {
+          "x": 152.192,
+          "z": 308.978
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Komödiengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-25_16",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -250.0,
+    "z": 160.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_355135033",
+      "points": [
+        {
+          "x": -247.01,
+          "z": 154.656
+        },
+        {
+          "x": -243.376,
+          "z": 170.387
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Lilienbrunngasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

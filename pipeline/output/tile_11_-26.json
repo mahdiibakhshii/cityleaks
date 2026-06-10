@@ -1,0 +1,35 @@
+{
+  "tileId": "11_-26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 110.0,
+    "z": -260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9067293",
+      "points": [
+        {
+          "x": 107.474,
+          "z": -257.611
+        },
+        {
+          "x": 114.48,
+          "z": -258.775
+        },
+        {
+          "x": 120.941,
+          "z": -259.748
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Georg-Coch-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

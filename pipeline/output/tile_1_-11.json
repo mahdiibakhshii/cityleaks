@@ -1,0 +1,50 @@
+{
+  "tileId": "1_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 10.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_352171703",
+      "points": [
+        {
+          "x": 13.635,
+          "z": -108.669
+        },
+        {
+          "x": 21.389,
+          "z": -108.83
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1314581869",
+      "points": [
+        {
+          "x": 12.812,
+          "z": -100.089
+        },
+        {
+          "x": 13.483,
+          "z": -106.003
+        },
+        {
+          "x": 13.635,
+          "z": -108.669
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Biberstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

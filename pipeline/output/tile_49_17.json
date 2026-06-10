@@ -1,0 +1,31 @@
+{
+  "tileId": "49_17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 490.0,
+    "z": 170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9797746",
+      "points": [
+        {
+          "x": 492.917,
+          "z": 179.869
+        },
+        {
+          "x": 489.715,
+          "z": 178.199
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Untere Donaustraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

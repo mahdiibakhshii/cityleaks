@@ -1,0 +1,47 @@
+{
+  "tileId": "10_41",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 100.0,
+    "z": 410.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29275428",
+      "points": [
+        {
+          "x": 100.741,
+          "z": 410.229
+        },
+        {
+          "x": 105.797,
+          "z": 425.741
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Große Mohrengasse"
+    },
+    {
+      "id": "osm_way_159481880",
+      "points": [
+        {
+          "x": 116.325,
+          "z": 410.888
+        },
+        {
+          "x": 100.741,
+          "z": 410.229
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Johannes-von-Gott-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

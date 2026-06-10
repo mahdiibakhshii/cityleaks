@@ -1,0 +1,81 @@
+{
+  "tileId": "19_-42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 190.0,
+    "z": -420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25427955",
+      "points": [
+        {
+          "x": 200.043,
+          "z": -413.791
+        },
+        {
+          "x": 194.564,
+          "z": -411.232
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Oskar-Kokoschka-Platz"
+    },
+    {
+      "id": "osm_way_203868701",
+      "points": [
+        {
+          "x": 194.564,
+          "z": -411.232
+        },
+        {
+          "x": 189.305,
+          "z": -417.575
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Fritz-Wotruba-Promenade"
+    },
+    {
+      "id": "osm_way_203868712",
+      "points": [
+        {
+          "x": 194.982,
+          "z": -420.842
+        },
+        {
+          "x": 194.33,
+          "z": -415.984
+        },
+        {
+          "x": 194.564,
+          "z": -411.232
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_818543870",
+      "points": [
+        {
+          "x": 194.982,
+          "z": -420.842
+        },
+        {
+          "x": 189.305,
+          "z": -417.575
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

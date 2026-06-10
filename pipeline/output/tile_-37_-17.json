@@ -1,0 +1,47 @@
+{
+  "tileId": "-37_-17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -370.0,
+    "z": -170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25950770",
+      "points": [
+        {
+          "x": -361.773,
+          "z": -164.359
+        },
+        {
+          "x": -363.565,
+          "z": -171.729
+        }
+      ],
+      "highway": "living_street",
+      "width": 6.7,
+      "name": "Köllnerhofgasse"
+    },
+    {
+      "id": "osm_way_745742182",
+      "points": [
+        {
+          "x": -376.586,
+          "z": -160.021
+        },
+        {
+          "x": -361.773,
+          "z": -164.359
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Fleischmarkt"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

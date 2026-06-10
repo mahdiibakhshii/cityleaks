@@ -1,0 +1,31 @@
+{
+  "tileId": "-34_-36",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -340.0,
+    "z": -360.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26565515",
+      "points": [
+        {
+          "x": -336.883,
+          "z": -358.615
+        },
+        {
+          "x": -334.799,
+          "z": -355.92
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Windhaaggasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

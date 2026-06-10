@@ -1,0 +1,63 @@
+{
+  "tileId": "-29_7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -290.0,
+    "z": 70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_263062086",
+      "points": [
+        {
+          "x": -280.358,
+          "z": 79.121
+        },
+        {
+          "x": -279.705,
+          "z": 80.412
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marienbrücke"
+    },
+    {
+      "id": "osm_way_263062087",
+      "points": [
+        {
+          "x": -281.714,
+          "z": 76.818
+        },
+        {
+          "x": -280.358,
+          "z": 79.121
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marienbrücke"
+    },
+    {
+      "id": "osm_way_357504706",
+      "points": [
+        {
+          "x": -280.499,
+          "z": 73.715
+        },
+        {
+          "x": -289.752,
+          "z": 79.609
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Dianabadufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

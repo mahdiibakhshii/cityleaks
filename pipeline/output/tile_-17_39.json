@@ -1,0 +1,46 @@
+{
+  "tileId": "-17_39",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -170.0,
+    "z": 390.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_28602163",
+      "points": [
+        {
+          "x": -162.115,
+          "z": 401.169
+        },
+        {
+          "x": -163.514,
+          "z": 398.364
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Lilienbrunngasse"
+    },
+    {
+      "id": "osm_way_1463158007",
+      "points": [
+        {
+          "x": -167.863,
+          "z": 399.732
+        },
+        {
+          "x": -163.514,
+          "z": 398.364
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

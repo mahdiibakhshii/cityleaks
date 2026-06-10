@@ -1,0 +1,31 @@
+{
+  "tileId": "23_52",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 230.0,
+    "z": 520.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024497",
+      "points": [
+        {
+          "x": 251.689,
+          "z": 551.003
+        },
+        {
+          "x": 225.887,
+          "z": 505.008
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Kleine Mohrengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

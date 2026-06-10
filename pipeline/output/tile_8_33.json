@@ -1,0 +1,50 @@
+{
+  "tileId": "8_33",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 80.0,
+    "z": 330.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8096059",
+      "points": [
+        {
+          "x": 83.696,
+          "z": 329.615
+        },
+        {
+          "x": 89.748,
+          "z": 346.379
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Große Mohrengasse"
+    },
+    {
+      "id": "osm_way_947223817",
+      "points": [
+        {
+          "x": 93.781,
+          "z": 331.62
+        },
+        {
+          "x": 85.588,
+          "z": 329.36
+        },
+        {
+          "x": 86.542,
+          "z": 331.69
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

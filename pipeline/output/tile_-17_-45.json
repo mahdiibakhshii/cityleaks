@@ -1,0 +1,47 @@
+{
+  "tileId": "-17_-45",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -170.0,
+    "z": -450.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26420460",
+      "points": [
+        {
+          "x": -168.779,
+          "z": -442.879
+        },
+        {
+          "x": -168.539,
+          "z": -450.046
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Postgasse"
+    },
+    {
+      "id": "osm_way_30018144",
+      "points": [
+        {
+          "x": -168.779,
+          "z": -442.879
+        },
+        {
+          "x": -161.194,
+          "z": -445.2
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Bäckerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,45 @@
+{
+  "tileId": "44_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 440.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_236760131",
+      "points": [
+        {
+          "x": 448.114,
+          "z": -99.497
+        },
+        {
+          "x": 450.744,
+          "z": -94.057
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1320356690",
+      "points": [
+        {
+          "x": 443.722,
+          "z": -94.529
+        },
+        {
+          "x": 448.114,
+          "z": -99.497
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

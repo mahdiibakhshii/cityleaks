@@ -1,0 +1,47 @@
+{
+  "tileId": "42_0",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 420.0,
+    "z": 0.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9800317",
+      "points": [
+        {
+          "x": 418.436,
+          "z": -4.894
+        },
+        {
+          "x": 428.924,
+          "z": 20.879
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Dampfschiffstraße"
+    },
+    {
+      "id": "osm_way_28617038",
+      "points": [
+        {
+          "x": 418.436,
+          "z": -4.894
+        },
+        {
+          "x": 430.262,
+          "z": 6.46
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Hintere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,66 @@
+{
+  "tileId": "18_-15",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 180.0,
+    "z": -150.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25427884",
+      "points": [
+        {
+          "x": 182.091,
+          "z": -140.316
+        },
+        {
+          "x": 185.279,
+          "z": -143.183
+        }
+      ],
+      "highway": "residential",
+      "width": 9.5,
+      "name": "Reischachstraße"
+    },
+    {
+      "id": "osm_way_203868702",
+      "points": [
+        {
+          "x": 178.062,
+          "z": -144.38
+        },
+        {
+          "x": 182.091,
+          "z": -140.316
+        }
+      ],
+      "highway": "residential",
+      "width": 5.4,
+      "name": "Julius-Raab-Platz"
+    },
+    {
+      "id": "osm_way_473367765",
+      "points": [
+        {
+          "x": 188.252,
+          "z": -138.293
+        },
+        {
+          "x": 185.279,
+          "z": -143.183
+        },
+        {
+          "x": 177.739,
+          "z": -150.779
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,50 @@
+{
+  "tileId": "-19_15",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -190.0,
+    "z": 150.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29234599",
+      "points": [
+        {
+          "x": -182.453,
+          "z": 154.813
+        },
+        {
+          "x": -180.276,
+          "z": 163.48
+        }
+      ],
+      "highway": "service",
+      "width": 4.0,
+      "name": "Gredlerstraße"
+    },
+    {
+      "id": "osm_way_792934538",
+      "points": [
+        {
+          "x": -184.808,
+          "z": 153.926
+        },
+        {
+          "x": -182.453,
+          "z": 154.813
+        },
+        {
+          "x": -179.459,
+          "z": 156.079
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

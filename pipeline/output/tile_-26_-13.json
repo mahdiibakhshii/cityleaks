@@ -1,0 +1,31 @@
+{
+  "tileId": "-26_-13",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -260.0,
+    "z": -130.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_346403315",
+      "points": [
+        {
+          "x": -229.453,
+          "z": -131.935
+        },
+        {
+          "x": -280.911,
+          "z": -120.105
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Hafnersteig"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

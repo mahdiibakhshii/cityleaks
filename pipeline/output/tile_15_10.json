@@ -1,0 +1,46 @@
+{
+  "tileId": "15_10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 150.0,
+    "z": 100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8093470",
+      "points": [
+        {
+          "x": 158.721,
+          "z": 105.199
+        },
+        {
+          "x": 151.777,
+          "z": 103.372
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Ferdinandstraße"
+    },
+    {
+      "id": "osm_way_37927536",
+      "points": [
+        {
+          "x": 158.721,
+          "z": 105.199
+        },
+        {
+          "x": 157.165,
+          "z": 110.752
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-53_-17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -530.0,
+    "z": -170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_506998433",
+      "points": [
+        {
+          "x": -523.855,
+          "z": -152.739
+        },
+        {
+          "x": -535.321,
+          "z": -167.731
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Bauernmarkt"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

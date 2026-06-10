@@ -1,0 +1,115 @@
+{
+  "tileId": "-7_38",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -70.0,
+    "z": 380.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024334",
+      "points": [
+        {
+          "x": -59.014,
+          "z": 385.276
+        },
+        {
+          "x": -62.366,
+          "z": 384.104
+        }
+      ],
+      "highway": "residential",
+      "width": 5.0,
+      "name": "Karmeliterplatz"
+    },
+    {
+      "id": "osm_way_164335725",
+      "points": [
+        {
+          "x": -66.627,
+          "z": 384.705
+        },
+        {
+          "x": -62.959,
+          "z": 386.094
+        },
+        {
+          "x": -59.607,
+          "z": 387.278
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    },
+    {
+      "id": "osm_way_231360530",
+      "points": [
+        {
+          "x": -61.735,
+          "z": 381.636
+        },
+        {
+          "x": -58.43,
+          "z": 382.151
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    },
+    {
+      "id": "osm_way_493432294",
+      "points": [
+        {
+          "x": -62.366,
+          "z": 384.104
+        },
+        {
+          "x": -76.792,
+          "z": 378.93
+        }
+      ],
+      "highway": "residential",
+      "width": 4.0,
+      "name": "Karmeliterplatz"
+    },
+    {
+      "id": "osm_way_493432295",
+      "points": [
+        {
+          "x": -61.735,
+          "z": 381.636
+        },
+        {
+          "x": -62.366,
+          "z": 384.104
+        },
+        {
+          "x": -62.959,
+          "z": 386.094
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1463158007",
+      "points": [
+        {
+          "x": -65.335,
+          "z": 380.604
+        },
+        {
+          "x": -61.735,
+          "z": 381.636
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

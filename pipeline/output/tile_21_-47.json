@@ -1,0 +1,31 @@
+{
+  "tileId": "21_-47",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 210.0,
+    "z": -470.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_553193732",
+      "points": [
+        {
+          "x": 221.451,
+          "z": -459.479
+        },
+        {
+          "x": 214.35,
+          "z": -473.716
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

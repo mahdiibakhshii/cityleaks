@@ -1,0 +1,62 @@
+{
+  "tileId": "-16_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -160.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230483955",
+      "points": [
+        {
+          "x": -159.695,
+          "z": -65.364
+        },
+        {
+          "x": -156.677,
+          "z": -57.538
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Schwedenbrücke"
+    },
+    {
+      "id": "osm_way_354021083",
+      "points": [
+        {
+          "x": -159.695,
+          "z": -65.364
+        },
+        {
+          "x": -151.31,
+          "z": -69.227
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_473320404",
+      "points": [
+        {
+          "x": -149.113,
+          "z": -60.404
+        },
+        {
+          "x": -151.31,
+          "z": -69.227
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

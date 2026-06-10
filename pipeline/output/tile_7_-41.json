@@ -1,0 +1,31 @@
+{
+  "tileId": "7_-41",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 70.0,
+    "z": -410.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4469959",
+      "points": [
+        {
+          "x": 97.86,
+          "z": -374.648
+        },
+        {
+          "x": 52.016,
+          "z": -444.194
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Stubenring"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

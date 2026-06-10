@@ -1,0 +1,46 @@
+{
+  "tileId": "-33_12",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -330.0,
+    "z": 120.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_127240496",
+      "points": [
+        {
+          "x": -321.547,
+          "z": 115.996
+        },
+        {
+          "x": -334.341,
+          "z": 125.395
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Obere Donaustraße"
+    },
+    {
+      "id": "osm_way_437864414",
+      "points": [
+        {
+          "x": -314.103,
+          "z": 118.153
+        },
+        {
+          "x": -338.517,
+          "z": 135.783
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

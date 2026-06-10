@@ -1,0 +1,31 @@
+{
+  "tileId": "32_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 320.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_399877914",
+      "points": [
+        {
+          "x": 310.973,
+          "z": -73.62
+        },
+        {
+          "x": 332.37,
+          "z": -62.66
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5,
+      "name": "Weißgerberufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

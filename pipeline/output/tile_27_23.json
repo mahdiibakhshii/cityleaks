@@ -1,0 +1,31 @@
+{
+  "tileId": "27_23",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 270.0,
+    "z": 230.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1190546267",
+      "points": [
+        {
+          "x": 270.723,
+          "z": 251.008
+        },
+        {
+          "x": 288.271,
+          "z": 217.803
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Tempelgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

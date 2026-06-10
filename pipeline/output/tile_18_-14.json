@@ -1,0 +1,31 @@
+{
+  "tileId": "18_-14",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 180.0,
+    "z": -140.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_203868703",
+      "points": [
+        {
+          "x": 182.091,
+          "z": -140.316
+        },
+        {
+          "x": 185.26,
+          "z": -134.289
+        }
+      ],
+      "highway": "residential",
+      "width": 5.4,
+      "name": "Julius-Raab-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,46 @@
+{
+  "tileId": "14_-8",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 140.0,
+    "z": -80.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26088759",
+      "points": [
+        {
+          "x": 139.32,
+          "z": -75.655
+        },
+        {
+          "x": 147.677,
+          "z": -78.007
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_102712070",
+      "points": [
+        {
+          "x": 150.153,
+          "z": -67.767
+        },
+        {
+          "x": 147.677,
+          "z": -78.007
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Aspernbrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,62 @@
+{
+  "tileId": "23_-43",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 230.0,
+    "z": -430.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_553193727",
+      "points": [
+        {
+          "x": 240.611,
+          "z": -422.399
+        },
+        {
+          "x": 236.386,
+          "z": -431.281
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_553193728",
+      "points": [
+        {
+          "x": 236.386,
+          "z": -431.281
+        },
+        {
+          "x": 227.21,
+          "z": -426.465
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marxergasse"
+    },
+    {
+      "id": "osm_way_818543869",
+      "points": [
+        {
+          "x": 230.853,
+          "z": -418.695
+        },
+        {
+          "x": 240.611,
+          "z": -422.399
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

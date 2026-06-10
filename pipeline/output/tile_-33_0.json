@@ -1,0 +1,63 @@
+{
+  "tileId": "-33_0",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -330.0,
+    "z": 0.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_7832222",
+      "points": [
+        {
+          "x": -324.368,
+          "z": 2.206
+        },
+        {
+          "x": -320.398,
+          "z": 9.993
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marienbrücke"
+    },
+    {
+      "id": "osm_way_229033665",
+      "points": [
+        {
+          "x": -324.368,
+          "z": 2.206
+        },
+        {
+          "x": -319.785,
+          "z": -0.58
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_553127698",
+      "points": [
+        {
+          "x": -330.991,
+          "z": 6.435
+        },
+        {
+          "x": -324.368,
+          "z": 2.206
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "28_26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 280.0,
+    "z": 260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1297476109",
+      "points": [
+        {
+          "x": 285.462,
+          "z": 261.536
+        },
+        {
+          "x": 284.71,
+          "z": 259.566
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Nestroyplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

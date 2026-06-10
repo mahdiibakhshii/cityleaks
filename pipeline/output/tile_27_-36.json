@@ -1,0 +1,47 @@
+{
+  "tileId": "27_-36",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 270.0,
+    "z": -360.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_101272246",
+      "points": [
+        {
+          "x": 272.351,
+          "z": -348.547
+        },
+        {
+          "x": 268.758,
+          "z": -359.519
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_553193738",
+      "points": [
+        {
+          "x": 275.22,
+          "z": -366.752
+        },
+        {
+          "x": 279.436,
+          "z": -352.833
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Vordere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

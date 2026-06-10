@@ -1,0 +1,31 @@
+{
+  "tileId": "12_41",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 120.0,
+    "z": 410.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_159481880",
+      "points": [
+        {
+          "x": 129.87,
+          "z": 412.221
+        },
+        {
+          "x": 116.325,
+          "z": 410.888
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Johannes-von-Gott-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

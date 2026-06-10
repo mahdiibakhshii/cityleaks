@@ -1,0 +1,61 @@
+{
+  "tileId": "-12_38",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -120.0,
+    "z": 380.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_28640751",
+      "points": [
+        {
+          "x": -107.671,
+          "z": 384.146
+        },
+        {
+          "x": -112.49,
+          "z": 384.393
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Karmeliterplatz"
+    },
+    {
+      "id": "osm_way_231360530",
+      "points": [
+        {
+          "x": -113.368,
+          "z": 382.365
+        },
+        {
+          "x": -110.758,
+          "z": 382.29
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    },
+    {
+      "id": "osm_way_1463158007",
+      "points": [
+        {
+          "x": -114.487,
+          "z": 383.012
+        },
+        {
+          "x": -110.758,
+          "z": 382.29
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

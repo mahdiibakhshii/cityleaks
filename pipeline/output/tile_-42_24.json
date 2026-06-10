@@ -1,0 +1,31 @@
+{
+  "tileId": "-42_24",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -420.0,
+    "z": 240.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9293458",
+      "points": [
+        {
+          "x": -408.721,
+          "z": 248.487
+        },
+        {
+          "x": -411.541,
+          "z": 247.058
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Salztorbrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

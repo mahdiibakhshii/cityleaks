@@ -1,0 +1,31 @@
+{
+  "tileId": "-8_-42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -80.0,
+    "z": -420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1275252130",
+      "points": [
+        {
+          "x": -80.163,
+          "z": -424.722
+        },
+        {
+          "x": -71.606,
+          "z": -408.347
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Dominikanerbastei"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

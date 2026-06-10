@@ -1,0 +1,31 @@
+{
+  "tileId": "-36_13",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -360.0,
+    "z": 130.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_357504706",
+      "points": [
+        {
+          "x": -350.838,
+          "z": 122.965
+        },
+        {
+          "x": -365.804,
+          "z": 138.707
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Dianabadufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,51 @@
+{
+  "tileId": "10_-37",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 100.0,
+    "z": -370.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4469959",
+      "points": [
+        {
+          "x": 105.024,
+          "z": -357.708
+        },
+        {
+          "x": 102.767,
+          "z": -366.121
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Stubenring"
+    },
+    {
+      "id": "osm_way_552417857",
+      "points": [
+        {
+          "x": 112.287,
+          "z": -370.653
+        },
+        {
+          "x": 106.815,
+          "z": -368.049
+        },
+        {
+          "x": 102.767,
+          "z": -366.121
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Oskar-Kokoschka-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

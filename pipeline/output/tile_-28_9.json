@@ -1,0 +1,96 @@
+{
+  "tileId": "-28_9",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -280.0,
+    "z": 90.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024409",
+      "points": [
+        {
+          "x": -273.933,
+          "z": 93.801
+        },
+        {
+          "x": -272.337,
+          "z": 96.354
+        },
+        {
+          "x": -270.371,
+          "z": 99.847
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Lilienbrunngasse"
+    },
+    {
+      "id": "osm_way_126555264",
+      "points": [
+        {
+          "x": -278.525,
+          "z": 94.208
+        },
+        {
+          "x": -281.195,
+          "z": 95.539
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_849093085",
+      "points": [
+        {
+          "x": -270.413,
+          "z": 91.863
+        },
+        {
+          "x": -273.933,
+          "z": 93.801
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1431693459",
+      "points": [
+        {
+          "x": -273.933,
+          "z": 93.801
+        },
+        {
+          "x": -278.525,
+          "z": 94.208
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1431693460",
+      "points": [
+        {
+          "x": -276.221,
+          "z": 87.09
+        },
+        {
+          "x": -273.933,
+          "z": 93.801
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Lilienbrunngasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

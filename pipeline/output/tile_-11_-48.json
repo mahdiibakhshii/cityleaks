@@ -1,0 +1,63 @@
+{
+  "tileId": "-11_-48",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -110.0,
+    "z": -480.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1213571163",
+      "points": [
+        {
+          "x": -104.445,
+          "z": -481.705
+        },
+        {
+          "x": -107.451,
+          "z": -476.934
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Dr.-Karl-Lueger-Platz"
+    },
+    {
+      "id": "osm_way_1275252131",
+      "points": [
+        {
+          "x": -107.451,
+          "z": -476.934
+        },
+        {
+          "x": -102.343,
+          "z": -467.147
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Dominikanerbastei"
+    },
+    {
+      "id": "osm_way_1320684168",
+      "points": [
+        {
+          "x": -110.33,
+          "z": -481.722
+        },
+        {
+          "x": -107.451,
+          "z": -476.934
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Dr.-Karl-Lueger-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

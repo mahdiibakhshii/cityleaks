@@ -1,0 +1,31 @@
+{
+  "tileId": "-11_-33",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -110.0,
+    "z": -330.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_101971899",
+      "points": [
+        {
+          "x": -77.062,
+          "z": -323.068
+        },
+        {
+          "x": -132.048,
+          "z": -334.229
+        }
+      ],
+      "highway": "residential",
+      "width": 10.0,
+      "name": "Barbaragasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,81 @@
+{
+  "tileId": "31_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 310.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_47120688",
+      "points": [
+        {
+          "x": 314.765,
+          "z": -109.608
+        },
+        {
+          "x": 313.612,
+          "z": -106.638
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Vordere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_73337736",
+      "points": [
+        {
+          "x": 319.109,
+          "z": -101.591
+        },
+        {
+          "x": 317.48,
+          "z": -100.242
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.1
+    },
+    {
+      "id": "osm_way_1024378993",
+      "points": [
+        {
+          "x": 314.999,
+          "z": -111.015
+        },
+        {
+          "x": 324.809,
+          "z": -108.615
+        }
+      ],
+      "highway": "busway",
+      "width": 4.0
+    },
+    {
+      "id": "osm_way_1105594423",
+      "points": [
+        {
+          "x": 313.612,
+          "z": -106.638
+        },
+        {
+          "x": 312.238,
+          "z": -104.227
+        },
+        {
+          "x": 308.783,
+          "z": -100.521
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Vordere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "64_17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 640.0,
+    "z": 170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25702234",
+      "points": [
+        {
+          "x": 660.796,
+          "z": 173.253
+        },
+        {
+          "x": 626.997,
+          "z": 173.887
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Henriette-Fahrbach-Promenade"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "45_26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 450.0,
+    "z": 260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29696032",
+      "points": [
+        {
+          "x": 433.096,
+          "z": 250.846
+        },
+        {
+          "x": 477.404,
+          "z": 281.354
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Czerninplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

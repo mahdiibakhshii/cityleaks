@@ -1,0 +1,46 @@
+{
+  "tileId": "20_2",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 200.0,
+    "z": 20.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25702234",
+      "points": [
+        {
+          "x": 216.943,
+          "z": 21.859
+        },
+        {
+          "x": 200.459,
+          "z": 18.238
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Henriette-Fahrbach-Promenade"
+    },
+    {
+      "id": "osm_way_184023389",
+      "points": [
+        {
+          "x": 214.503,
+          "z": 26.118
+        },
+        {
+          "x": 197.887,
+          "z": 22.417
+        }
+      ],
+      "highway": "steps",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

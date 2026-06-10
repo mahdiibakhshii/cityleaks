@@ -1,0 +1,47 @@
+{
+  "tileId": "-27_-40",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -270.0,
+    "z": -400.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_192797122",
+      "points": [
+        {
+          "x": -271.454,
+          "z": -396.467
+        },
+        {
+          "x": -263.077,
+          "z": -399.886
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Bäckerstraße"
+    },
+    {
+      "id": "osm_way_714680570",
+      "points": [
+        {
+          "x": -263.077,
+          "z": -399.886
+        },
+        {
+          "x": -259.387,
+          "z": -392.66
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Dr.-Ignaz-Seipel-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

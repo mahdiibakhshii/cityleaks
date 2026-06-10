@@ -1,0 +1,66 @@
+{
+  "tileId": "19_-41",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 190.0,
+    "z": -410.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25427955",
+      "points": [
+        {
+          "x": 194.564,
+          "z": -411.232
+        },
+        {
+          "x": 189.308,
+          "z": -408.647
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Oskar-Kokoschka-Platz"
+    },
+    {
+      "id": "osm_way_561881135",
+      "points": [
+        {
+          "x": 191.741,
+          "z": -400.543
+        },
+        {
+          "x": 194.676,
+          "z": -401.768
+        },
+        {
+          "x": 198.466,
+          "z": -403.401
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1174346642",
+      "points": [
+        {
+          "x": 198.466,
+          "z": -403.401
+        },
+        {
+          "x": 194.564,
+          "z": -411.232
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schallautzerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,61 @@
+{
+  "tileId": "-21_-4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -210.0,
+    "z": -40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29067451",
+      "points": [
+        {
+          "x": -217.959,
+          "z": -30.764
+        },
+        {
+          "x": -193.079,
+          "z": -36.978
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Wolfgang-Schmitz-Promenade"
+    },
+    {
+      "id": "osm_way_417483793",
+      "points": [
+        {
+          "x": -206.174,
+          "z": -34.01
+        },
+        {
+          "x": -210.861,
+          "z": -35.384
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_417483809",
+      "points": [
+        {
+          "x": -210.292,
+          "z": -36.008
+        },
+        {
+          "x": -206.174,
+          "z": -34.01
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

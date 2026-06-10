@@ -1,0 +1,81 @@
+{
+  "tileId": "-13_3",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -130.0,
+    "z": 30.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230484048",
+      "points": [
+        {
+          "x": -119.442,
+          "z": 36.168
+        },
+        {
+          "x": -121.038,
+          "z": 29.824
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_553127693",
+      "points": [
+        {
+          "x": -121.038,
+          "z": 29.824
+        },
+        {
+          "x": -129.271,
+          "z": 31.455
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Untere Donaustraße"
+    },
+    {
+      "id": "osm_way_985177257",
+      "points": [
+        {
+          "x": -119.442,
+          "z": 36.168
+        },
+        {
+          "x": -127.663,
+          "z": 37.933
+        },
+        {
+          "x": -131.754,
+          "z": 39.004
+        }
+      ],
+      "highway": "cycleway",
+      "width": 3.0
+    },
+    {
+      "id": "osm_way_1340803174",
+      "points": [
+        {
+          "x": -129.271,
+          "z": 31.455
+        },
+        {
+          "x": -127.663,
+          "z": 37.933
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

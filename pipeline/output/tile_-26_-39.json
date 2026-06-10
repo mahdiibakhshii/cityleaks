@@ -1,0 +1,31 @@
+{
+  "tileId": "-26_-39",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -260.0,
+    "z": -390.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_714680570",
+      "points": [
+        {
+          "x": -259.387,
+          "z": -392.66
+        },
+        {
+          "x": -253.122,
+          "z": -380.606
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Dr.-Ignaz-Seipel-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

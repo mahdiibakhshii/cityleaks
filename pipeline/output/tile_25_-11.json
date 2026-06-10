@@ -1,0 +1,47 @@
+{
+  "tileId": "25_-11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 250.0,
+    "z": -110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_553193725",
+      "points": [
+        {
+          "x": 253.45,
+          "z": -102.163
+        },
+        {
+          "x": 262.741,
+          "z": -103.129
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Uraniastraße"
+    },
+    {
+      "id": "osm_way_1174346637",
+      "points": [
+        {
+          "x": 253.45,
+          "z": -102.163
+        },
+        {
+          "x": 255.042,
+          "z": -109.728
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schallautzerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

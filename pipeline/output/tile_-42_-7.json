@@ -1,0 +1,50 @@
+{
+  "tileId": "-42_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -420.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4952915",
+      "points": [
+        {
+          "x": -417.352,
+          "z": -71.75
+        },
+        {
+          "x": -418.876,
+          "z": -65.439
+        },
+        {
+          "x": -419.879,
+          "z": -61.31
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Rabensteig"
+    },
+    {
+      "id": "osm_way_867322308",
+      "points": [
+        {
+          "x": -419.09,
+          "z": -73.415
+        },
+        {
+          "x": -420.577,
+          "z": -66.326
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

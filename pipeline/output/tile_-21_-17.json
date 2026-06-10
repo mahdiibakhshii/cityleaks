@@ -1,0 +1,31 @@
+{
+  "tileId": "-21_-17",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -210.0,
+    "z": -170.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25950762",
+      "points": [
+        {
+          "x": -203.85,
+          "z": -172.257
+        },
+        {
+          "x": -200.023,
+          "z": -162.727
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Laurenzerberg"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

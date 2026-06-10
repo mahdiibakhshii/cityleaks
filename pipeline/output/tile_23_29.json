@@ -1,0 +1,62 @@
+{
+  "tileId": "23_29",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 230.0,
+    "z": 290.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_416674347",
+      "points": [
+        {
+          "x": 239.506,
+          "z": 289.815
+        },
+        {
+          "x": 236.901,
+          "z": 295.817
+        }
+      ],
+      "highway": "platform",
+      "width": 4.0,
+      "name": "Nestroyplatz"
+    },
+    {
+      "id": "osm_way_425297956",
+      "points": [
+        {
+          "x": 234.717,
+          "z": 287.517
+        },
+        {
+          "x": 229.688,
+          "z": 298.578
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schrottgießergasse"
+    },
+    {
+      "id": "osm_way_677097207",
+      "points": [
+        {
+          "x": 239.598,
+          "z": 297.077
+        },
+        {
+          "x": 236.901,
+          "z": 295.817
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

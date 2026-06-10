@@ -1,0 +1,62 @@
+{
+  "tileId": "-44_-13",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -440.0,
+    "z": -130.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_176378054",
+      "points": [
+        {
+          "x": -431.814,
+          "z": -130.212
+        },
+        {
+          "x": -448.166,
+          "z": -121.299
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Fleischmarkt"
+    },
+    {
+      "id": "osm_way_867322308",
+      "points": [
+        {
+          "x": -430.058,
+          "z": -124.121
+        },
+        {
+          "x": -437.3,
+          "z": -120.159
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0
+    },
+    {
+      "id": "osm_way_1101809116",
+      "points": [
+        {
+          "x": -431.814,
+          "z": -130.212
+        },
+        {
+          "x": -430.058,
+          "z": -124.121
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Rabensteig"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

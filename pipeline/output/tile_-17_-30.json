@@ -1,0 +1,63 @@
+{
+  "tileId": "-17_-30",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -170.0,
+    "z": -300.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_347015852",
+      "points": [
+        {
+          "x": -163.18,
+          "z": -296.452
+        },
+        {
+          "x": -165.151,
+          "z": -296.342
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Postgasse"
+    },
+    {
+      "id": "osm_way_1320671226",
+      "points": [
+        {
+          "x": -165.081,
+          "z": -293.617
+        },
+        {
+          "x": -165.151,
+          "z": -296.342
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Postgasse"
+    },
+    {
+      "id": "osm_way_1320671228",
+      "points": [
+        {
+          "x": -165.151,
+          "z": -296.342
+        },
+        {
+          "x": -167.009,
+          "z": -297.154
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Schönlaterngasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

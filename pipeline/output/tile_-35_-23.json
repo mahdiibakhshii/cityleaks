@@ -1,0 +1,31 @@
+{
+  "tileId": "-35_-23",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -350.0,
+    "z": -230.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25950771",
+      "points": [
+        {
+          "x": -354.604,
+          "z": -220.221
+        },
+        {
+          "x": -343.126,
+          "z": -229.978
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Grashofgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

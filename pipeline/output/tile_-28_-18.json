@@ -1,0 +1,47 @@
+{
+  "tileId": "-28_-18",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -280.0,
+    "z": -180.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_4952869",
+      "points": [
+        {
+          "x": -284.106,
+          "z": -177.765
+        },
+        {
+          "x": -274.647,
+          "z": -180.209
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Fleischmarkt"
+    },
+    {
+      "id": "osm_way_888868306",
+      "points": [
+        {
+          "x": -284.106,
+          "z": -177.765
+        },
+        {
+          "x": -274.177,
+          "z": -167.881
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Griechengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

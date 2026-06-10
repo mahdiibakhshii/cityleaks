@@ -1,0 +1,51 @@
+{
+  "tileId": "-2_-42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -20.0,
+    "z": -420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1272547481",
+      "points": [
+        {
+          "x": -10.977,
+          "z": -414.262
+        },
+        {
+          "x": -16.2,
+          "z": -411.888
+        },
+        {
+          "x": -22.235,
+          "z": -408.95
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Falkestraße"
+    },
+    {
+      "id": "osm_way_1275252115",
+      "points": [
+        {
+          "x": -16.2,
+          "z": -411.888
+        },
+        {
+          "x": -20.384,
+          "z": -419.323
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Biberstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

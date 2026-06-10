@@ -1,0 +1,62 @@
+{
+  "tileId": "24_27",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 240.0,
+    "z": 270.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8096080",
+      "points": [
+        {
+          "x": 249.208,
+          "z": 277.983
+        },
+        {
+          "x": 241.44,
+          "z": 281.445
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schrottgießergasse"
+    },
+    {
+      "id": "osm_way_30285690",
+      "points": [
+        {
+          "x": 249.208,
+          "z": 277.983
+        },
+        {
+          "x": 240.045,
+          "z": 270.224
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Praterstraße"
+    },
+    {
+      "id": "osm_way_416167925",
+      "points": [
+        {
+          "x": 233.518,
+          "z": 262.512
+        },
+        {
+          "x": 266.442,
+          "z": 290.634
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

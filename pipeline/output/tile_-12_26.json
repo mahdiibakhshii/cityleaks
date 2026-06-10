@@ -1,0 +1,31 @@
+{
+  "tileId": "-12_26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -120.0,
+    "z": 260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1128278881",
+      "points": [
+        {
+          "x": -155.735,
+          "z": 279.183
+        },
+        {
+          "x": -83.767,
+          "z": 253.847
+        }
+      ],
+      "highway": "residential",
+      "width": 8.2,
+      "name": "Negerlegasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-1_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -10.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29067451",
+      "points": [
+        {
+          "x": -21.528,
+          "z": -60.77
+        },
+        {
+          "x": 9.067,
+          "z": -62.499
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Wolfgang-Schmitz-Promenade"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

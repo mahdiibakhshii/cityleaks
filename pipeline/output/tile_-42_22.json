@@ -1,0 +1,46 @@
+{
+  "tileId": "-42_22",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -420.0,
+    "z": 220.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_338998822",
+      "points": [
+        {
+          "x": -415.922,
+          "z": 226.944
+        },
+        {
+          "x": -407.208,
+          "z": 230.425
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_357504712",
+      "points": [
+        {
+          "x": -415.922,
+          "z": 226.944
+        },
+        {
+          "x": -413.62,
+          "z": 220.826
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Dianabadufer"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

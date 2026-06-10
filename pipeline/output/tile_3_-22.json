@@ -1,0 +1,31 @@
+{
+  "tileId": "3_-22",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 30.0,
+    "z": -220.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8034529",
+      "points": [
+        {
+          "x": 27.831,
+          "z": -205.532
+        },
+        {
+          "x": 32.318,
+          "z": -233.102
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Biberstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

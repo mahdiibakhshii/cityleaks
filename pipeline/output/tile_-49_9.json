@@ -1,0 +1,31 @@
+{
+  "tileId": "-49_9",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -490.0,
+    "z": 90.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_44024905",
+      "points": [
+        {
+          "x": -489.691,
+          "z": 87.614
+        },
+        {
+          "x": -475.019,
+          "z": 101.152
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Morzinplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

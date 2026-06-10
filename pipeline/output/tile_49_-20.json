@@ -1,0 +1,31 @@
+{
+  "tileId": "49_-20",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 490.0,
+    "z": -200.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_138980890",
+      "points": [
+        {
+          "x": 459.016,
+          "z": -188.824
+        },
+        {
+          "x": 534.08,
+          "z": -194.184
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Kolonitzgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

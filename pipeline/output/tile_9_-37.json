@@ -1,0 +1,35 @@
+{
+  "tileId": "9_-37",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 90.0,
+    "z": -370.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1320671232",
+      "points": [
+        {
+          "x": 90.524,
+          "z": -360.137
+        },
+        {
+          "x": 96.702,
+          "z": -363.161
+        },
+        {
+          "x": 102.767,
+          "z": -366.121
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Rosenbursenstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

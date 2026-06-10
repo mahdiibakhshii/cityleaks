@@ -1,0 +1,31 @@
+{
+  "tileId": "39_40",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 390.0,
+    "z": 400.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_200689825",
+      "points": [
+        {
+          "x": 368.747,
+          "z": 373.887
+        },
+        {
+          "x": 431.179,
+          "z": 428.237
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Praterstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

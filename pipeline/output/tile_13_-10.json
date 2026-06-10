@@ -1,0 +1,77 @@
+{
+  "tileId": "13_-10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 130.0,
+    "z": -100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_236757556",
+      "points": [
+        {
+          "x": 128.74,
+          "z": -97.237
+        },
+        {
+          "x": 132.185,
+          "z": -102.468
+        }
+      ],
+      "highway": "secondary_link",
+      "width": 4.0,
+      "name": "Julius-Raab-Platz"
+    },
+    {
+      "id": "osm_way_1081327232",
+      "points": [
+        {
+          "x": 133.554,
+          "z": -89.746
+        },
+        {
+          "x": 144.932,
+          "z": -90.631
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_1384153545",
+      "points": [
+        {
+          "x": 133.554,
+          "z": -89.746
+        },
+        {
+          "x": 133.053,
+          "z": -94.147
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1384153546",
+      "points": [
+        {
+          "x": 133.053,
+          "z": -94.147
+        },
+        {
+          "x": 132.607,
+          "z": -101.126
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

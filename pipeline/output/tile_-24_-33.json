@@ -1,0 +1,31 @@
+{
+  "tileId": "-24_-33",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -240.0,
+    "z": -330.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26565439",
+      "points": [
+        {
+          "x": -245.887,
+          "z": -335.648
+        },
+        {
+          "x": -233.439,
+          "z": -312.077
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0,
+      "name": "Jesuitengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,47 @@
+{
+  "tileId": "27_26",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 270.0,
+    "z": 260.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1190546268",
+      "points": [
+        {
+          "x": 269.467,
+          "z": 267.096
+        },
+        {
+          "x": 284.293,
+          "z": 264.128
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Czerningasse"
+    },
+    {
+      "id": "osm_way_1297476109",
+      "points": [
+        {
+          "x": 265.928,
+          "z": 265.598
+        },
+        {
+          "x": 285.462,
+          "z": 261.536
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Nestroyplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,55 @@
+{
+  "tileId": "-24_14",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -240.0,
+    "z": 140.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9288654",
+      "points": [
+        {
+          "x": -243.346,
+          "z": 140.546
+        },
+        {
+          "x": -236.532,
+          "z": 142.225
+        },
+        {
+          "x": -230.436,
+          "z": 143.735
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Gredlerstraße"
+    },
+    {
+      "id": "osm_way_355120254",
+      "points": [
+        {
+          "x": -230.436,
+          "z": 143.735
+        },
+        {
+          "x": -233.391,
+          "z": 144.427
+        },
+        {
+          "x": -238.637,
+          "z": 145.645
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Gredlerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

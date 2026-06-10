@@ -1,0 +1,31 @@
+{
+  "tileId": "15_-5",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 150.0,
+    "z": -50.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230626522",
+      "points": [
+        {
+          "x": 156.355,
+          "z": -27.963
+        },
+        {
+          "x": 150.153,
+          "z": -67.767
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Aspernbrücke"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

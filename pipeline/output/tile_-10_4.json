@@ -1,0 +1,46 @@
+{
+  "tileId": "-10_4",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -100.0,
+    "z": 40.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_228273969",
+      "points": [
+        {
+          "x": -98.281,
+          "z": 48.289
+        },
+        {
+          "x": -91.996,
+          "z": 48.768
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    },
+    {
+      "id": "osm_way_437864410",
+      "points": [
+        {
+          "x": -109.941,
+          "z": 47.079
+        },
+        {
+          "x": -71.142,
+          "z": 40.793
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Praterstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

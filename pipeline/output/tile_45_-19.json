@@ -1,0 +1,61 @@
+{
+  "tileId": "45_-19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 450.0,
+    "z": -190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_138980890",
+      "points": [
+        {
+          "x": 447.833,
+          "z": -187.659
+        },
+        {
+          "x": 459.016,
+          "z": -188.824
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Kolonitzgasse"
+    },
+    {
+      "id": "osm_way_497131753",
+      "points": [
+        {
+          "x": 457.012,
+          "z": -177.42
+        },
+        {
+          "x": 459.016,
+          "z": -188.824
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_497131754",
+      "points": [
+        {
+          "x": 457.012,
+          "z": -177.42
+        },
+        {
+          "x": 451.079,
+          "z": -183.019
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-9_46",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -90.0,
+    "z": 460.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_164103747",
+      "points": [
+        {
+          "x": -116.096,
+          "z": 471.006
+        },
+        {
+          "x": -46.358,
+          "z": 458.406
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Karmelitergasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "14_-39",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 140.0,
+    "z": -390.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_552417856",
+      "points": [
+        {
+          "x": 149.666,
+          "z": -389.159
+        },
+        {
+          "x": 132.743,
+          "z": -380.847
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Oskar-Kokoschka-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

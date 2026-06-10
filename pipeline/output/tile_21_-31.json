@@ -1,0 +1,51 @@
+{
+  "tileId": "21_-31",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 210.0,
+    "z": -310.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25427883",
+      "points": [
+        {
+          "x": 216.731,
+          "z": -308.412
+        },
+        {
+          "x": 216.905,
+          "z": -311.055
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schallautzerstraße"
+    },
+    {
+      "id": "osm_way_1174346719",
+      "points": [
+        {
+          "x": 217.619,
+          "z": -300.757
+        },
+        {
+          "x": 217.109,
+          "z": -304.236
+        },
+        {
+          "x": 216.731,
+          "z": -308.412
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schallautzerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

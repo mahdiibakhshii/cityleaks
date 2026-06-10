@@ -1,0 +1,35 @@
+{
+  "tileId": "-7_31",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -70.0,
+    "z": 310.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29234592",
+      "points": [
+        {
+          "x": -69.734,
+          "z": 313.637
+        },
+        {
+          "x": -62.781,
+          "z": 312.495
+        },
+        {
+          "x": -61.373,
+          "z": 312.265
+        }
+      ],
+      "highway": "residential",
+      "width": 9.2,
+      "name": "Lassingleithnerplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

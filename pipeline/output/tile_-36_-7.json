@@ -1,0 +1,31 @@
+{
+  "tileId": "-36_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -360.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_44005502",
+      "points": [
+        {
+          "x": -363.937,
+          "z": -70.893
+        },
+        {
+          "x": -353.888,
+          "z": -53.158
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Rotenturmstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

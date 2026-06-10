@@ -1,0 +1,31 @@
+{
+  "tileId": "-38_-19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -380.0,
+    "z": -190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_25950770",
+      "points": [
+        {
+          "x": -363.565,
+          "z": -171.729
+        },
+        {
+          "x": -376.961,
+          "z": -205.112
+        }
+      ],
+      "highway": "living_street",
+      "width": 6.7,
+      "name": "Köllnerhofgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

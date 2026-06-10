@@ -1,0 +1,50 @@
+{
+  "tileId": "11_2",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 110.0,
+    "z": 20.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8093462",
+      "points": [
+        {
+          "x": 114.869,
+          "z": 20.689
+        },
+        {
+          "x": 113.647,
+          "z": 26.637
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Fischergasse"
+    },
+    {
+      "id": "osm_way_127720889",
+      "points": [
+        {
+          "x": 119.121,
+          "z": 27.614
+        },
+        {
+          "x": 113.647,
+          "z": 26.637
+        },
+        {
+          "x": 109.83,
+          "z": 26.068
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    }
+  ],
+  "water": [],
+  "greens": []
+}

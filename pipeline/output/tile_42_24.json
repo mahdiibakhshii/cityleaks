@@ -1,0 +1,31 @@
+{
+  "tileId": "42_24",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 420.0,
+    "z": 240.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_161844831",
+      "points": [
+        {
+          "x": 415.373,
+          "z": 248.414
+        },
+        {
+          "x": 433.096,
+          "z": 250.846
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Czerningasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

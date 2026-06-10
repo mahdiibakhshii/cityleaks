@@ -1,0 +1,31 @@
+{
+  "tileId": "36_10",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 360.0,
+    "z": 100.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8096076",
+      "points": [
+        {
+          "x": 371.765,
+          "z": 103.256
+        },
+        {
+          "x": 366.086,
+          "z": 110.314
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Ulrichgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

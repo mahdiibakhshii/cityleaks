@@ -1,0 +1,85 @@
+{
+  "tileId": "11_-16",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 110.0,
+    "z": -160.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_26420444",
+      "points": [
+        {
+          "x": 116.649,
+          "z": -150.934
+        },
+        {
+          "x": 116.411,
+          "z": -157.131
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Stubenring"
+    },
+    {
+      "id": "osm_way_473363100",
+      "points": [
+        {
+          "x": 109.475,
+          "z": -151.619
+        },
+        {
+          "x": 110.936,
+          "z": -155.561
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_473367796",
+      "points": [
+        {
+          "x": 110.936,
+          "z": -155.561
+        },
+        {
+          "x": 116.411,
+          "z": -157.131
+        },
+        {
+          "x": 122.586,
+          "z": -158.743
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1275252027",
+      "points": [
+        {
+          "x": 115.155,
+          "z": -149.648
+        },
+        {
+          "x": 116.649,
+          "z": -150.934
+        },
+        {
+          "x": 120.605,
+          "z": -152.697
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Julius-Raab-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

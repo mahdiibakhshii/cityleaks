@@ -1,0 +1,67 @@
+{
+  "tileId": "-17_-7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -170.0,
+    "z": -70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_229033715",
+      "points": [
+        {
+          "x": -164.68,
+          "z": -63.752
+        },
+        {
+          "x": -162.625,
+          "z": -64.416
+        },
+        {
+          "x": -159.695,
+          "z": -65.364
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_553127694",
+      "points": [
+        {
+          "x": -167.624,
+          "z": -62.849
+        },
+        {
+          "x": -164.68,
+          "z": -63.752
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Franz-Josefs-Kai"
+    },
+    {
+      "id": "osm_way_790323077",
+      "points": [
+        {
+          "x": -161.59,
+          "z": -70.301
+        },
+        {
+          "x": -159.695,
+          "z": -65.364
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Laurenzerberg"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

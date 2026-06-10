@@ -1,0 +1,47 @@
+{
+  "tileId": "-15_-36",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -150.0,
+    "z": -360.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1096372366",
+      "points": [
+        {
+          "x": -144.975,
+          "z": -351.371
+        },
+        {
+          "x": -137.353,
+          "z": -354.548
+        }
+      ],
+      "highway": "residential",
+      "width": 4.5,
+      "name": "Predigergasse"
+    },
+    {
+      "id": "osm_way_1216387583",
+      "points": [
+        {
+          "x": -152.866,
+          "z": -362.62
+        },
+        {
+          "x": -144.975,
+          "z": -351.371
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Postgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

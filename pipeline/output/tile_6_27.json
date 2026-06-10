@@ -1,0 +1,31 @@
+{
+  "tileId": "6_27",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 60.0,
+    "z": 270.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8096059",
+      "points": [
+        {
+          "x": 60.246,
+          "z": 270.478
+        },
+        {
+          "x": 65.524,
+          "z": 280.301
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Große Mohrengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

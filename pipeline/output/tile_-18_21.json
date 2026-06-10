@@ -1,0 +1,31 @@
+{
+  "tileId": "-18_21",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -180.0,
+    "z": 210.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29234593",
+      "points": [
+        {
+          "x": -167.845,
+          "z": 225.643
+        },
+        {
+          "x": -172.856,
+          "z": 203.45
+        }
+      ],
+      "highway": "service",
+      "width": 4.0,
+      "name": "Schoellerhofgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

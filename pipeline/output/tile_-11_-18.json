@@ -1,0 +1,50 @@
+{
+  "tileId": "-11_-18",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -110.0,
+    "z": -180.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_12327855",
+      "points": [
+        {
+          "x": -123.101,
+          "z": -170.641
+        },
+        {
+          "x": -78.916,
+          "z": -183.412
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Auwinkel"
+    },
+    {
+      "id": "osm_way_690563355",
+      "points": [
+        {
+          "x": -102.51,
+          "z": -171.828
+        },
+        {
+          "x": -104.296,
+          "z": -171.304
+        },
+        {
+          "x": -110.899,
+          "z": -169.833
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

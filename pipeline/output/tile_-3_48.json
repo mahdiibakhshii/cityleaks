@@ -1,0 +1,47 @@
+{
+  "tileId": "-3_48",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -30.0,
+    "z": 480.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024500",
+      "points": [
+        {
+          "x": -23.491,
+          "z": 482.165
+        },
+        {
+          "x": -21.99,
+          "z": 483.014
+        }
+      ],
+      "highway": "residential",
+      "width": 6.9,
+      "name": "Glockengasse"
+    },
+    {
+      "id": "osm_way_575645297",
+      "points": [
+        {
+          "x": -23.491,
+          "z": 482.165
+        },
+        {
+          "x": -21.795,
+          "z": 493.269
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

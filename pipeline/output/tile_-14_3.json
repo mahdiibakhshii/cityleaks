@@ -1,0 +1,66 @@
+{
+  "tileId": "-14_3",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -140.0,
+    "z": 30.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_146984829",
+      "points": [
+        {
+          "x": -129.271,
+          "z": 31.455
+        },
+        {
+          "x": -134.251,
+          "z": 32.366
+        },
+        {
+          "x": -138.421,
+          "z": 33.281
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Obere Donaustraße"
+    },
+    {
+      "id": "osm_way_985177257",
+      "points": [
+        {
+          "x": -131.754,
+          "z": 39.004
+        },
+        {
+          "x": -136.13,
+          "z": 40.193
+        }
+      ],
+      "highway": "cycleway",
+      "width": 3.0
+    },
+    {
+      "id": "osm_way_1340803173",
+      "points": [
+        {
+          "x": -136.13,
+          "z": 40.193
+        },
+        {
+          "x": -138.421,
+          "z": 33.281
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Taborstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

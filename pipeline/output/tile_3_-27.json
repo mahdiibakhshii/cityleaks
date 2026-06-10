@@ -1,0 +1,62 @@
+{
+  "tileId": "3_-27",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 30.0,
+    "z": -270.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_39260493",
+      "points": [
+        {
+          "x": 39.166,
+          "z": -261.03
+        },
+        {
+          "x": 32.248,
+          "z": -261.054
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Georg-Coch-Platz"
+    },
+    {
+      "id": "osm_way_347073125",
+      "points": [
+        {
+          "x": 37.679,
+          "z": -264.292
+        },
+        {
+          "x": 36.27,
+          "z": -272.734
+        }
+      ],
+      "highway": "steps",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1461503886",
+      "points": [
+        {
+          "x": 32.248,
+          "z": -261.054
+        },
+        {
+          "x": 30.103,
+          "z": -273.19
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Biberstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

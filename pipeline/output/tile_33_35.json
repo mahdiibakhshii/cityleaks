@@ -1,0 +1,96 @@
+{
+  "tileId": "33_35",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 330.0,
+    "z": 350.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_30285687",
+      "points": [
+        {
+          "x": 332.919,
+          "z": 355.641
+        },
+        {
+          "x": 332.077,
+          "z": 354.936
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Praterstraße"
+    },
+    {
+      "id": "osm_way_34486737",
+      "points": [
+        {
+          "x": 335.768,
+          "z": 350.544
+        },
+        {
+          "x": 332.077,
+          "z": 354.936
+        },
+        {
+          "x": 328.085,
+          "z": 359.556
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0,
+      "name": "Passage Jägerzeile"
+    },
+    {
+      "id": "osm_way_416167881",
+      "points": [
+        {
+          "x": 335.768,
+          "z": 350.544
+        },
+        {
+          "x": 339.232,
+          "z": 353.32
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_416167882",
+      "points": [
+        {
+          "x": 337.433,
+          "z": 350.93
+        },
+        {
+          "x": 334.663,
+          "z": 354.138
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_416167918",
+      "points": [
+        {
+          "x": 339.232,
+          "z": 353.32
+        },
+        {
+          "x": 337.433,
+          "z": 350.93
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

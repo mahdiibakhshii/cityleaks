@@ -1,0 +1,51 @@
+{
+  "tileId": "-47_11",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -470.0,
+    "z": 110.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_694684028",
+      "points": [
+        {
+          "x": -465.394,
+          "z": 108.528
+        },
+        {
+          "x": -457.974,
+          "z": 112.452
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Morzinplatz"
+    },
+    {
+      "id": "osm_way_1024589781",
+      "points": [
+        {
+          "x": -465.918,
+          "z": 109.531
+        },
+        {
+          "x": -467.994,
+          "z": 113.051
+        },
+        {
+          "x": -470.603,
+          "z": 116.807
+        }
+      ],
+      "highway": "busway",
+      "width": 4.0,
+      "name": "Franz-Josefs-Kai"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

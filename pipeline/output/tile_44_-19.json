@@ -1,0 +1,105 @@
+{
+  "tileId": "44_-19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 440.0,
+    "z": -190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_138980890",
+      "points": [
+        {
+          "x": 446.329,
+          "z": -187.497
+        },
+        {
+          "x": 447.833,
+          "z": -187.659
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Kolonitzgasse"
+    },
+    {
+      "id": "osm_way_208448268",
+      "points": [
+        {
+          "x": 446.329,
+          "z": -187.497
+        },
+        {
+          "x": 444.892,
+          "z": -187.323
+        },
+        {
+          "x": 439.209,
+          "z": -186.625
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    },
+    {
+      "id": "osm_way_255728432",
+      "points": [
+        {
+          "x": 446.329,
+          "z": -187.497
+        },
+        {
+          "x": 447.988,
+          "z": -185.132
+        },
+        {
+          "x": 450.256,
+          "z": -181.911
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Hintere Zollamtsstraße"
+    },
+    {
+      "id": "osm_way_497131754",
+      "points": [
+        {
+          "x": 451.079,
+          "z": -183.019
+        },
+        {
+          "x": 447.937,
+          "z": -185.978
+        },
+        {
+          "x": 446.329,
+          "z": -187.497
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_1164496580",
+      "points": [
+        {
+          "x": 447.021,
+          "z": -175.61
+        },
+        {
+          "x": 446.329,
+          "z": -187.497
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Hintere Zollamtsstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

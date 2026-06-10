@@ -1,0 +1,31 @@
+{
+  "tileId": "-23_42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -230.0,
+    "z": 420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1433775029",
+      "points": [
+        {
+          "x": -211.4,
+          "z": 416.373
+        },
+        {
+          "x": -246.112,
+          "z": 427.78
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Kleine Sperlgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

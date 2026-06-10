@@ -1,0 +1,70 @@
+{
+  "tileId": "-5_45",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -50.0,
+    "z": 450.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_164103747",
+      "points": [
+        {
+          "x": -46.358,
+          "z": 458.406
+        },
+        {
+          "x": -39.198,
+          "z": 456.889
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Karmelitergasse"
+    },
+    {
+      "id": "osm_way_473317368",
+      "points": [
+        {
+          "x": -40.23,
+          "z": 451.911
+        },
+        {
+          "x": -44.737,
+          "z": 455.032
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_473317370",
+      "points": [
+        {
+          "x": -50.651,
+          "z": 455.415
+        },
+        {
+          "x": -44.908,
+          "z": 454.218
+        },
+        {
+          "x": -44.737,
+          "z": 455.032
+        },
+        {
+          "x": -44.491,
+          "z": 456.215
+        }
+      ],
+      "highway": "platform",
+      "width": 4.0,
+      "name": "Karmeliterplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,31 @@
+{
+  "tileId": "-7_19",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -70.0,
+    "z": 190.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_367960081",
+      "points": [
+        {
+          "x": -71.309,
+          "z": 194.889
+        },
+        {
+          "x": -49.931,
+          "z": 190.347
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0,
+      "name": "Durchhaus Taborstraße 10"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

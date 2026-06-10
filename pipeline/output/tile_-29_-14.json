@@ -1,0 +1,35 @@
+{
+  "tileId": "-29_-14",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -290.0,
+    "z": -140.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_9225440",
+      "points": [
+        {
+          "x": -279.661,
+          "z": -141.729
+        },
+        {
+          "x": -281.767,
+          "z": -135.385
+        },
+        {
+          "x": -284.751,
+          "z": -130.98
+        }
+      ],
+      "highway": "pedestrian",
+      "width": 5.0,
+      "name": "Griechengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

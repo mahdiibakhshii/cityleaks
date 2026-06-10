@@ -1,0 +1,31 @@
+{
+  "tileId": "-37_30",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -370.0,
+    "z": 300.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1433775030",
+      "points": [
+        {
+          "x": -368.894,
+          "z": 287.992
+        },
+        {
+          "x": -353.342,
+          "z": 316.666
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Hollandstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

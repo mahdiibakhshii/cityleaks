@@ -1,0 +1,65 @@
+{
+  "tileId": "-27_-42",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -270.0,
+    "z": -420.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8034540",
+      "points": [
+        {
+          "x": -262.518,
+          "z": -414.474
+        },
+        {
+          "x": -261.889,
+          "z": -413.073
+        },
+        {
+          "x": -261.103,
+          "z": -411.325
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Dr.-Ignaz-Seipel-Platz"
+    },
+    {
+      "id": "osm_way_116531178",
+      "points": [
+        {
+          "x": -262.518,
+          "z": -414.474
+        },
+        {
+          "x": -265.753,
+          "z": -420.992
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1434546942",
+      "points": [
+        {
+          "x": -261.889,
+          "z": -413.073
+        },
+        {
+          "x": -259.454,
+          "z": -414.586
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

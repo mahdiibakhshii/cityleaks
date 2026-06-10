@@ -1,0 +1,46 @@
+{
+  "tileId": "-16_-1",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -160.0,
+    "z": -10.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_230483959",
+      "points": [
+        {
+          "x": -140.727,
+          "z": 25.968
+        },
+        {
+          "x": -162.364,
+          "z": -44.999
+        }
+      ],
+      "highway": "secondary",
+      "width": 8.0,
+      "name": "Schwedenbrücke"
+    },
+    {
+      "id": "osm_way_473320403",
+      "points": [
+        {
+          "x": -148.468,
+          "z": 27.875
+        },
+        {
+          "x": -170.227,
+          "z": -44.94
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

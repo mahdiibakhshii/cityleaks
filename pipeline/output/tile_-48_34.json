@@ -1,0 +1,31 @@
+{
+  "tileId": "-48_34",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -480.0,
+    "z": 340.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1068262738",
+      "points": [
+        {
+          "x": -478.795,
+          "z": 353.312
+        },
+        {
+          "x": -468.123,
+          "z": 331.177
+        }
+      ],
+      "highway": "path",
+      "width": 2.0,
+      "name": "Vilma-Steindling-Promenade"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

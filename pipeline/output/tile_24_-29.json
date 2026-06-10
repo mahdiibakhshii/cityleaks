@@ -1,0 +1,31 @@
+{
+  "tileId": "24_-29",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 240.0,
+    "z": -290.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_562054480",
+      "points": [
+        {
+          "x": 238.154,
+          "z": -307.892
+        },
+        {
+          "x": 243.352,
+          "z": -261.069
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0,
+      "name": "Gottfried-von-Einem-Platz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

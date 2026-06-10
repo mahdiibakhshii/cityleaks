@@ -1,0 +1,31 @@
+{
+  "tileId": "-28_-40",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -280.0,
+    "z": -400.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_1336826341",
+      "points": [
+        {
+          "x": -272.588,
+          "z": -395.82
+        },
+        {
+          "x": -271.454,
+          "z": -396.467
+        }
+      ],
+      "highway": "living_street",
+      "width": 5.0,
+      "name": "Bäckerstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,46 @@
+{
+  "tileId": "31_8",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 310.0,
+    "z": 80.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_157533722",
+      "points": [
+        {
+          "x": 317.87,
+          "z": 84.606
+        },
+        {
+          "x": 315.444,
+          "z": 79.415
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5
+    },
+    {
+      "id": "osm_way_367500885",
+      "points": [
+        {
+          "x": 317.87,
+          "z": 84.606
+        },
+        {
+          "x": 321.125,
+          "z": 76.727
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Tempelgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

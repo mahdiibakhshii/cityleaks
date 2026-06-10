@@ -1,0 +1,31 @@
+{
+  "tileId": "0_51",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 0.0,
+    "z": 510.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_8024500",
+      "points": [
+        {
+          "x": -8.194,
+          "z": 497.994
+        },
+        {
+          "x": 11.394,
+          "z": 541.329
+        }
+      ],
+      "highway": "residential",
+      "width": 6.9,
+      "name": "Glockengasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

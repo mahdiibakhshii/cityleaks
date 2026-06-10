@@ -1,0 +1,50 @@
+{
+  "tileId": "2_7",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 20.0,
+    "z": 70.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_204274839",
+      "points": [
+        {
+          "x": 31.433,
+          "z": 74.846
+        },
+        {
+          "x": 22.97,
+          "z": 74.805
+        },
+        {
+          "x": 21.092,
+          "z": 77.54
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Ferdinandstraße"
+    },
+    {
+      "id": "osm_way_1305817968",
+      "points": [
+        {
+          "x": 24.094,
+          "z": 80.473
+        },
+        {
+          "x": 21.092,
+          "z": 77.54
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

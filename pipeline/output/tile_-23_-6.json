@@ -1,0 +1,46 @@
+{
+  "tileId": "-23_-6",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -230.0,
+    "z": -60.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_417483825",
+      "points": [
+        {
+          "x": -245.638,
+          "z": -59.034
+        },
+        {
+          "x": -211.186,
+          "z": -46.653
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_417494146",
+      "points": [
+        {
+          "x": -225.764,
+          "z": -52.551
+        },
+        {
+          "x": -229.685,
+          "z": -51.043
+        }
+      ],
+      "highway": "platform",
+      "width": 4.0,
+      "name": "Schwedenplatz"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

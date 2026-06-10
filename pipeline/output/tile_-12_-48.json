@@ -1,0 +1,77 @@
+{
+  "tileId": "-12_-48",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -120.0,
+    "z": -480.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_30018146",
+      "points": [
+        {
+          "x": -117.642,
+          "z": -470.213
+        },
+        {
+          "x": -114.874,
+          "z": -472.042
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5,
+      "name": "Bäckerstraße"
+    },
+    {
+      "id": "osm_way_192247779",
+      "points": [
+        {
+          "x": -114.874,
+          "z": -472.042
+        },
+        {
+          "x": -107.451,
+          "z": -476.934
+        }
+      ],
+      "highway": "cycleway",
+      "width": 2.5,
+      "name": "Bäckerstraße"
+    },
+    {
+      "id": "osm_way_192247784",
+      "points": [
+        {
+          "x": -117.452,
+          "z": -477.058
+        },
+        {
+          "x": -114.874,
+          "z": -472.042
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    },
+    {
+      "id": "osm_way_1320684169",
+      "points": [
+        {
+          "x": -117.452,
+          "z": -477.058
+        },
+        {
+          "x": -118.753,
+          "z": -479.538
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

@@ -1,0 +1,46 @@
+{
+  "tileId": "8_40",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 80.0,
+    "z": 400.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_29275429",
+      "points": [
+        {
+          "x": 90.957,
+          "z": 409.686
+        },
+        {
+          "x": 80.093,
+          "z": 408.89
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Schmelzgasse"
+    },
+    {
+      "id": "osm_way_981033827",
+      "points": [
+        {
+          "x": 80.093,
+          "z": 408.89
+        },
+        {
+          "x": 80.657,
+          "z": 401.084
+        }
+      ],
+      "highway": "service",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

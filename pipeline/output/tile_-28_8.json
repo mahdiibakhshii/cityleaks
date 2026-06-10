@@ -1,0 +1,94 @@
+{
+  "tileId": "-28_8",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -280.0,
+    "z": 80.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_127240496",
+      "points": [
+        {
+          "x": -276.221,
+          "z": 87.09
+        },
+        {
+          "x": -283.589,
+          "z": 91.483
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Obere Donaustraße"
+    },
+    {
+      "id": "osm_way_263062086",
+      "points": [
+        {
+          "x": -279.705,
+          "z": 80.412
+        },
+        {
+          "x": -276.221,
+          "z": 87.09
+        }
+      ],
+      "highway": "tertiary",
+      "width": 7.0,
+      "name": "Marienbrücke"
+    },
+    {
+      "id": "osm_way_361117235",
+      "points": [
+        {
+          "x": -271.754,
+          "z": 84.557
+        },
+        {
+          "x": -276.221,
+          "z": 87.09
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Obere Donaustraße"
+    },
+    {
+      "id": "osm_way_1023937355",
+      "points": [
+        {
+          "x": -270.387,
+          "z": 83.781
+        },
+        {
+          "x": -271.754,
+          "z": 84.557
+        }
+      ],
+      "highway": "primary",
+      "width": 10.0,
+      "name": "Obere Donaustraße"
+    },
+    {
+      "id": "osm_way_1076429323",
+      "points": [
+        {
+          "x": -274.345,
+          "z": 76.994
+        },
+        {
+          "x": -270.387,
+          "z": 83.781
+        }
+      ],
+      "highway": "busway",
+      "width": 4.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

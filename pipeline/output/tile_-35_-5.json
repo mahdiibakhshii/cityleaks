@@ -1,0 +1,67 @@
+{
+  "tileId": "-35_-5",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -350.0,
+    "z": -50.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_252813847",
+      "points": [
+        {
+          "x": -347.177,
+          "z": -42.397
+        },
+        {
+          "x": -346.187,
+          "z": -40.867
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Rotenturmstraße"
+    },
+    {
+      "id": "osm_way_417494158",
+      "points": [
+        {
+          "x": -347.77,
+          "z": -52.859
+        },
+        {
+          "x": -338.502,
+          "z": -36.371
+        },
+        {
+          "x": -344.678,
+          "z": -54.594
+        }
+      ],
+      "highway": "platform",
+      "width": 4.0,
+      "name": "Schwedenplatz"
+    },
+    {
+      "id": "osm_way_980086104",
+      "points": [
+        {
+          "x": -351.697,
+          "z": -49.383
+        },
+        {
+          "x": -347.177,
+          "z": -42.397
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Rotenturmstraße"
+    }
+  ],
+  "water": [],
+  "greens": []
+}

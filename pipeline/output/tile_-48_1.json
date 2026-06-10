@@ -1,0 +1,50 @@
+{
+  "tileId": "-48_1",
+  "tileSize": 10.0,
+  "origin": {
+    "x": -480.0,
+    "z": 10.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_123412917",
+      "points": [
+        {
+          "x": -474.165,
+          "z": 11.476
+        },
+        {
+          "x": -480.426,
+          "z": 15.434
+        }
+      ],
+      "highway": "steps",
+      "width": 2.0,
+      "name": "Ruprechtsstiege"
+    },
+    {
+      "id": "osm_way_351751347",
+      "points": [
+        {
+          "x": -469.357,
+          "z": 16.043
+        },
+        {
+          "x": -473.043,
+          "z": 10.651
+        },
+        {
+          "x": -474.165,
+          "z": 11.476
+        }
+      ],
+      "highway": "footway",
+      "width": 2.0
+    }
+  ],
+  "water": [],
+  "greens": []
+}

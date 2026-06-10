@@ -1,0 +1,31 @@
+{
+  "tileId": "44_-23",
+  "tileSize": 10.0,
+  "origin": {
+    "x": 440.0,
+    "z": -230.0
+  },
+  "bounds": {},
+  "version": 1,
+  "buildings": [],
+  "roads": [
+    {
+      "id": "osm_way_30062344",
+      "points": [
+        {
+          "x": 445.42,
+          "z": -225.238
+        },
+        {
+          "x": 443.685,
+          "z": -223.823
+        }
+      ],
+      "highway": "residential",
+      "width": 6.0,
+      "name": "Hetzgasse"
+    }
+  ],
+  "water": [],
+  "greens": []
+}
