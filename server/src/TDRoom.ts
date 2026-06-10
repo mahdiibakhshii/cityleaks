@@ -43,6 +43,14 @@ export class TDRoom {
     this.io.to('td').emit(EVENTS.GRID_DELTA, { cells: newCells });
   }
 
+  /**
+   * Push a cleared grid to the TD room (after an admin reset, which clears the
+   * shared LeakGrid). TD clients re-snapshot from the empty buffer.
+   */
+  sendReset(leakGrid: LeakGrid): void {
+    this.io.to('td').emit(EVENTS.GRID_FULL, leakGrid.getFullBuffer());
+  }
+
   /** Send a stats update to the TD room. */
   sendStats(leakGrid: LeakGrid, playerCount: number): void {
     this.io.to('td').emit(EVENTS.GRID_STATS, {

@@ -30,8 +30,10 @@ export class NoteStore {
   /**
    * Validate + create a note from a client request. Returns the stored Note, or
    * null if the text is empty/invalid. Position is clamped to the map bounds.
+   * `admin` flags a "creator" note (stuck by Batman) so clients render it
+   * distinctly.
    */
-  create(req: NoteCreate, bounds: MapBounds): Note | null {
+  create(req: NoteCreate, bounds: MapBounds, admin = false): Note | null {
     if (!req || typeof req.text !== 'string') return null;
     const text = req.text.trim().slice(0, NOTE_MAX_LENGTH);
     if (text.length === 0) return null;
@@ -47,9 +49,36 @@ export class NoteStore {
       y,
       text,
       createdAt: Date.now(),
+      ...(admin ? { admin: true } : {}),
     };
     this.notes.push(note);
     return note;
+  }
+
+  /** Delete a note by id. Returns true if a note was removed. */
+  remove(id: string): boolean {
+    const before = this.notes.length;
+    this.notes = this.notes.filter((n) => n.id !== id);
+    return this.notes.length !== before;
+  }
+
+  /**
+   * Edit a note's text (admin moderation). Re-trims + clamps to NOTE_MAX_LENGTH.
+   * Returns the updated Note, or null if not found / the new text is empty.
+   */
+  edit(id: string, text: unknown): Note | null {
+    if (typeof text !== 'string') return null;
+    const trimmed = text.trim().slice(0, NOTE_MAX_LENGTH);
+    if (trimmed.length === 0) return null;
+    const note = this.notes.find((n) => n.id === id);
+    if (!note) return null;
+    note.text = trimmed;
+    return note;
+  }
+
+  /** Remove every note (admin cleanup for a fresh run). */
+  clear(): void {
+    this.notes = [];
   }
 
   // ─── Persistence (JSON file) ───

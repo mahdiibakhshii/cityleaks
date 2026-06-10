@@ -9,6 +9,9 @@ import { KILL } from '../config';
  * camera-facing sprite sharing one procedurally-drawn tombstone texture (no
  * asset files). Sits at z=KILL.Z (above paths, below the note icons + players).
  */
+/** Marker glyph: a tombstone (in-game) or a bold X (the monitor's kill spot). */
+export type KillMarkerStyle = 'tombstone' | 'x';
+
 export class KillLayer {
   readonly group = new THREE.Group();
   private readonly texture: THREE.Texture;
@@ -17,10 +20,11 @@ export class KillLayer {
   private readonly iconSize: number;
 
   /** iconSize is in WORLD units; the monitor passes a larger value for its
-   *  zoomed-out whole-map view. Defaults to the in-game icon size. */
-  constructor(iconSize: number = KILL.ICON_SIZE) {
+   *  zoomed-out whole-map view. `style` picks the glyph — the in-game default is
+   *  a tombstone; the monitor uses an 'x' to mark where a kill happened. */
+  constructor(iconSize: number = KILL.ICON_SIZE, style: KillMarkerStyle = 'tombstone') {
     this.iconSize = iconSize;
-    this.texture = makeTombstoneTexture();
+    this.texture = style === 'x' ? makeXTexture() : makeTombstoneTexture();
     this.material = new THREE.SpriteMaterial({
       map: this.texture,
       transparent: true,
@@ -83,6 +87,42 @@ function makeTombstoneTexture(): THREE.CanvasTexture {
   ctx.fillStyle = KILL.STONE_DARK;
   ctx.fillRect(59, 44, 10, 40); // vertical
   ctx.fillRect(48, 56, 32, 10); // horizontal
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+/**
+ * Draw a bold X (a red "kill happened here" cross) onto a canvas → CanvasTexture,
+ * with a dark outline so it reads over the map overview. Used by the monitor.
+ */
+function makeXTexture(): THREE.CanvasTexture {
+  const S = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = S;
+  canvas.height = S;
+  const ctx = canvas.getContext('2d')!;
+
+  const m = 30; // margin from the edges
+  ctx.lineCap = 'round';
+
+  // Dark outline stroke first (slightly thicker), then the red X on top.
+  const strokeX = (width: number, color: string) => {
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(m, m);
+    ctx.lineTo(S - m, S - m);
+    ctx.moveTo(S - m, m);
+    ctx.lineTo(m, S - m);
+    ctx.stroke();
+  };
+  strokeX(26, 'rgba(0,0,0,0.7)');
+  strokeX(16, '#ff3b5c');
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;

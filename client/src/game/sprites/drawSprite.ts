@@ -165,6 +165,42 @@ function drawDuck(ctx: Ctx, f: number): void {
   px(ctx, 10, 6, '#ffffff'); // glint
 }
 
+// ─── Batman — the admin "creator" (dark cowl, cape, emblem) ───
+
+function drawBatman(ctx: Ctx, f: number): void {
+  const suit = '#3a3f4d'; // grey body suit
+  const dark = '#23262e'; // cowl / cape / gloves / boots (near-black)
+  const skin = '#e7b48c'; // exposed jaw
+  const emblem = '#ffd23f'; // bat emblem + utility belt
+  const eye = '#dfe7ff'; // white eye slits
+
+  // Cape draping down the back (left side, since the figure faces right).
+  rect(ctx, 2, 10, 3, 9, dark);
+  px(ctx, 1, 12, dark);
+  px(ctx, 1, 16, dark);
+
+  drawLegs(ctx, f, dark, dark); // dark legs + boots
+
+  // Torso + utility belt + chest emblem.
+  rect(ctx, 4, 11, 8, 7, suit);
+  rect(ctx, 4, 15, 8, 1, emblem);
+  rect(ctx, 6, 12, 4, 2, emblem);
+  px(ctx, 6, 13, suit);
+  px(ctx, 9, 13, suit);
+  // front arm
+  rect(ctx, 11, f === 0 ? 12 : 11, 2, 4, dark);
+
+  // Head: cowl with a small exposed jaw and pointy ears.
+  rect(ctx, 4, 3, 8, 6, dark); // cowl
+  rect(ctx, 5, 9, 6, 1, dark); // cowl chin line
+  rect(ctx, 8, 8, 4, 2, skin); // exposed jaw (faces right)
+  rect(ctx, 4, 1, 2, 2, dark); // left ear
+  rect(ctx, 9, 1, 2, 2, dark); // right ear
+  // white eye slits (faces right)
+  rect(ctx, 8, 5, 2, 1, eye);
+  px(ctx, 7, 5, eye);
+}
+
 // ─── Anonymous figure — single tintable silhouette (Skip) ───
 
 function drawAnon(ctx: Ctx, f: number): void {
@@ -293,6 +329,9 @@ const PLAYER_SPECS: Record<string, SpriteSpec> = {
   plumber: { width: 16, height: 24, frames: 2, outline: '#1a0f0c', draw: drawPlumber },
   duck: { width: 16, height: 24, frames: 2, outline: '#5a3d0a', draw: drawDuck },
   knight: { width: 16, height: 24, frames: 2, outline: '#23262e', draw: drawKnight },
+  // Batman — the admin "creator" character. Not in the intro picker (CHARACTERS),
+  // but registered here so every client renders it when granted server-side.
+  batman: { width: 16, height: 24, frames: 2, outline: '#0a0b0f', draw: drawBatman },
 };
 
 // Anonymous figure (Skip / unknown ids). Dark outline; body tinted at runtime.

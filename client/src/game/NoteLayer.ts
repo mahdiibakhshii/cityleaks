@@ -15,7 +15,9 @@ import { NOTE } from '../config';
 export class NoteLayer {
   readonly group = new THREE.Group();
   private texture: THREE.Texture;
+  private adminTexture: THREE.Texture;
   private material: THREE.SpriteMaterial;
+  private adminMaterial: THREE.SpriteMaterial;
   private notes = new Map<string, { note: Note; sprite: THREE.Sprite }>();
   private revealedId: string | null = null;
   private readonly iconSize: number;
@@ -24,11 +26,21 @@ export class NoteLayer {
    *  zoomed-out whole-map view. Defaults to the in-game icon size. */
   constructor(iconSize: number = NOTE.ICON_SIZE) {
     this.iconSize = iconSize;
-    this.texture = makeNoteTexture();
-    // One shared material; per-sprite visibility lets us hide a revealed note's
-    // icon without touching the others.
+    // Two shared materials: anonymous player notes and the distinct "creator"
+    // (Batman / admin) note. Per-sprite visibility hides a revealed note's icon.
+    this.texture = makeNoteTexture(NOTE.ICON_PAPER, NOTE.ICON_FOLD, NOTE.ICON_ACCENT);
+    this.adminTexture = makeNoteTexture(
+      NOTE.ADMIN_ICON_PAPER,
+      NOTE.ADMIN_ICON_FOLD,
+      NOTE.ADMIN_ICON_ACCENT
+    );
     this.material = new THREE.SpriteMaterial({
       map: this.texture,
+      transparent: true,
+      depthWrite: false,
+    });
+    this.adminMaterial = new THREE.SpriteMaterial({
+      map: this.adminTexture,
       transparent: true,
       depthWrite: false,
     });
@@ -44,12 +56,31 @@ export class NoteLayer {
   /** Add a single note (from NOTE_NEW or an optimistic local stick). */
   addNote(note: Note): void {
     if (this.notes.has(note.id)) return;
-    const sprite = new THREE.Sprite(this.material);
+    const sprite = new THREE.Sprite(note.admin ? this.adminMaterial : this.material);
     sprite.scale.set(this.iconSize, this.iconSize, 1);
     // Scene space stores three_y = -data_y like everything else.
     sprite.position.set(note.x, -note.y, NOTE.Z);
     this.group.add(sprite);
     this.notes.set(note.id, { note, sprite });
+  }
+
+  /** Remove one note (admin delete → NOTE_REMOVE). */
+  removeNote(id: string): void {
+    const entry = this.notes.get(id);
+    if (!entry) return;
+    this.group.remove(entry.sprite);
+    this.notes.delete(id);
+    if (this.revealedId === id) this.revealedId = null;
+  }
+
+  /** Update a note's stored text in place (admin edit → NOTE_UPDATE). */
+  updateNote(note: Note): void {
+    const entry = this.notes.get(note.id);
+    if (!entry) {
+      this.addNote(note);
+      return;
+    }
+    entry.note.text = note.text;
   }
 
   /**
@@ -84,11 +115,12 @@ export class NoteLayer {
 }
 
 /**
- * Draw a sticky-note icon onto a canvas → CanvasTexture. A cream paper square
- * with a folded top-right corner and a blue pin dot, outlined so it reads over
- * any map background.
+ * Draw a sticky-note icon onto a canvas → CanvasTexture. A paper square with a
+ * folded top-right corner and a pin dot, outlined so it reads over any map
+ * background. Colors are parameterized so the anonymous and "creator" (admin)
+ * notes share one drawing routine.
  */
-function makeNoteTexture(): THREE.CanvasTexture {
+function makeNoteTexture(paper: string, fold: string, accent: string): THREE.CanvasTexture {
   const S = 128;
   const canvas = document.createElement('canvas');
   canvas.width = S;
@@ -96,7 +128,7 @@ function makeNoteTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext('2d')!;
 
   const pad = 22;
-  const fold = 30; // folded-corner size
+  const foldSize = 30; // folded-corner size
   const left = pad;
   const top = pad;
   const right = S - pad;
@@ -109,22 +141,22 @@ function makeNoteTexture(): THREE.CanvasTexture {
   // Paper body: square with the top-right corner cut off (the fold).
   ctx.beginPath();
   ctx.moveTo(left, top);
-  ctx.lineTo(right - fold, top);
-  ctx.lineTo(right, top + fold);
+  ctx.lineTo(right - foldSize, top);
+  ctx.lineTo(right, top + foldSize);
   ctx.lineTo(right, bottom);
   ctx.lineTo(left, bottom);
   ctx.closePath();
-  ctx.fillStyle = NOTE.ICON_PAPER;
+  ctx.fillStyle = paper;
   ctx.fill();
   ctx.stroke();
 
   // The folded triangle in the corner.
   ctx.beginPath();
-  ctx.moveTo(right - fold, top);
-  ctx.lineTo(right - fold, top + fold);
-  ctx.lineTo(right, top + fold);
+  ctx.moveTo(right - foldSize, top);
+  ctx.lineTo(right - foldSize, top + foldSize);
+  ctx.lineTo(right, top + foldSize);
   ctx.closePath();
-  ctx.fillStyle = NOTE.ICON_FOLD;
+  ctx.fillStyle = fold;
   ctx.fill();
   ctx.stroke();
 
@@ -140,10 +172,10 @@ function makeNoteTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  // Blue pin dot at the top-left to make the marker pop.
+  // Pin dot at the top-left to make the marker pop.
   ctx.beginPath();
   ctx.arc(left, top, 9, 0, Math.PI * 2);
-  ctx.fillStyle = NOTE.ICON_ACCENT;
+  ctx.fillStyle = accent;
   ctx.fill();
   ctx.lineWidth = 3;
   ctx.strokeStyle = 'rgba(0,0,0,0.55)';

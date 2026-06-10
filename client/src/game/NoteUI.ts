@@ -29,6 +29,11 @@ export class NoteUI {
   private revealText: HTMLDivElement;
   private currentRevealKey: string | null = null;
 
+  // Transient admin broadcast overlay (distinct from note reveals).
+  private announce: HTMLDivElement;
+  private announceText: HTMLDivElement;
+  private announceTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(callbacks: NoteUICallbacks) {
     this.cb = callbacks;
 
@@ -40,12 +45,20 @@ export class NoteUI {
     this.reveal.appendChild(this.revealText);
     document.body.appendChild(this.reveal);
 
-    // ─── "Stick a note" button ───
+    // ─── Admin broadcast overlay (non-interactive, auto-dismissed) ───
+    this.announce = document.createElement('div');
+    this.announce.className = 'admin-announce';
+    this.announceText = document.createElement('div');
+    this.announceText.className = 'admin-announce-text';
+    this.announce.appendChild(this.announceText);
+    document.body.appendChild(this.announce);
+
+    // ─── "Take the spray out" button (opens the compose modal) ───
     this.button = document.createElement('button');
     this.button.className = 'note-button';
     this.button.type = 'button';
-    this.button.setAttribute('aria-label', 'Stick a note');
-    this.button.innerHTML = '<span class="note-button-icon">✎</span>';
+    this.button.setAttribute('aria-label', 'Take the spray out and write here');
+    this.button.textContent = 'Take the spray out';
     this.button.addEventListener('click', () => this.openCompose());
     document.body.appendChild(this.button);
 
@@ -58,12 +71,12 @@ export class NoteUI {
 
     const title = document.createElement('div');
     title.className = 'note-panel-title';
-    title.textContent = 'Stick a note here';
+    title.textContent = 'Spray your words here';
 
     this.textarea = document.createElement('textarea');
     this.textarea.className = 'note-textarea';
     this.textarea.maxLength = NOTE_MAX_LENGTH;
-    this.textarea.placeholder = 'Leave an anonymous note at this spot…';
+    this.textarea.placeholder = 'Write your words here — others will read them when they pass by this spot.';
     this.textarea.addEventListener('input', () => this.updateCounter());
 
     this.counter = document.createElement('span');
@@ -81,7 +94,7 @@ export class NoteUI {
     const submit = document.createElement('button');
     submit.type = 'button';
     submit.className = 'note-btn note-btn-submit';
-    submit.textContent = 'Stick';
+    submit.textContent = 'Spray';
     submit.addEventListener('click', () => this.submit());
 
     actions.append(this.counter, cancel, submit);
@@ -103,12 +116,29 @@ export class NoteUI {
    * Show a note's text fullscreen. Keyed by id so we only re-fit the font when
    * the revealed note actually changes (called every frame while in range).
    */
-  showReveal(text: string, key: string): void {
+  showReveal(text: string, key: string, isAdmin = false): void {
     if (this.currentRevealKey === key) return;
     this.currentRevealKey = key;
     this.revealText.textContent = text;
+    // "Creator" (Batman) notes reveal in a distinct style.
+    this.reveal.classList.toggle('admin', isAdmin);
     this.reveal.classList.add('visible');
     this.fitRevealText();
+  }
+
+  /**
+   * Flash a transient admin broadcast over the screen in the distinct creator
+   * style (like a note reveal, but auto-dismissed). A new broadcast replaces the
+   * current one and restarts the timer.
+   */
+  showAnnouncement(text: string, durationMs = 6000): void {
+    this.announceText.textContent = text;
+    this.announce.classList.add('visible');
+    if (this.announceTimer) clearTimeout(this.announceTimer);
+    this.announceTimer = setTimeout(() => {
+      this.announce.classList.remove('visible');
+      this.announceTimer = null;
+    }, durationMs);
   }
 
   hideReveal(): void {
@@ -117,13 +147,20 @@ export class NoteUI {
     this.reveal.classList.remove('visible');
   }
 
-  /** Binary-search a font size so the text fills the screen without overflowing. */
+  /**
+   * Binary-search a font size so the text fits its column without overflowing,
+   * then CAP it so short notes stay a comfortable reading size instead of
+   * blowing up to fill the whole screen. The text wraps inside a centered column
+   * (see `.note-reveal-text` max-width) so longer notes align tidily.
+   */
   private fitRevealText(): void {
     const el = this.revealText;
-    const maxBox = this.reveal.clientHeight;
-    if (maxBox === 0) return; // not laid out yet
+    if (this.reveal.clientHeight === 0) return; // not laid out yet
+    // Upper bound: a fraction of the shorter screen axis, with an absolute
+    // ceiling — keeps text readable, not gigantic, on any screen size.
+    const cap = Math.min(72, Math.min(window.innerWidth, window.innerHeight) * 0.11);
     let lo = 14;
-    let hi = Math.min(window.innerWidth, window.innerHeight) * 0.6;
+    let hi = Math.max(lo, cap);
     // 8 iterations gets us within ~0.4% — visually exact.
     for (let i = 0; i < 8; i++) {
       const mid = (lo + hi) / 2;
@@ -176,8 +213,10 @@ export class NoteUI {
 
   dispose(): void {
     window.removeEventListener('resize', this.onResize);
+    if (this.announceTimer) clearTimeout(this.announceTimer);
     this.button.remove();
     this.modal.remove();
     this.reveal.remove();
+    this.announce.remove();
   }
 }

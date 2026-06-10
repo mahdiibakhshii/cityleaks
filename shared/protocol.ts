@@ -17,6 +17,9 @@ export const EVENTS = {
   NOTE_EXISTING: 'note:existing', // server → client: all notes on connect
   NOTE_NEW: 'note:new', // server → client: one newly stuck note
   NOTE_CREATE: 'note:create', // client → server: stick a note
+  NOTE_REMOVE: 'note:remove', // server → client: one note deleted (admin) — {id}
+  NOTE_UPDATE: 'note:update', // server → client: one note edited (admin) — full Note
+  NOTE_RESET: 'note:reset', // server → client: all notes cleared (admin)
   // Enemies: server-authoritative wandering NPCs (mirror the player events).
   ENEMY_EXISTING: 'enemy:existing', // server → client: all enemies on connect
   ENEMY_JOIN: 'enemy:join', // server → client: one enemy spawned
@@ -26,6 +29,27 @@ export const EVENTS = {
   // Kill markers: persistent "an enemy died here" icons (mirror the sticky notes).
   KILL_EXISTING: 'kill:existing', // server → client: all kill markers on connect
   KILL_NEW: 'kill:new', // server → client: one newly placed kill marker
+  KILL_RESET: 'kill:reset', // server → client: all kill markers cleared (admin)
+  // Admin (server-enforced password gate). The admin page connects role=admin
+  // with a token; the live game grants the Batman identity only with a valid
+  // token. All client→server admin actions are trusted because the socket is
+  // already in the authed `admin` room.
+  ADMIN_OK: 'admin:ok', // server → admin: token accepted
+  ADMIN_DENIED: 'admin:denied', // server → admin: token rejected (then disconnect)
+  ADMIN_STATS: 'admin:stats', // server → admin: live dashboard numbers (~1 Hz)
+  ADMIN_PLAYERS: 'admin:players', // server → admin: live connected-player list (~1 Hz)
+  ADMIN_ANNOUNCE: 'admin:announce', // server → game+monitor: transient broadcast message
+  ADMIN_NOTE_DELETE: 'admin:note:delete', // admin → server: delete a note — {id}
+  ADMIN_NOTE_EDIT: 'admin:note:edit', // admin → server: edit a note — {id,text}
+  ADMIN_BROADCAST: 'admin:broadcast', // admin → server: broadcast a message — {text}
+  ADMIN_RESET_PATHS: 'admin:reset:paths', // admin → server: wipe the leak grid
+  ADMIN_RESET_NOTES: 'admin:reset:notes', // admin → server: wipe all notes
+  ADMIN_RESET_KILLS: 'admin:reset:kills', // admin → server: wipe all kill markers
+  ADMIN_KICK: 'admin:kick', // admin → server: disconnect a player — {id}
+  // Monitor background-image opacity. Bidirectional: admin → server sets it
+  // ({value} 0..1); server → monitor+admin broadcasts the current value (and
+  // sends it to a monitor/admin on connect so they start in sync).
+  ADMIN_MAP_OPACITY: 'admin:map-opacity',
 } as const;
 
 // ─── Timing ───
@@ -129,9 +153,35 @@ export const CHARACTERS: CharacterDef[] = [
   },
 ];
 
-/** Look up a selectable character by id. Returns undefined for anon / unknown. */
+// ─── Batman: the admin "creator" character ───
+//
+// Deliberately NOT in CHARACTERS, so it never appears in the intro picker. It is
+// only granted to a live-game socket that presents a valid admin token (see the
+// server's handleGameConnection); a plain `?character=batman` falls back to the
+// anonymous circle. Notes stuck by Batman are flagged `admin: true` and render in
+// a distinct "creator" style. It renders everywhere via the `batman` sprite
+// (client/src/game/sprites/drawSprite.ts) like any other character.
+export const ADMIN_CHARACTER_ID = 'batman';
+
+export const ADMIN_CHARACTER: CharacterDef = {
+  id: ADMIN_CHARACTER_ID,
+  name: 'Batman',
+  description: 'The creator. Leaves messages the whole city can tell apart.',
+  shape: 'hexagon',
+  color: '#11131a',
+  abilities: NEUTRAL,
+};
+
+/**
+ * Look up a character by id for RENDERING / color resolution. Resolves the
+ * selectable characters PLUS the admin Batman (so the local Batman client can
+ * read its color). This is NOT an authorization check — the server gates who is
+ * allowed to BE Batman by validating the admin token, independently of this.
+ * Returns undefined for anon / unknown ids.
+ */
 export function getCharacter(id: string | undefined | null): CharacterDef | undefined {
   if (!id) return undefined;
+  if (id === ADMIN_CHARACTER_ID) return ADMIN_CHARACTER;
   return CHARACTERS.find((c) => c.id === id);
 }
 
@@ -414,6 +464,7 @@ export interface Note {
   y: number;
   text: string;
   createdAt: number; // epoch ms
+  admin?: boolean; // true = a "creator" note stuck by Batman (distinct icon + style)
 }
 
 // Client → server request to stick a note. The server validates text length and
@@ -422,4 +473,48 @@ export interface NoteCreate {
   x: number;
   y: number;
   text: string;
+}
+
+// ─── Admin payloads ───
+
+// A transient broadcast message shown to every player (like a note reveal, but
+// in the distinct "creator" style) for a few seconds, then auto-dismissed.
+export interface AdminAnnounce {
+  id: string;
+  text: string;
+}
+
+// One row of the admin's live player list (sent in ADMIN_PLAYERS).
+export interface AdminPlayerInfo {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+  character: string;
+}
+
+// The admin live dashboard snapshot (sent ~1 Hz in ADMIN_STATS).
+export interface AdminStats {
+  players: number;
+  leakedPercentage: number;
+  enemies: number;
+  notes: number;
+  kills: number;
+  tickMs: { last: number; avg: number; max: number };
+  uptime: number;
+}
+
+// Admin action request payloads.
+export interface AdminNoteEdit {
+  id: string;
+  text: string;
+}
+export interface AdminBroadcast {
+  text: string;
+}
+export interface AdminKick {
+  id: string;
+}
+export interface AdminMapOpacity {
+  value: number; // 0 (transparent) .. 1 (opaque)
 }

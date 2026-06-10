@@ -19,6 +19,12 @@ import { EnemyManager } from './EnemyManager';
 import { InputManager } from '../input/InputManager';
 import { NetworkClient } from '../network/NetworkClient';
 
+// Kill-glitch timing: total duration (s) and the fraction marks where the map
+// photo finishes fading out / starts fading back in (the gap is held transparent).
+const GLITCH_DURATION = 0.9;
+const GLITCH_DOWN = 0.18; // 0..GLITCH_DOWN: opacity 1 → 0
+const GLITCH_UP = 0.36; // GLITCH_UP..1: opacity 0 → 1 (hold transparent between)
+
 export class Game {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -42,10 +48,19 @@ export class Game {
   private tileCullAccumulator = 0;
   private running = false;
   private statusEl: HTMLElement | null;
+  // Citywide kill "glitch": seconds elapsed into the map-fade pulse, or -1 idle.
+  private glitchElapsed = -1;
   private readonly characterId: string;
+  private readonly adminToken?: string;
 
-  constructor(spawnX: number, spawnY: number, characterId: string = ANON_CHARACTER_ID) {
+  constructor(
+    spawnX: number,
+    spawnY: number,
+    characterId: string = ANON_CHARACTER_ID,
+    adminToken?: string
+  ) {
     this.characterId = characterId;
+    this.adminToken = adminToken;
     // Renderer.
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -106,6 +121,34 @@ export class Game {
     this.statusEl = document.getElementById('status');
 
     window.addEventListener('resize', this.onResize);
+  }
+
+  /** Start (or restart) the citywide kill "glitch" — see updateKillGlitch. */
+  private playKillGlitch(): void {
+    this.glitchElapsed = 0;
+  }
+
+  /**
+   * Citywide "environment glitch" felt by EVERY online player when an enemy is
+   * killed anywhere in the city (driven by the broadcast ENEMY_DIE): the MAP
+   * PHOTO fades transparent and back, while the path water + characters keep
+   * rendering on top. Advanced each frame from the rAF loop.
+   */
+  private updateKillGlitch(dt: number): void {
+    if (this.glitchElapsed < 0) return;
+    this.glitchElapsed += dt;
+    const p = this.glitchElapsed / GLITCH_DURATION;
+    if (p >= 1) {
+      this.glitchElapsed = -1;
+      this.tileMap.setOpacity(1);
+      return;
+    }
+    // Fade the photo OUT fast, hold transparent, then ease it back in.
+    let opacity: number;
+    if (p < GLITCH_DOWN) opacity = 1 - p / GLITCH_DOWN; // 1 → 0
+    else if (p < GLITCH_UP) opacity = 0; // hold transparent
+    else opacity = (p - GLITCH_UP) / (1 - GLITCH_UP); // 0 → 1
+    this.tileMap.setOpacity(opacity);
   }
 
   /** Load mask tiles near spawn, then snap the player to a walkable spawn. */
@@ -172,6 +215,8 @@ export class Game {
       onEnemyDie: (death) => {
         // Play the kill moment (scream → explosion); no popup.
         this.enemyManager.killEnemy(death);
+        // Citywide environment glitch felt by every online player.
+        this.playKillGlitch();
       },
       onKillsExisting: (markers) => {
         this.killLayer.setMarkers(markers);
@@ -179,10 +224,30 @@ export class Game {
       onKillNew: (marker) => {
         this.killLayer.addMarker(marker);
       },
+      // Admin-driven events: a broadcast flashes onscreen; live cleanups clear
+      // the corresponding overlay immediately.
+      onAnnounce: (msg) => {
+        this.noteUI.showAnnouncement(msg.text);
+      },
+      onGridReset: () => {
+        this.pathLayer.clear();
+      },
+      onNotesReset: () => {
+        this.noteLayer.setNotes([]);
+      },
+      onNoteRemove: (id) => {
+        this.noteLayer.removeNote(id);
+      },
+      onNoteUpdate: (note) => {
+        this.noteLayer.updateNote(note);
+      },
+      onKillsReset: () => {
+        this.killLayer.setMarkers([]);
+      },
       onConnectionChange: (connected) => {
         this.showStatus(connected ? 'Connected' : 'Reconnecting…', !connected);
       },
-    }, this.characterId);
+    }, this.characterId, this.adminToken);
   }
 
   start(): void {
@@ -224,11 +289,14 @@ export class Game {
     // 4. Camera follow.
     this.camera.follow(this.player.position, dt);
 
+    // 4a. Advance the citywide kill glitch (fades the map photo, if active).
+    this.updateKillGlitch(dt);
+
     // 4b. Sticky notes: reveal the nearest note within range fullscreen; hide
     //     when we walk past the threshold (the "glitch" in the walk).
     const near = this.noteLayer.getRevealNote(this.player.x, this.player.y);
     if (near) {
-      this.noteUI.showReveal(near.text, near.id);
+      this.noteUI.showReveal(near.text, near.id, near.admin === true);
       this.noteLayer.setRevealed(near.id);
     } else {
       this.noteUI.hideReveal();

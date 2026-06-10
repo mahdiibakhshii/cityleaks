@@ -88,16 +88,26 @@ export const KILL = {
   OUTLINE: 'rgba(0,0,0,0.6)',
 };
 
+// Touch / small-screen devices get bigger avatars so the mascots stay readable
+// on a phone. PURELY VISUAL (see SPRITE below) — detected once at load via a
+// coarse pointer; desktop (fine pointer) keeps the baseline sizes.
+const IS_TOUCH =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(pointer: coarse)').matches;
+const AVATAR_SCALE = IS_TOUCH ? 1.6 : 1;
+
 // Pixel-art character/enemy sprites (client/src/game/sprites/). Each entity is a
 // textured quad showing an animated walk cycle baked from procedural pixel art.
 export const SPRITE = {
   // On-screen size in world units. PURELY VISUAL — collision/movement use
   // PLAYER.RADIUS + PLAYER.SPEED, so enlarging these makes the avatar bigger
-  // WITHOUT changing the step size or which buildings it bumps into.
+  // WITHOUT changing the step size or which buildings it bumps into. Scaled up
+  // on touch screens (AVATAR_SCALE) for legibility on small phones.
   // Players are 16×24 px art (taller than wide); width is derived from the aspect.
-  PLAYER_HEIGHT: 44,
+  PLAYER_HEIGHT: Math.round(44 * AVATAR_SCALE),
   // Ghosts are 16×16 px.
-  ENEMY_HEIGHT: 36,
+  ENEMY_HEIGHT: Math.round(36 * AVATAR_SCALE),
   // Fraction of height to raise the quad so a character's FEET sit near its
   // road point (its center/collision position) instead of straddling it.
   ANCHOR_Y: 0.34,
@@ -163,6 +173,11 @@ export const NOTE = {
   ICON_PAPER: '#fdf6c8', // note paper
   ICON_FOLD: '#e6d98f', // folded corner
   ICON_ACCENT: '#2a9df4', // pin / accent (matches PATH water-blue)
+  // "Creator" (Batman / admin) note icon — a dark card with a gold accent so it
+  // reads as distinct from anonymous player notes at a glance.
+  ADMIN_ICON_PAPER: '#1b1d26',
+  ADMIN_ICON_FOLD: '#34384a',
+  ADMIN_ICON_ACCENT: '#ffd23f',
   // Hide a note's own icon while its text is revealed fullscreen (less clutter).
   HIDE_ICON_WHEN_REVEALED: true,
 };

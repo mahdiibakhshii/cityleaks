@@ -11,16 +11,23 @@ export default defineConfig({
         ws: true,
         changeOrigin: true,
       },
+      // Proxy REST API calls (e.g. the admin login) to the game server in dev.
+      // In production the server serves both the client and /api on one origin.
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
   build: {
     outDir: 'dist',
     target: 'es2022',
     rollupOptions: {
-      // Two pages: the game (index.html) and the monitor (monitor.html).
+      // Three pages: the game (index.html), the monitor, and the admin console.
       input: {
         main: 'index.html',
         monitor: 'monitor.html',
+        admin: 'admin.html',
       },
     },
   },

@@ -6,6 +6,8 @@ import {
   MAX_PLAYERS,
   GRID_SIZE,
   ANON_CHARACTER_ID,
+  ADMIN_CHARACTER_ID,
+  ADMIN_CHARACTER,
   ENEMY_KILL_SPLASH_RADIUS,
   getCharacter,
   type PlayerState,
@@ -13,12 +15,19 @@ import {
   type PlayerPos,
   type NoteCreate,
   type EnemyDie,
+  type AdminPlayerInfo,
+  type AdminStats,
+  type AdminNoteEdit,
+  type AdminBroadcast,
+  type AdminKick,
+  type AdminMapOpacity,
 } from '../../shared/protocol';
 import { LeakGrid } from './LeakGrid';
 import { NoteStore } from './NoteStore';
 import { KillStore } from './KillStore';
 import { TDRoom } from './TDRoom';
 import { EnemyManager } from './EnemyManager';
+import { AdminAuth } from './AdminAuth';
 import { MAP_BOUNDS, SPAWN, GRID_FILE, NOTES_FILE, KILLS_FILE } from './config';
 
 function clamp(value: number, min: number, max: number): number {
@@ -48,6 +57,12 @@ export class GameServer {
   private killStore: KillStore;
   private tdRoom: TDRoom;
   private enemyManager: EnemyManager;
+  private adminAuth: AdminAuth;
+  // Socket ids of authed Batman (admin) players, so their notes are flagged.
+  private adminSocketIds = new Set<string>();
+  // Monitor background-image opacity (0..1), set by the admin, broadcast to the
+  // monitor room. In-memory only — resets to fully opaque on restart.
+  private mapOpacity = 1;
   private tickInterval: NodeJS.Timeout | null = null;
   private saveInterval: NodeJS.Timeout | null = null;
   private statsTickCounter = 0;
@@ -63,7 +78,8 @@ export class GameServer {
     noteStore: NoteStore,
     killStore: KillStore,
     tdRoom: TDRoom,
-    enemyManager: EnemyManager
+    enemyManager: EnemyManager,
+    adminAuth: AdminAuth
   ) {
     this.io = io;
     this.leakGrid = leakGrid;
@@ -71,6 +87,7 @@ export class GameServer {
     this.killStore = killStore;
     this.tdRoom = tdRoom;
     this.enemyManager = enemyManager;
+    this.adminAuth = adminAuth;
   }
 
   getPlayerCount(): number {
@@ -127,6 +144,12 @@ export class GameServer {
         return;
       }
 
+      // Admin clients: gated by a valid token (minted at /api/admin/login).
+      if (socket.handshake.query.role === 'admin') {
+        this.handleAdminConnection(socket);
+        return;
+      }
+
       this.handleGameConnection(socket);
     });
   }
@@ -141,10 +164,124 @@ export class GameServer {
     socket.emit(EVENTS.NOTE_EXISTING, this.noteStore.getAll());
     socket.emit(EVENTS.KILL_EXISTING, this.killStore.getAll());
     socket.emit(EVENTS.ENEMY_EXISTING, this.enemyManager.getStates());
+    socket.emit(EVENTS.ADMIN_MAP_OPACITY, { value: this.mapOpacity });
 
     socket.on('disconnect', () => {
       console.log('Monitor disconnected:', socket.id);
     });
+  }
+
+  /**
+   * Admin dashboard connection. The handshake must carry a valid token (from
+   * /api/admin/login); otherwise we deny + disconnect. Once authed, the socket
+   * joins the `admin` room (which receives live ADMIN_STATS / ADMIN_PLAYERS each
+   * second) and may issue privileged actions — trusted implicitly because the
+   * socket is already authed.
+   */
+  private handleAdminConnection(socket: Socket): void {
+    const rawToken = socket.handshake.query.token;
+    const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+    if (!this.adminAuth.validate(token)) {
+      socket.emit(EVENTS.ADMIN_DENIED);
+      socket.disconnect(true);
+      return;
+    }
+
+    socket.join('admin');
+    socket.emit(EVENTS.ADMIN_OK);
+    console.log('Admin connected:', socket.id);
+
+    // Initial snapshots so the dashboard populates immediately.
+    socket.emit(EVENTS.NOTE_EXISTING, this.noteStore.getAll());
+    socket.emit(EVENTS.KILL_EXISTING, this.killStore.getAll());
+    socket.emit(EVENTS.ADMIN_STATS, this.buildAdminStats());
+    socket.emit(EVENTS.ADMIN_PLAYERS, this.buildAdminPlayers());
+    socket.emit(EVENTS.ADMIN_MAP_OPACITY, { value: this.mapOpacity });
+
+    // ─── Note moderation ───
+    socket.on(EVENTS.ADMIN_NOTE_DELETE, (data: { id?: string }) => {
+      if (!data || typeof data.id !== 'string') return;
+      if (!this.noteStore.remove(data.id)) return;
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_REMOVE, { id: data.id });
+      void this.noteStore.saveToDiskAsync(NOTES_FILE);
+    });
+
+    socket.on(EVENTS.ADMIN_NOTE_EDIT, (data: AdminNoteEdit) => {
+      if (!data || typeof data.id !== 'string') return;
+      const note = this.noteStore.edit(data.id, data.text);
+      if (!note) return;
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
+      void this.noteStore.saveToDiskAsync(NOTES_FILE);
+    });
+
+    // ─── Broadcast a message to every player (transient, distinct style) ───
+    socket.on(EVENTS.ADMIN_BROADCAST, (data: AdminBroadcast) => {
+      const text = typeof data?.text === 'string' ? data.text.trim().slice(0, 280) : '';
+      if (text.length === 0) return;
+      this.io
+        .to('game')
+        .to('monitor')
+        .emit(EVENTS.ADMIN_ANNOUNCE, { id: `a${Date.now()}`, text });
+    });
+
+    // ─── Cleanups (fresh-run resets) ───
+    socket.on(EVENTS.ADMIN_RESET_PATHS, () => {
+      this.leakGrid.reset();
+      void this.leakGrid.saveToDiskAsync(GRID_FILE);
+      this.io.to('game').to('monitor').emit(EVENTS.GRID_RESET);
+      this.tdRoom.sendReset(this.leakGrid);
+    });
+
+    socket.on(EVENTS.ADMIN_RESET_NOTES, () => {
+      this.noteStore.clear();
+      void this.noteStore.saveToDiskAsync(NOTES_FILE);
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_RESET);
+    });
+
+    socket.on(EVENTS.ADMIN_RESET_KILLS, () => {
+      this.killStore.clear();
+      void this.killStore.saveToDiskAsync(KILLS_FILE);
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.KILL_RESET);
+    });
+
+    // ─── Kick a connected player ───
+    socket.on(EVENTS.ADMIN_KICK, (data: AdminKick) => {
+      if (!data || typeof data.id !== 'string') return;
+      this.io.sockets.sockets.get(data.id)?.disconnect(true);
+    });
+
+    // ─── Monitor background-image opacity ───
+    socket.on(EVENTS.ADMIN_MAP_OPACITY, (data: AdminMapOpacity) => {
+      if (!data || typeof data.value !== 'number' || !Number.isFinite(data.value)) return;
+      this.mapOpacity = Math.max(0, Math.min(1, data.value));
+      this.io.to('monitor').to('admin').emit(EVENTS.ADMIN_MAP_OPACITY, { value: this.mapOpacity });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Admin disconnected:', socket.id);
+    });
+  }
+
+  private buildAdminStats(): AdminStats {
+    return {
+      players: this.players.size,
+      leakedPercentage: this.leakGrid.getPercentage(),
+      enemies: this.enemyManager.count,
+      notes: this.noteStore.getCount(),
+      kills: this.killStore.getCount(),
+      tickMs: this.getTickMetrics(),
+      uptime: process.uptime(),
+    };
+  }
+
+  private buildAdminPlayers(): AdminPlayerInfo[] {
+    return Array.from(this.players.values()).map(({ id, x, y, color, character }) => ({
+      id,
+      x,
+      y,
+      color,
+      character,
+    }));
   }
 
   private handleGameConnection(socket: Socket): void {
@@ -160,7 +297,24 @@ export class GameServer {
     // falls back to the classic random color and the circle shape.
     const rawCharId = socket.handshake.query.character;
     const charId = Array.isArray(rawCharId) ? rawCharId[0] : rawCharId;
-    const character = getCharacter(charId);
+
+    // Batman is privileged: only granted to a socket presenting a valid admin
+    // token (server-enforced). A bare ?character=batman with no/invalid token
+    // falls through to the anonymous circle. An authed Batman is also flagged so
+    // its notes are marked as "creator" notes.
+    const rawAdminToken = socket.handshake.query.adminToken;
+    const adminToken = Array.isArray(rawAdminToken) ? rawAdminToken[0] : rawAdminToken;
+    const isAuthedBatman =
+      charId === ADMIN_CHARACTER_ID && this.adminAuth.validate(adminToken);
+
+    let character;
+    if (charId === ADMIN_CHARACTER_ID) {
+      character = isAuthedBatman ? ADMIN_CHARACTER : undefined; // unauthed → anon
+    } else {
+      character = getCharacter(charId);
+    }
+    if (isAuthedBatman) this.adminSocketIds.add(socket.id);
+
     const color = character?.color ?? this.randomColor();
     const startX = SPAWN.x;
     const startY = SPAWN.y;
@@ -211,14 +365,15 @@ export class GameServer {
     // A player "sticks" a note: validate + persist, then broadcast to everyone
     // (game + monitor) so the icon appears for all clients live.
     socket.on(EVENTS.NOTE_CREATE, (data: NoteCreate) => {
-      const note = this.noteStore.create(data, MAP_BOUNDS);
+      const note = this.noteStore.create(data, MAP_BOUNDS, this.adminSocketIds.has(socket.id));
       if (!note) return;
-      this.io.to('game').to('monitor').emit(EVENTS.NOTE_NEW, note);
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_NEW, note);
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
     });
 
     socket.on('disconnect', () => {
       this.players.delete(socket.id);
+      this.adminSocketIds.delete(socket.id);
       this.io.to('game').to('monitor').emit(EVENTS.PLAYER_LEAVE, { id: socket.id });
     });
   }
@@ -279,6 +434,9 @@ export class GameServer {
         percentage: this.leakGrid.getPercentage(),
         playerCount: this.players.size,
       });
+      // Live admin dashboard + player list.
+      this.io.to('admin').emit(EVENTS.ADMIN_STATS, this.buildAdminStats());
+      this.io.to('admin').emit(EVENTS.ADMIN_PLAYERS, this.buildAdminPlayers());
     }
 
     // Record tick timing (EMA for a stable average; track the worst spike).

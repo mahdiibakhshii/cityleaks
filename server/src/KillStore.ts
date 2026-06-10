@@ -39,6 +39,11 @@ export class KillStore {
     return marker;
   }
 
+  /** Remove every kill marker (admin cleanup for a fresh run). */
+  clear(): void {
+    this.kills = [];
+  }
+
   // ─── Persistence (JSON file) ───
 
   loadFromDisk(filePath: string): void {

@@ -20,10 +20,31 @@ export class TileMap {
   private loader = new THREE.TextureLoader();
   private tiles: Map<string, LoadedTile> = new Map();
   private loading: Set<string> = new Set();
+  // Global map-photo opacity (1 = normal). Driven by the kill "glitch" so the
+  // background image can fade transparent while paths/players stay visible.
+  private opacity = 1;
 
   constructor() {
     this.group = new THREE.Group();
     this.group.position.z = 0;
+  }
+
+  /**
+   * Fade the whole map photo (all tiles, present + future) to `o` (0..1). Used by
+   * the citywide kill glitch: at o<1 the photo goes transparent, revealing the
+   * dark background, while the path overlay + characters keep rendering on top.
+   */
+  setOpacity(o: number): void {
+    const transparent = o < 1;
+    this.opacity = o;
+    for (const { mesh } of this.tiles.values()) {
+      const mat = mesh.material as THREE.MeshBasicMaterial;
+      if (mat.transparent !== transparent) {
+        mat.transparent = transparent; // toggling render state needs a recompile
+        mat.needsUpdate = true;
+      }
+      mat.opacity = o; // just a uniform — cheap to change every frame
+    }
   }
 
   private key(col: number, row: number): string {
@@ -55,7 +76,13 @@ export class TileMap {
         texture.generateMipmaps = false;
 
         const geometry = new THREE.PlaneGeometry(TILE_W, TILE_H);
-        const material = new THREE.MeshBasicMaterial({ map: texture });
+        // Inherit the current global opacity so tiles streaming in mid-glitch
+        // match the rest of the map.
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: this.opacity < 1,
+          opacity: this.opacity,
+        });
         const mesh = new THREE.Mesh(geometry, material);
         // Center in data space, negated Y for the scene.
         const centerX = this.tileMinX(col) + TILE_W / 2;

@@ -16,9 +16,11 @@ import {
 // client and server never import each other; both derive layout from shared/.
 const MASK_ALPHA_THRESHOLD = 128;
 
-// Cache file layout: [int32 LE grid size][packed walkable bits]. The header lets
-// us detect a COLLISION_GRID_SIZE change and rebuild instead of loading stale bits.
-const CACHE_HEADER_BYTES = 4;
+// Cache file layout: [int32 LE grid size][int32 LE mask fingerprint][packed
+// walkable bits]. The header lets us rebuild instead of loading stale bits when
+// EITHER the COLLISION_GRID_SIZE changes OR the mask tiles are regenerated (the
+// fingerprint is derived from every mask tile's byte size — see maskFingerprint).
+const CACHE_HEADER_BYTES = 8;
 
 /**
  * Coarse, bit-packed WALKABLE grid spanning the full MAP_BOUNDS, used by the
@@ -166,7 +168,8 @@ export class CollisionField {
    * `ready` when done (enemies stay dormant until then).
    */
   async build(): Promise<void> {
-    if (await this.tryLoadCache()) {
+    const fingerprint = await this.maskFingerprint();
+    if (await this.tryLoadCache(fingerprint)) {
       this._ready = true;
       return;
     }
@@ -193,7 +196,38 @@ export class CollisionField {
         (missing ? `, ${missing} missing` : '') +
         ` — ${pct}% walkable (${Date.now() - startedAt} ms).`
     );
-    await this.saveCache();
+    await this.saveCache(fingerprint);
+  }
+
+  /**
+   * Cheap content signature of the mask tile set: FNV-1a over each tile's
+   * (col, row, byte size). Only `stat`s the files (no decode), so the cache-
+   * validity check stays instant. File size is content-determined and stable
+   * across git checkouts/redeploys, so regenerating the mask auto-invalidates
+   * the cache while a plain redeploy (which only churns mtimes) does not.
+   */
+  private async maskFingerprint(): Promise<number> {
+    let h = 0x811c9dc5; // FNV offset basis
+    const mix = (n: number): void => {
+      const v = n >>> 0;
+      for (let s = 0; s < 32; s += 8) {
+        h ^= (v >>> s) & 0xff;
+        h = Math.imul(h, 0x01000193); // FNV prime
+      }
+    };
+    for (const tile of MAP.TILES) {
+      const file = path.join(this.maskDir, `tile_${tile.col}_${tile.row}.png`);
+      let size = 0xffffffff; // missing/unreadable → distinct sentinel
+      try {
+        size = (await fs.promises.stat(file)).size;
+      } catch {
+        // leave sentinel
+      }
+      mix(tile.col);
+      mix(tile.row);
+      mix(size);
+    }
+    return h >>> 0;
   }
 
   /** Decode one mask tile and OR its walkable pixels into the coarse grid. */
@@ -229,11 +263,15 @@ export class CollisionField {
     return true;
   }
 
-  private async tryLoadCache(): Promise<boolean> {
+  private async tryLoadCache(fingerprint: number): Promise<boolean> {
     try {
       const buf = await fs.promises.readFile(this.cacheFile);
       if (buf.length !== CACHE_HEADER_BYTES + this.grid.length) return false;
       if (buf.readInt32LE(0) !== this.size) return false;
+      if (buf.readUInt32LE(4) !== fingerprint) {
+        console.log('CollisionField: mask tiles changed — rebuilding collision cache.');
+        return false;
+      }
       this.grid = new Uint8Array(buf.subarray(CACHE_HEADER_BYTES));
       console.log(
         `CollisionField: loaded cache (${this.cacheFile}) — ` +
@@ -245,10 +283,11 @@ export class CollisionField {
     }
   }
 
-  private async saveCache(): Promise<void> {
+  private async saveCache(fingerprint: number): Promise<void> {
     try {
       const header = Buffer.alloc(CACHE_HEADER_BYTES);
       header.writeInt32LE(this.size, 0);
+      header.writeUInt32LE(fingerprint, 4);
       await fs.promises.mkdir(path.dirname(this.cacheFile), { recursive: true });
       await fs.promises.writeFile(this.cacheFile, Buffer.concat([header, Buffer.from(this.grid)]));
       console.log(`CollisionField: cache written to ${this.cacheFile}.`);

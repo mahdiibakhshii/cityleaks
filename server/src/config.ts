@@ -11,6 +11,10 @@ export { MAP_BOUNDS, SPAWN, COLLISION_GRID_SIZE };
 
 export const PORT = Number(process.env.PORT) || 3000;
 
+// Admin page password. Override in production via env (ADMIN_PASSWORD=…); the
+// default matches the simple local code requested for the installation.
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '252525';
+
 // Where the leak grid is persisted. Resolved relative to the server's cwd.
 export const GRID_FILE = path.resolve(process.cwd(), 'data', 'leak-grid.bin');
 

@@ -12,6 +12,7 @@ import {
   type EnemyLeave,
   type EnemyDie,
   type KillMarker,
+  type AdminAnnounce,
 } from '../../../shared/protocol';
 
 export interface NetworkCallbacks {
@@ -32,6 +33,14 @@ export interface NetworkCallbacks {
   onEnemyDie: (death: EnemyDie) => void;
   onKillsExisting: (markers: KillMarker[]) => void;
   onKillNew: (marker: KillMarker) => void;
+  // Admin-driven events (broadcast + live cleanups). Optional — only the game
+  // page wires these; defaults are no-ops where omitted.
+  onAnnounce?: (msg: AdminAnnounce) => void;
+  onGridReset?: () => void;
+  onNotesReset?: () => void;
+  onNoteRemove?: (id: string) => void;
+  onNoteUpdate?: (note: Note) => void;
+  onKillsReset?: () => void;
 }
 
 /** Socket.IO client: connects, forwards server events, throttles outgoing moves. */
@@ -39,16 +48,18 @@ export class NetworkClient {
   private socket: Socket;
   private callbacks: NetworkCallbacks;
 
-  constructor(callbacks: NetworkCallbacks, characterId: string) {
+  constructor(callbacks: NetworkCallbacks, characterId: string, adminToken?: string) {
     this.callbacks = callbacks;
 
     // In dev, Vite proxies /socket.io to the server. Default same-origin connect.
     // The chosen character rides in the handshake query (like `role`); the server
     // uses it to assign our shape + signature color and echo both to all clients.
+    // An adminToken (present only for a Batman session) authorizes that identity
+    // server-side; without it, character=batman falls back to the anonymous circle.
     this.socket = io({
       transports: ['websocket', 'polling'],
       reconnection: true,
-      query: { character: characterId },
+      query: adminToken ? { character: characterId, adminToken } : { character: characterId },
     });
 
     this.socket.on('connect', () => this.callbacks.onConnectionChange(true));
@@ -98,6 +109,16 @@ export class NetworkClient {
       this.callbacks.onKillsExisting(markers)
     );
     this.socket.on(EVENTS.KILL_NEW, (marker: KillMarker) => this.callbacks.onKillNew(marker));
+
+    // Admin-driven events: broadcasts, note moderation, and live cleanups.
+    this.socket.on(EVENTS.ADMIN_ANNOUNCE, (msg: AdminAnnounce) => this.callbacks.onAnnounce?.(msg));
+    this.socket.on(EVENTS.GRID_RESET, () => this.callbacks.onGridReset?.());
+    this.socket.on(EVENTS.NOTE_RESET, () => this.callbacks.onNotesReset?.());
+    this.socket.on(EVENTS.NOTE_REMOVE, (data: { id: string }) =>
+      this.callbacks.onNoteRemove?.(data.id)
+    );
+    this.socket.on(EVENTS.NOTE_UPDATE, (note: Note) => this.callbacks.onNoteUpdate?.(note));
+    this.socket.on(EVENTS.KILL_RESET, () => this.callbacks.onKillsReset?.());
   }
 
   sendPosition(x: number, y: number): void {

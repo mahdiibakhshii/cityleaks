@@ -12,6 +12,15 @@ export interface PathLayerOptions {
    * there we keep a smooth flat trail (LinearFilter) like the original.
    */
   pixelated?: boolean;
+
+  /**
+   * Thicken every trail by stamping a disc of this RADIUS (in grid cells) around
+   * each visited cell when uploading the texture. 0 = exact 1-cell trail (the
+   * in-game default). The monitor uses a few cells so the path stays visible when
+   * the whole ~17k-unit city is zoomed to fit one screen (a single cell is
+   * otherwise ~1px). Does not affect leak-marking — it's purely a display dilate.
+   */
+  dilate?: number;
 }
 
 /**
@@ -36,16 +45,24 @@ export interface PathLayerOptions {
  */
 export class PathLayer {
   readonly mesh: THREE.Mesh;
+  // Raw visited grid (1 cell = 1 player step), the source of truth for marking.
   private data: Uint8Array<ArrayBuffer>;
+  // What's uploaded to the GPU. Equals `data` when dilate=0; otherwise a
+  // thickened (disc-stamped) copy so trails read at a zoomed-out scale.
+  private display: Uint8Array<ArrayBuffer>;
+  private readonly dilate: number;
   private texture: THREE.DataTexture;
   private material: THREE.ShaderMaterial;
 
   constructor(opts: PathLayerOptions = {}) {
     const pixelated = opts.pixelated ?? true;
+    this.dilate = Math.max(0, Math.floor(opts.dilate ?? 0));
 
     this.data = new Uint8Array(new ArrayBuffer(GRID_SIZE * GRID_SIZE));
+    this.display =
+      this.dilate > 0 ? new Uint8Array(new ArrayBuffer(GRID_SIZE * GRID_SIZE)) : this.data;
     this.texture = new THREE.DataTexture(
-      this.data,
+      this.display,
       GRID_SIZE,
       GRID_SIZE,
       THREE.RedFormat,
@@ -157,12 +174,22 @@ export class PathLayer {
     this.material.uniforms.uTime.value += dt;
   }
 
+  /** Clear the whole overlay (admin path reset → GRID_RESET). */
+  clear(): void {
+    this.data.fill(0);
+    if (this.dilate > 0) this.display.fill(0);
+    this.texture.needsUpdate = true;
+  }
+
   /** Replace the whole grid from the bit-packed buffer sent on connect. */
   applyFull(buffer: ArrayBuffer | Uint8Array): void {
     const packed = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
     const n = GRID_SIZE * GRID_SIZE;
+    if (this.dilate > 0) this.display.fill(0);
     for (let i = 0; i < n; i++) {
-      this.data[i] = packed[i >> 3] & (1 << (i & 7)) ? 255 : 0;
+      const on = packed[i >> 3] & (1 << (i & 7)) ? 255 : 0;
+      this.data[i] = on;
+      if (on && this.dilate > 0) this.stampDisc(i % GRID_SIZE, (i / GRID_SIZE) | 0);
     }
     this.texture.needsUpdate = true;
   }
@@ -173,6 +200,7 @@ export class PathLayer {
     for (const index of cells) {
       if (index >= 0 && index < this.data.length && this.data[index] !== 255) {
         this.data[index] = 255;
+        if (this.dilate > 0) this.stampDisc(index % GRID_SIZE, (index / GRID_SIZE) | 0);
         changed = true;
       }
     }
@@ -191,7 +219,25 @@ export class PathLayer {
     const index = cellY * GRID_SIZE + cellX;
     if (this.data[index] !== 255) {
       this.data[index] = 255;
+      if (this.dilate > 0) this.stampDisc(cellX, cellY);
       this.texture.needsUpdate = true;
+    }
+  }
+
+  /** Stamp a filled disc of radius `this.dilate` (cells) into the display grid. */
+  private stampDisc(cx: number, cy: number): void {
+    const r = this.dilate;
+    const r2 = r * r;
+    for (let dy = -r; dy <= r; dy++) {
+      const yy = cy + dy;
+      if (yy < 0 || yy >= GRID_SIZE) continue;
+      const row = yy * GRID_SIZE;
+      for (let dx = -r; dx <= r; dx++) {
+        if (dx * dx + dy * dy > r2) continue;
+        const xx = cx + dx;
+        if (xx < 0 || xx >= GRID_SIZE) continue;
+        this.display[row + xx] = 255;
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ import { getPlayerSpec, renderSpec } from '../game/sprites/drawSprite';
 /**
  * The intro popup shown on every page load, before the game boots.
  *
- *   Phase 1 — a welcome panel (placeholder hero art + text) with Skip / Next.
+ *   Phase 1 — a text-only welcome panel (the premise) with Skip / Next.
  *   Phase 2 — character selection: four shape cards + Skip.
  *
  * `show()` resolves to the chosen character id (a CHARACTERS id, or
@@ -48,22 +48,39 @@ export class IntroOverlay {
 
   private buildPhase1(): HTMLDivElement {
     const phase = document.createElement('div');
-    phase.className = 'intro-phase';
-
-    const hero = document.createElement('div');
-    hero.className = 'intro-hero';
-    hero.innerHTML = '<span class="intro-hero-emoji">🌐</span>';
+    phase.className = 'intro-phase intro-phase-welcome';
 
     const title = document.createElement('h1');
     title.className = 'intro-title';
-    title.textContent = 'Welcome to CityLeaks';
+    title.textContent = 'CityLeaks';
 
-    const text = document.createElement('p');
-    text.className = 'intro-text';
-    text.textContent =
-      'Roam the streets of Vienna. Every place you walk is recorded forever as a ' +
-      'glowing trail on a living map shared by everyone. Leave anonymous notes for ' +
-      'strangers to find. Ready to make your mark?';
+    const tagline = document.createElement('p');
+    tagline.className = 'intro-tagline';
+    tagline.textContent = 'Leak the city with your feet. Clean it with your words.';
+
+    // The premise, as a short left-aligned column.
+    const paragraphs = [
+      "Tonight we're on the bank of the Donau, in the rain. The far side stinks — and " +
+        'so do the platforms we get handed: feeds that sell us and fence us in. So we ' +
+        'opened our own leak in the river, ours to steer.',
+      'Where you walk, the water follows. Your steps spread the Donau through the ' +
+        "streets of Vienna — maybe enough of it can wash the city's filth out.",
+      'Your words are the cleaning powder. Anywhere on the map, leave a line — a ' +
+        'memory, a thought, a chant, a slogan — whatever wants to be heard in that exact ' +
+        'spot. You stay anonymous; your words still reach everyone.',
+      "You're part of this city's crowd now. After tonight, Batman heads out and writes " +
+        'the lines you left onto the real walls of Vienna, exactly where you dropped them ' +
+        'on this map. Tonight it leaks digitally. Tomorrow it leaks in paint. Want to ' +
+        'stir the city?',
+    ];
+    const body = document.createElement('div');
+    body.className = 'intro-body';
+    for (const p of paragraphs) {
+      const para = document.createElement('p');
+      para.className = 'intro-text';
+      para.textContent = p;
+      body.appendChild(para);
+    }
 
     const actions = document.createElement('div');
     actions.className = 'intro-actions';
@@ -72,7 +89,7 @@ export class IntroOverlay {
       this.makeButton('Next', 'intro-btn-primary', () => this.goToPhase2())
     );
 
-    phase.append(hero, title, text, actions);
+    phase.append(title, tagline, body, actions);
     return phase;
   }
 

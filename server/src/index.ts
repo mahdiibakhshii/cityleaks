@@ -10,6 +10,7 @@ import { KillStore } from './KillStore';
 import { TDRoom } from './TDRoom';
 import { CollisionField } from './CollisionField';
 import { EnemyManager } from './EnemyManager';
+import { AdminAuth } from './AdminAuth';
 import { PORT, GRID_FILE, NOTES_FILE, KILLS_FILE, COLLISION_FILE, MASK_TILES_DIR } from './config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,6 +39,10 @@ killStore.loadFromDisk(KILLS_FILE);
 
 const tdRoom = new TDRoom(io);
 
+// Admin auth: password → short-lived bearer token. Gates the admin page and the
+// live-game Batman identity (server-enforced).
+const adminAuth = new AdminAuth();
+
 // Server collision field for the wandering enemies (they stay on roads). Built
 // from the mask tiles in the background — non-blocking, so the server starts
 // listening immediately; enemies stay dormant until `ready`.
@@ -45,7 +50,10 @@ const collisionField = new CollisionField(MASK_TILES_DIR, COLLISION_FILE);
 void collisionField.build();
 const enemyManager = new EnemyManager(collisionField);
 
-const gameServer = new GameServer(io, leakGrid, noteStore, killStore, tdRoom, enemyManager);
+const gameServer = new GameServer(io, leakGrid, noteStore, killStore, tdRoom, enemyManager, adminAuth);
+
+// Parse JSON bodies (used by the admin login endpoint).
+app.use(express.json());
 
 // Serve the built client (production) from client/dist.
 const clientDist = path.resolve(__dirname, '../../client/dist');
@@ -53,6 +61,22 @@ const clientDist = path.resolve(__dirname, '../../client/dist');
 // Clean URL for the monitor page (also available directly at /monitor.html).
 app.get('/monitor', (_req, res) => {
   res.sendFile(path.join(clientDist, 'monitor.html'));
+});
+
+// Clean URL for the admin page (also available directly at /admin.html).
+app.get('/admin', (_req, res) => {
+  res.sendFile(path.join(clientDist, 'admin.html'));
+});
+
+// Admin login: validate the password, mint a short-lived token. The token then
+// authorizes the admin socket (role=admin) and the live-game Batman session.
+app.post('/api/admin/login', (req, res) => {
+  const token = adminAuth.login(req.body?.password);
+  if (!token) {
+    res.status(401).json({ error: 'invalid password' });
+    return;
+  }
+  res.json({ token });
 });
 
 app.use(express.static(clientDist));

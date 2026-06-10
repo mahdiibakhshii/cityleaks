@@ -80,11 +80,13 @@ canvas {
   opacity: 1;
 }
 .note-reveal-text {
-  max-width: 100%;
+  /* A centered reading column (not edge-to-edge) so multi-line notes wrap and
+     align tidily; the JS font fit caps the size so short notes aren't huge. */
+  max-width: min(80vw, 720px);
   max-height: 100%;
   text-align: center;
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.2;
   color: #ffffff;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
@@ -93,23 +95,71 @@ canvas {
     0 2px 6px rgba(0, 0, 0, 0.9);
 }
 
-/* Persistent "Stick a note" button, bottom-right (joystick is bottom-left). */
+/* "Creator" (Batman / admin) note reveal — gold serif, distinct from the white
+   sans-serif anonymous notes so players can tell who wrote it. */
+.note-reveal.admin .note-reveal-text {
+  color: #ffd23f;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* Transient admin broadcast: a banner the whole city sees for a few seconds.
+   Sits just above note reveals; non-interactive so movement/joystick keep
+   working underneath. */
+.admin-announce {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  padding: 6vmin 6vmin 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.admin-announce.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.admin-announce-text {
+  max-width: 92%;
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.15;
+  font-size: clamp(22px, 5vw, 64px);
+  color: #ffe680;
+  background: rgba(10, 11, 16, 0.78);
+  border: 2px solid rgba(255, 210, 63, 0.7);
+  border-radius: 14px;
+  padding: 0.5em 0.8em;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+/* Persistent "Take the spray out" button, bottom-right (joystick is bottom-left).
+   A text pill (auto-width) rather than a round icon. */
 .note-button {
   position: fixed;
   right: 18px;
   bottom: 24px;
   z-index: 15;
-  width: 60px;
-  height: 60px;
   border: none;
-  border-radius: 50%;
+  border-radius: 24px;
   background: #2a9df4;
   color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 20px;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   -webkit-tap-highlight-color: transparent;
   transition: transform 100ms ease, background 120ms ease;
 }
@@ -118,10 +168,6 @@ canvas {
 }
 .note-button:active {
   transform: scale(0.92);
-}
-.note-button-icon {
-  font-size: 28px;
-  line-height: 1;
 }
 
 /* Compose modal — ABOVE everything (incl. joystick) while open. */
@@ -212,11 +258,9 @@ canvas {
   .note-button {
     right: clamp(32px, 3vw, 72px);
     bottom: clamp(32px, 3vw, 72px);
-    width: clamp(104px, 9vmin, 184px);
-    height: clamp(104px, 9vmin, 184px);
-  }
-  .note-button-icon {
-    font-size: clamp(52px, 4.6vmin, 92px);
+    font-size: clamp(20px, 1.6vw, 36px);
+    padding: clamp(16px, 1.2vw, 28px) clamp(26px, 2vw, 46px);
+    border-radius: clamp(18px, 1.4vw, 32px);
   }
   .note-panel {
     max-width: clamp(620px, 56vw, 1040px);
@@ -320,6 +364,26 @@ canvas {
   line-height: 1.5;
   color: #b6b6c6;
   max-width: 46ch;
+}
+/* Premise tagline under the title (phase 1). */
+.intro-tagline {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #2a9df4;
+  max-width: 46ch;
+}
+/* Narrative column (phase 1): paragraphs stacked, left-aligned for reading. */
+.intro-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 54ch;
+  text-align: left;
+}
+.intro-body .intro-text {
+  max-width: none;
+  margin: 0;
 }
 
 .intro-actions {
@@ -428,14 +492,36 @@ canvas {
     max-width: 2600px;
     height: 96vh;
     max-height: none;
-    padding: clamp(48px, 4vw, 110px) clamp(44px, 4vw, 110px);
+    padding: clamp(40px, 3vw, 90px) clamp(44px, 4vw, 110px);
     border-radius: clamp(24px, 1.8vw, 40px);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* `safe` keeps content centered but, if it ever overflows, aligns to the
+       top so it stays scrollable (plain `center` would clip the top). */
+    justify-content: safe center;
   }
   .intro-phase {
     gap: clamp(26px, 2.6vh, 56px);
+  }
+  /* The welcome phase carries far more copy than the character picker, so keep
+     its text compact (smaller fonts + gaps + a wider column) to fit one screen
+     without scrolling. Scoped so the picker keeps its large, roomy sizing. */
+  .intro-phase-welcome {
+    gap: clamp(14px, 1.6vh, 30px);
+  }
+  .intro-phase-welcome .intro-title {
+    font-size: clamp(34px, 3.2vw, 64px);
+  }
+  .intro-phase-welcome .intro-tagline {
+    font-size: clamp(19px, 1.7vw, 34px);
+    max-width: min(92ch, 1100px);
+  }
+  .intro-phase-welcome .intro-body {
+    gap: clamp(12px, 1.2vh, 22px);
+    max-width: min(92ch, 1100px);
+  }
+  .intro-phase-welcome .intro-body .intro-text {
+    font-size: clamp(16px, 1.3vw, 28px);
   }
   .intro-hero {
     height: clamp(240px, 26vh, 460px);
@@ -450,6 +536,14 @@ canvas {
   .intro-text {
     font-size: clamp(20px, 1.9vw, 44px);
     max-width: 66ch;
+  }
+  .intro-tagline {
+    font-size: clamp(22px, 2.1vw, 50px);
+    max-width: 66ch;
+  }
+  .intro-body {
+    gap: clamp(14px, 1.4vh, 30px);
+    max-width: 78ch;
   }
   .intro-characters {
     grid-template-columns: repeat(4, 1fr);
@@ -490,4 +584,294 @@ canvas {
   border-radius: 6px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   pointer-events: none;
+}
+
+/* Read-only notes list on the monitor, docked to the right of the map. */
+#monitor-notes {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 18;
+  width: clamp(360px, 34vw, 640px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 11, 18, 0.72);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(3px);
+}
+.monitor-notes-title {
+  flex-shrink: 0;
+  padding: clamp(16px, 1.4vw, 26px) clamp(18px, 1.4vw, 28px);
+  font-size: clamp(18px, 1.5vw, 30px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8a9a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.monitor-notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: clamp(14px, 1.2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1vw, 18px);
+}
+.monitor-note {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: clamp(12px, 1vw, 20px) clamp(14px, 1.1vw, 22px);
+  color: #e8e8f0;
+  font-size: clamp(17px, 1.4vw, 28px);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.monitor-note-creator {
+  border-color: rgba(255, 210, 63, 0.55);
+  background: rgba(255, 210, 63, 0.08);
+  color: #ffe680;
+  font-style: italic;
+}
+.monitor-note-empty {
+  color: #6c6c7c;
+  font-style: italic;
+  padding: 4px 2px;
+}
+
+/* ─── Admin dashboard (/admin) ─── */
+/* Sized generously for desktop (clamp() keeps it sane on small screens too). */
+
+.admin-login {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(120% 120% at 50% 0%, #1d1d33 0%, #0b0b14 70%);
+}
+.admin-login-panel {
+  width: 100%;
+  max-width: clamp(480px, 46vw, 860px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 1.8vw, 36px);
+  background: #16161f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: clamp(40px, 3.6vw, 76px);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.65);
+}
+.admin-login-title {
+  font-size: clamp(34px, 3.2vw, 66px);
+  font-weight: 800;
+  color: #e8e8f0;
+  text-align: center;
+}
+.admin-login-input {
+  width: 100%;
+  font-size: clamp(24px, 1.9vw, 40px);
+  padding: clamp(18px, 1.3vw, 30px) clamp(20px, 1.4vw, 34px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0e0e16;
+  color: #f0f0f6;
+  outline: none;
+}
+.admin-login-input:focus {
+  border-color: #2a9df4;
+}
+.admin-login-error {
+  min-height: 24px;
+  font-size: clamp(17px, 1.3vw, 28px);
+  color: #ff6b81;
+  text-align: center;
+}
+
+.admin-page {
+  min-height: 100vh;
+  padding: clamp(24px, 2.4vw, 56px);
+  color: #e8e8f0;
+  font-size: clamp(18px, 1.4vw, 30px);
+}
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: clamp(24px, 2.2vw, 48px);
+}
+.admin-title {
+  font-size: clamp(32px, 3vw, 62px);
+  font-weight: 800;
+}
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(420px, 34vw, 680px), 1fr));
+  gap: clamp(22px, 2vw, 42px);
+  align-items: start;
+}
+.admin-card {
+  background: #16161f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: clamp(22px, 1.9vw, 42px);
+}
+.admin-card-title {
+  font-size: clamp(17px, 1.3vw, 28px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a8a9a;
+  margin-bottom: clamp(14px, 1.2vw, 28px);
+}
+
+.admin-stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: clamp(6px, 0.5vw, 12px) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.admin-stat-key {
+  color: #b6b6c4;
+}
+.admin-stat-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 0.8vw, 18px);
+  max-height: clamp(360px, 42vh, 640px);
+  overflow-y: auto;
+}
+.admin-empty {
+  color: #6c6c7c;
+  font-style: italic;
+  padding: 8px 0;
+}
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 0.9vw, 18px);
+}
+.admin-row-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-swatch {
+  width: clamp(20px, 1.5vw, 32px);
+  height: clamp(20px, 1.5vw, 32px);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+.admin-range {
+  flex: 1;
+  height: clamp(8px, 0.8vw, 16px);
+  accent-color: #2a9df4;
+  cursor: pointer;
+}
+
+.admin-note {
+  background: #0e0e16;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: clamp(12px, 1vw, 22px);
+}
+.admin-note-creator {
+  border-color: rgba(255, 210, 63, 0.5);
+}
+.admin-note-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-bottom: clamp(10px, 0.8vw, 18px);
+}
+.admin-note-actions {
+  display: flex;
+  gap: clamp(8px, 0.7vw, 16px);
+  justify-content: flex-end;
+}
+
+.admin-textarea {
+  width: 100%;
+  min-height: clamp(120px, 12vh, 260px);
+  resize: vertical;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0e0e16;
+  color: #f0f0f6;
+  font-size: clamp(18px, 1.4vw, 30px);
+  font-family: inherit;
+  line-height: 1.4;
+  padding: clamp(14px, 1.2vw, 24px);
+  outline: none;
+  margin-bottom: clamp(14px, 1.2vw, 24px);
+}
+.admin-textarea:focus {
+  border-color: #2a9df4;
+}
+
+.admin-overview {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  background: #11131a;
+}
+.admin-legend {
+  margin-top: clamp(8px, 0.7vw, 16px);
+  font-size: clamp(13px, 0.95vw, 20px);
+  color: #8a8a9a;
+}
+
+.admin-btn {
+  border: none;
+  border-radius: 12px;
+  padding: clamp(14px, 1.1vw, 26px) clamp(22px, 1.7vw, 42px);
+  font-size: clamp(18px, 1.4vw, 30px);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-tap-highlight-color: transparent;
+}
+.admin-btn:active {
+  transform: scale(0.97);
+}
+.admin-btn-small {
+  padding: clamp(10px, 0.8vw, 18px) clamp(16px, 1.2vw, 28px);
+  font-size: clamp(16px, 1.2vw, 26px);
+}
+.admin-btn-primary {
+  background: #2a9df4;
+}
+.admin-btn-danger {
+  background: #c0392b;
+}
+.admin-btn-batman {
+  background: #1b1d26;
+  border: 1px solid rgba(255, 210, 63, 0.6);
+  color: #ffd23f;
+}
+/* Cleanup card stacks its danger buttons full-width. */
+.admin-card .admin-btn-danger {
+  display: block;
+  width: 100%;
+  margin-bottom: clamp(10px, 0.8vw, 18px);
+}
+.admin-note-actions .admin-btn-danger,
+.admin-row .admin-btn-danger {
+  display: inline-block;
+  width: auto;
+  margin-bottom: 0;
 }
