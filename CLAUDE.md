@@ -22,6 +22,18 @@ cd server && npm start                       # serves client/dist on PORT||3000
 - Game at `/`, monitor at `/monitor`.
 - **The server runs TypeScript directly via `tsx` — there is NO server compile step.** Use `npm run typecheck` (tsc --noEmit) to type-check. (We deliberately don't `tsc`-emit the server: `moduleResolution: bundler` produces extensionless imports Node's ESM loader rejects. tsx sidesteps this and is the validated prod runner.)
 
+## Deployment & CI/CD
+
+**Live in production** on a Hetzner VPS, auto-deployed by GitHub Actions. Full runbook + scripts: [deploy/](deploy/) (`deploy/README.md`).
+
+- **Repo:** https://github.com/mahdiibakhshii/cityleaks (public). **Server:** `root@167.233.102.255` (Ubuntu 26.04, 2 vCPU/4 GB + 2 GB swap), app at `/opt/cityleaks`. **Public URL:** http://167.233.102.255/ (`/monitor`, `/api/status`).
+- **Stack on the box:** nginx reverse-proxies `:80 → :3000` (WebSocket upgrade headers — see `deploy/nginx-cityleaks.conf`); PM2 process **`cityleaks`** runs `node --import tsx src/index.ts` (`deploy/ecosystem.config.cjs`) and is enabled on boot. Node is the **official v22 binary** in `/usr/local` (NodeSource has no `resolute`/26.04 repo).
+- **Deploy = push to `main`.** `.github/workflows/deploy.yml` builds the client on the runner, rsyncs `client/dist` to the server, `git reset --hard origin/main`, `npm ci --omit=dev`, `pm2 restart`. ~20 s end to end. Secrets: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` (a deploy-only key, separate from the local admin key `~/.ssh/cityleaks_hetzner`).
+- **First-time provisioning** (already done once, re-runnable): `deploy/provision.sh` (swap, Node, PM2, nginx, fd/sysctl tuning, ufw, fail2ban) then `deploy/bootstrap-app.sh` (clone, build, PM2 start, nginx site, firewall).
+- **Persistent data lives only on the server** at `/opt/cityleaks/server/data/` (leak grid, notes, collision cache) — gitignored, untouched by deploys/reboots. Never commit it; never let a deploy delete it.
+- **Ops:** `pm2 status` / `pm2 logs cityleaks` / `pm2 restart cityleaks`; health via `curl localhost:3000/api/status`.
+- **Not yet done (optional):** custom domain + HTTPS (certbot), SSH hardening (disable password auth), bump CI off the deprecated Node-20 actions.
+
 ## Golden rules (don't violate)
 
 1. **`shared/protocol.ts` is the SINGLE SOURCE OF TRUTH** for both client and server: event names, constants, the tile layout (`MAP.TILES`), computed `MAP_BOUNDS`, `SPAWN`, and all payload types. Tiles/spawn/grid size change **here only** — the server (`server/src/config.ts`) and client (`client/src/config.ts`) re-export from it.
@@ -31,7 +43,7 @@ cd server && npm start                       # serves client/dist on PORT||3000
 ## Current state — 2026-06-10
 
 All four build phases are functionally complete and load-tested. Working today:
-- **Multiplayer:** Socket.IO, 10 Hz server tick, join/leave/state broadcast, interpolation, reconnection, soft cap `MAX_PLAYERS=150`.
+- **Multiplayer:** Socket.IO, 10 Hz server tick, join/leave/state broadcast, interpolation, reconnection, soft cap `MAX_PLAYERS=220` (targets ~200 concurrent). `state:update` broadcasts a **slim `PlayerPos` (id+x+y only)** — static `color`/`character` ride only on `player:join`/`player:existing`, halving per-tick payload + serialization for the 200-player target. (Same pattern for enemies via `EnemyPos`.)
 - **Movement & collision:** keyboard + nipple.js joystick, wall-sliding against the alpha mask, spawn-into-building recovery (`findNearestWalkable`).
 - **Streaming:** map tiles (camera view + directional preload margin) and mask tiles (player proximity) both stream/unload dynamically — scales to the full 17×17 Vienna grid.
 - **Shared persistent paths:** the leak grid is rendered on every client via `PathLayer` as **pixel-art leaking water** — chunky NearestFilter cells shaded from a banded blue palette (`PATH.DEEP/MID/LIGHT`), a calm time-based shimmer + twinkle, and an animated bright **foam rim** on trail edges (4-neighbour edge detect). One fullscreen quad + one cheap shader pass (mobile-light); `PathLayer.update(dt)` drives the animation. Monitor uses `PathLayer({ pixelated })` (`pixelated:true` matches the game look). Persists to disk, anonymous, ownerless; new clients see all prior paths on connect.
@@ -65,6 +77,8 @@ Not done / optional (from Phase 4): PWA manifest + "Add to Home Screen", service
 - `monitor/MonitorApp.ts` + `monitor.ts` + `client/monitor.html` — the spectator page.
 
 **tools/** — `split_tiles.py` (tiles + overview generator), `load-test.mjs` (stress test), `smoke-test.mjs` (7 protocol checks), `note-test.mjs` (9 sticky-note protocol checks), `gen-placeholders.mjs` (dev placeholder tiles).
+
+**deploy/** — production deployment (see Deployment & CI/CD above): `provision.sh` (server bootstrap), `bootstrap-app.sh` (first app bring-up), `ecosystem.config.cjs` (PM2), `nginx-cityleaks.conf` (reverse proxy), `README.md` (runbook). **`.github/workflows/deploy.yml`** — the push-to-`main` auto-deploy pipeline.
 
 ## Networking model
 
@@ -108,3 +122,6 @@ Pass criteria: peak server tick < 50 ms while broadcasts hold ~10 Hz. Run a prod
 - TS is strict; a `Uint8Array` field backing a `DataTexture` needs `Uint8Array<ArrayBuffer>` typing (TS 5.7).
 - Game camera fits the **shorter** axis (cover/fullscreen); the monitor camera fits the **whole** map (contain/letterboxed).
 - `tsx` must stay in server `dependencies` (not devDependencies) — it's the prod runtime.
+- **Tiles are committed to git** (`client/public/tiles/`, ~66 MB) so the server is self-contained after `git clone` — do NOT re-add them to `.gitignore`. Originals (`tools/originals/`) and `server/data/` stay ignored.
+- **Shell scripts must keep LF endings** (`.gitattributes` enforces `*.sh eol=lf`) — CRLF breaks bash on the Linux server.
+- **Deploys run `git reset --hard origin/main` on the server** — anything not committed (and not gitignored) is wiped. Live state in `server/data/` is gitignored, so it's safe; don't put deploy-time state anywhere tracked.
