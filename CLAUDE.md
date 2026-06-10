@@ -26,13 +26,14 @@ cd server && npm start                       # serves client/dist on PORT||3000
 
 **Live in production** on a Hetzner VPS, auto-deployed by GitHub Actions. Full runbook + scripts: [deploy/](deploy/) (`deploy/README.md`).
 
-- **Repo:** https://github.com/mahdiibakhshii/cityleaks (public). **Server:** `root@167.233.102.255` (Ubuntu 26.04, 2 vCPU/4 GB + 2 GB swap), app at `/opt/cityleaks`. **Public URL:** http://167.233.102.255/ (`/monitor`, `/api/status`).
-- **Stack on the box:** nginx reverse-proxies `:80 → :3000` (WebSocket upgrade headers — see `deploy/nginx-cityleaks.conf`); PM2 process **`cityleaks`** runs `node --import tsx src/index.ts` (`deploy/ecosystem.config.cjs`) and is enabled on boot. Node is the **official v22 binary** in `/usr/local` (NodeSource has no `resolute`/26.04 repo).
+- **Repo:** https://github.com/mahdiibakhshii/cityleaks (public). **Server:** `root@167.233.102.255` (Ubuntu 26.04, 2 vCPU/4 GB + 2 GB swap), app at `/opt/cityleaks`. **Public URL:** **https://cityleaks.space** (also `www.`; `/monitor`, `/api/status`).
+- **Stack on the box:** nginx reverse-proxies `:443/:80 → :3000` (WebSocket upgrade headers — see `deploy/nginx-cityleaks.conf`); PM2 process **`cityleaks`** runs `node --import tsx src/index.ts` (`deploy/ecosystem.config.cjs`) and is enabled on boot. Node is the **official v22 binary** in `/usr/local` (NodeSource has no `resolute`/26.04 repo).
+- **Domain + HTTPS:** `cityleaks.space` via Namecheap A records → server IP; Let's Encrypt cert managed by **certbot** (auto-renews, added the `:443` block + HTTP→HTTPS redirect to the live nginx config). First-time + re-run details in `deploy/README.md`. The CI/CD deploy does NOT touch nginx, so TLS is undisturbed by pushes.
 - **Deploy = push to `main`.** `.github/workflows/deploy.yml` builds the client on the runner, rsyncs `client/dist` to the server, `git reset --hard origin/main`, `npm ci --omit=dev`, `pm2 restart`. ~20 s end to end. Secrets: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` (a deploy-only key, separate from the local admin key `~/.ssh/cityleaks_hetzner`).
 - **First-time provisioning** (already done once, re-runnable): `deploy/provision.sh` (swap, Node, PM2, nginx, fd/sysctl tuning, ufw, fail2ban) then `deploy/bootstrap-app.sh` (clone, build, PM2 start, nginx site, firewall).
 - **Persistent data lives only on the server** at `/opt/cityleaks/server/data/` (leak grid, notes, collision cache) — gitignored, untouched by deploys/reboots. Never commit it; never let a deploy delete it.
 - **Ops:** `pm2 status` / `pm2 logs cityleaks` / `pm2 restart cityleaks`; health via `curl localhost:3000/api/status`.
-- **Not yet done (optional):** custom domain + HTTPS (certbot), SSH hardening (disable password auth), bump CI off the deprecated Node-20 actions.
+- **Not yet done (optional):** SSH hardening (disable password auth), bump CI off the deprecated Node-20 actions.
 
 ## Golden rules (don't violate)
 

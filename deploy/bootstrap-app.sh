@@ -36,6 +36,12 @@ cp deploy/nginx-cityleaks.conf /etc/nginx/sites-available/cityleaks
 ln -sf /etc/nginx/sites-available/cityleaks /etc/nginx/sites-enabled/cityleaks
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
+# Re-apply HTTPS if a Let's Encrypt cert already exists (keeps TLS across re-runs).
+# For the FIRST-time HTTPS setup on a new server, see deploy/README.md (certbot).
+if [ -d /etc/letsencrypt/live/cityleaks.space ]; then
+  certbot install --nginx --cert-name cityleaks.space --redirect -n || true
+  nginx -t && systemctl reload nginx
+fi
 
 echo "[7/7] firewall"
 ufw allow OpenSSH >/dev/null 2>&1 || ufw allow 22/tcp
