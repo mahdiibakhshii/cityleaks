@@ -13,7 +13,6 @@ import { GuideLayer } from './GuideLayer';
 import { NoteLayer } from './NoteLayer';
 import { NoteUI } from './NoteUI';
 import { KillLayer } from './KillLayer';
-import { HuntUI } from './HuntUI';
 import { Player } from './Player';
 import { PlayerManager } from './PlayerManager';
 import { EnemyManager } from './EnemyManager';
@@ -31,7 +30,6 @@ export class Game {
   private noteLayer: NoteLayer;
   private noteUI: NoteUI;
   private killLayer: KillLayer;
-  private huntUI: HuntUI;
   private player: Player;
   private playerManager: PlayerManager;
   private enemyManager: EnemyManager;
@@ -45,7 +43,6 @@ export class Game {
   private running = false;
   private statusEl: HTMLElement | null;
   private readonly characterId: string;
-  private localId: string | null = null;
 
   constructor(spawnX: number, spawnY: number, characterId: string = ANON_CHARACTER_ID) {
     this.characterId = characterId;
@@ -86,11 +83,6 @@ export class Game {
     // Persistent enemy-kill tombstones (above paths, below note icons + players).
     this.killLayer = new KillLayer();
     this.scene.add(this.killLayer.group);
-    // Success popup shown to the hunters credited with a kill.
-    this.huntUI = new HuntUI({
-      onOpen: () => this.input.setEnabled(false),
-      onClose: () => this.input.setEnabled(true),
-    });
 
     // Players. The local player takes the chosen character's shape + signature
     // color immediately (no white flash); the server confirms the color via
@@ -136,7 +128,6 @@ export class Game {
   connect(): void {
     this.network = new NetworkClient({
       onSelf: (self) => {
-        this.localId = self.id;
         this.playerManager.setLocalId(self.id);
         this.player.setColor(self.color);
         // Keep our locally-resolved walkable spawn rather than snapping into
@@ -179,11 +170,8 @@ export class Game {
         this.enemyManager.updateFromServer(positions);
       },
       onEnemyDie: (death) => {
+        // Play the kill moment (scream → explosion); no popup.
         this.enemyManager.killEnemy(death);
-        // If we helped trap it, celebrate (blocking popup until "Continue").
-        if (this.localId && death.by.includes(this.localId)) {
-          this.huntUI.showSuccess(death.kind);
-        }
       },
       onKillsExisting: (markers) => {
         this.killLayer.setMarkers(markers);
@@ -277,7 +265,6 @@ export class Game {
     this.input.dispose();
     this.guideLayer.dispose();
     this.noteUI.dispose();
-    this.huntUI.dispose();
     this.network?.dispose();
   }
 }
