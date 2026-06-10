@@ -1,0 +1,60 @@
+name: Deploy to Hetzner
+
+# Redeploy on every push to main. The client is built on the GitHub runner
+# (keeps the 2-vCPU server free for live players), then shipped to the server;
+# the server's TS source is pulled and the PM2 process is restarted.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {} # allow manual "Run workflow" from the Actions tab
+
+# Never run two deploys at once; cancel an in-progress one if a newer push lands.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Build client
+        run: |
+          cd client
+          npm ci
+          npm run build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Ship client build
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            client/dist/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/cityleaks/client/dist/"
+
+      - name: Update server source and restart
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -s <<'REMOTE'
+            set -e
+            cd /opt/cityleaks
+            git fetch --depth=1 origin main
+            git reset --hard origin/main
+            cd server && npm ci --omit=dev
+            pm2 restart cityleaks --update-env
+            pm2 save
+          REMOTE
