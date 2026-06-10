@@ -17,6 +17,9 @@ export const GRID_FILE = path.resolve(process.cwd(), 'data', 'leak-grid.bin');
 // Where sticky notes are persisted (JSON). Same data dir as the leak grid.
 export const NOTES_FILE = path.resolve(process.cwd(), 'data', 'notes.json');
 
+// Where persistent enemy-kill markers are stored (JSON). Same data dir.
+export const KILLS_FILE = path.resolve(process.cwd(), 'data', 'kills.json');
+
 // Cached server collision field (built once from the mask tiles). Same data dir.
 export const COLLISION_FILE = path.resolve(process.cwd(), 'data', 'collision.bin');
 

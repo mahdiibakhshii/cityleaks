@@ -6,10 +6,11 @@ import { fileURLToPath } from 'url';
 import { GameServer } from './GameServer';
 import { LeakGrid } from './LeakGrid';
 import { NoteStore } from './NoteStore';
+import { KillStore } from './KillStore';
 import { TDRoom } from './TDRoom';
 import { CollisionField } from './CollisionField';
 import { EnemyManager } from './EnemyManager';
-import { PORT, GRID_FILE, NOTES_FILE, COLLISION_FILE, MASK_TILES_DIR } from './config';
+import { PORT, GRID_FILE, NOTES_FILE, KILLS_FILE, COLLISION_FILE, MASK_TILES_DIR } from './config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,6 +32,10 @@ leakGrid.loadFromDisk(GRID_FILE);
 const noteStore = new NoteStore();
 noteStore.loadFromDisk(NOTES_FILE);
 
+// Enemy-kill markers: load any persisted markers on startup.
+const killStore = new KillStore();
+killStore.loadFromDisk(KILLS_FILE);
+
 const tdRoom = new TDRoom(io);
 
 // Server collision field for the wandering enemies (they stay on roads). Built
@@ -40,7 +45,7 @@ const collisionField = new CollisionField(MASK_TILES_DIR, COLLISION_FILE);
 void collisionField.build();
 const enemyManager = new EnemyManager(collisionField);
 
-const gameServer = new GameServer(io, leakGrid, noteStore, tdRoom, enemyManager);
+const gameServer = new GameServer(io, leakGrid, noteStore, killStore, tdRoom, enemyManager);
 
 // Serve the built client (production) from client/dist.
 const clientDist = path.resolve(__dirname, '../../client/dist');
@@ -59,6 +64,7 @@ app.get('/api/status', (_req, res) => {
     leakedCells: leakGrid.getLeakedCount(),
     leakedPercentage: leakGrid.getPercentage(),
     notes: gameServer.getNoteCount(),
+    kills: gameServer.getKillCount(),
     enemies: gameServer.getEnemyCount(),
     tickMs: gameServer.getTickMetrics(),
     uptime: process.uptime(),
@@ -73,10 +79,11 @@ httpServer.listen(PORT, () => {
 
 // Persist the grid on graceful shutdown.
 function shutdown(): void {
-  console.log('Shutting down — saving leak grid + notes...');
+  console.log('Shutting down — saving leak grid + notes + kills...');
   gameServer.stop();
   leakGrid.saveToDisk(GRID_FILE);
   noteStore.saveToDisk(NOTES_FILE);
+  killStore.saveToDisk(KILLS_FILE);
   httpServer.close(() => process.exit(0));
   // Force-exit if close hangs.
   setTimeout(() => process.exit(0), 2000).unref();

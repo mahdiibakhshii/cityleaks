@@ -65,17 +65,39 @@ export const ENEMY = {
   Z: 1,
   // Interpolation smoothing toward server targets (matches RemotePlayer).
   LERP: 10,
+  // ─── The hunt (life tint + panic telegraph + death FX) ───
+  // Body tint at FULL life is the enemy's own color (red-ish); as life drains it
+  // lerps to this deep purple-black. These are the two thresholds the player reads.
+  DYING_COLOR: '#2a0a33',
+  // Panic telegraph: the walk cycle speeds up and the body jitters as panic → 1.
+  PANIC_FPS_BOOST: 2.6, // extra walk FPS added at full panic (×, on top of SPRITE.WALK_FPS)
+  PANIC_SHAKE: 2.4, // world-unit horizontal jitter amplitude at full panic
+  // Death sequence timing (seconds): scream/shake, then the explosion pop.
+  SCREAM_TIME: 0.5,
+  BURST_TIME: 0.6,
+  BURST_RADIUS: 95, // peak world radius of the explosion shockwave ring
+};
+
+// Persistent "an enemy died here" markers (mirrors NOTE). A tombstone icon is
+// stuck at every kill location forever — the city's accumulating hunt history.
+export const KILL = {
+  ICON_SIZE: 40, // world units (in-game); the monitor passes a larger value
+  Z: 1.4, // just below the note icons (1.5), above paths + guide
+  STONE: '#b9c0cc', // tombstone fill
+  STONE_DARK: '#8a93a3', // shading / cross
+  OUTLINE: 'rgba(0,0,0,0.6)',
 };
 
 // Pixel-art character/enemy sprites (client/src/game/sprites/). Each entity is a
 // textured quad showing an animated walk cycle baked from procedural pixel art.
 export const SPRITE = {
-  // On-screen size in world units. Players are 16×24 px art (taller than wide);
-  // width is derived from the atlas aspect. A bit larger than the old 8u circle
-  // so the pixel art reads.
-  PLAYER_HEIGHT: 28,
+  // On-screen size in world units. PURELY VISUAL — collision/movement use
+  // PLAYER.RADIUS + PLAYER.SPEED, so enlarging these makes the avatar bigger
+  // WITHOUT changing the step size or which buildings it bumps into.
+  // Players are 16×24 px art (taller than wide); width is derived from the aspect.
+  PLAYER_HEIGHT: 44,
   // Ghosts are 16×16 px.
-  ENEMY_HEIGHT: 24,
+  ENEMY_HEIGHT: 36,
   // Fraction of height to raise the quad so a character's FEET sit near its
   // road point (its center/collision position) instead of straddling it.
   ANCHOR_Y: 0.34,

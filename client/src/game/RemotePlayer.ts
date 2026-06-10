@@ -17,14 +17,20 @@ export class RemotePlayer {
   private displayY: number;
   private readonly anon: boolean;
 
-  constructor(x: number, y: number, color: string, characterId?: string) {
+  constructor(
+    x: number,
+    y: number,
+    color: string,
+    characterId?: string,
+    height: number = SPRITE.PLAYER_HEIGHT
+  ) {
     this.targetX = x;
     this.targetY = y;
     this.displayX = x;
     this.displayY = y;
     this.anon = isAnonSpec(characterId);
     const tint = this.anon ? srgbTint(color) : undefined;
-    this.sprite = new CharacterSprite(playerAtlas(characterId), SPRITE.PLAYER_HEIGHT, REMOTE_Z, SPRITE.ANCHOR_Y, tint);
+    this.sprite = new CharacterSprite(playerAtlas(characterId), height, REMOTE_Z, SPRITE.ANCHOR_Y, tint);
     this.sprite.mesh.position.set(x, -y, REMOTE_Z);
   }
 

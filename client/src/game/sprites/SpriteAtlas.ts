@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {
   renderSpec,
   getPlayerSpec,
-  getEnemySpec,
+  getGhostSpec,
   isAnonSpec,
   type SpriteSpec,
 } from './drawSprite';
@@ -46,7 +46,11 @@ export function playerAtlas(id: string | undefined | null): BakedAtlas {
   return bake(key, getPlayerSpec(id));
 }
 
-/** Baked atlas for an enemy ghost of the given body color. */
-export function enemyAtlas(color: string): BakedAtlas {
-  return bake(`e:${color}`, getEnemySpec(color));
+/**
+ * Baked atlas for the enemy ghost. One shared, NEUTRAL sheet for all enemies —
+ * the body color (and its live healthy→dying shift) is applied per-instance via
+ * CharacterSprite's uTint, not baked in.
+ */
+export function ghostAtlas(): BakedAtlas {
+  return bake('ghost', getGhostSpec());
 }

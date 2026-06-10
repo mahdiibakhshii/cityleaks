@@ -16,6 +16,7 @@ export class CharacterSprite {
   private mat: THREE.ShaderMaterial;
   private facingRight = true;
   private animT = 0;
+  private frameOverride: number | null = null;
 
   constructor(atlas: BakedAtlas, worldHeight: number, z: number, anchorY: number, tint?: THREE.Color) {
     const worldWidth = (worldHeight * atlas.fw) / atlas.fh;
@@ -68,6 +69,15 @@ export class CharacterSprite {
   }
 
   /**
+   * Force a specific atlas frame (e.g. a scream frame), ignoring the walk cycle,
+   * until cleared with `null`. Used by the enemy death sequence.
+   */
+  setFrameOverride(frame: number | null): void {
+    this.frameOverride = frame;
+    if (frame !== null) this.mat.uniforms.uFrame.value = frame;
+  }
+
+  /**
    * Advance the walk animation. `moving` plays the cycle (idle shows the stand
    * frame); `facingRight` left undefined keeps the previous facing (so moving
    * straight up/down doesn't reset which way the character looks).
@@ -75,6 +85,10 @@ export class CharacterSprite {
   animate(dt: number, moving: boolean, facingRight?: boolean): void {
     if (facingRight !== undefined) this.facingRight = facingRight;
     this.mat.uniforms.uFlip.value = this.facingRight ? 0 : 1;
+    if (this.frameOverride !== null) {
+      this.mat.uniforms.uFrame.value = this.frameOverride;
+      return;
+    }
     if (moving) {
       this.animT += dt;
       this.mat.uniforms.uFrame.value = Math.floor(this.animT * SPRITE.WALK_FPS) % 2;

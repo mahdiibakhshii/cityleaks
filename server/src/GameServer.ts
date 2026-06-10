@@ -6,17 +6,20 @@ import {
   MAX_PLAYERS,
   GRID_SIZE,
   ANON_CHARACTER_ID,
+  ENEMY_KILL_SPLASH_RADIUS,
   getCharacter,
   type PlayerState,
   type PlayerMove,
   type PlayerPos,
   type NoteCreate,
+  type EnemyDie,
 } from '../../shared/protocol';
 import { LeakGrid } from './LeakGrid';
 import { NoteStore } from './NoteStore';
+import { KillStore } from './KillStore';
 import { TDRoom } from './TDRoom';
 import { EnemyManager } from './EnemyManager';
-import { MAP_BOUNDS, SPAWN, GRID_FILE, NOTES_FILE } from './config';
+import { MAP_BOUNDS, SPAWN, GRID_FILE, NOTES_FILE, KILLS_FILE } from './config';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -42,6 +45,7 @@ export class GameServer {
   private io: Server;
   private leakGrid: LeakGrid;
   private noteStore: NoteStore;
+  private killStore: KillStore;
   private tdRoom: TDRoom;
   private enemyManager: EnemyManager;
   private tickInterval: NodeJS.Timeout | null = null;
@@ -57,12 +61,14 @@ export class GameServer {
     io: Server,
     leakGrid: LeakGrid,
     noteStore: NoteStore,
+    killStore: KillStore,
     tdRoom: TDRoom,
     enemyManager: EnemyManager
   ) {
     this.io = io;
     this.leakGrid = leakGrid;
     this.noteStore = noteStore;
+    this.killStore = killStore;
     this.tdRoom = tdRoom;
     this.enemyManager = enemyManager;
   }
@@ -133,6 +139,7 @@ export class GameServer {
     socket.emit(EVENTS.GRID_FULL, this.leakGrid.getFullBuffer());
     socket.emit(EVENTS.PLAYER_EXISTING, Array.from(this.players.values()));
     socket.emit(EVENTS.NOTE_EXISTING, this.noteStore.getAll());
+    socket.emit(EVENTS.KILL_EXISTING, this.killStore.getAll());
     socket.emit(EVENTS.ENEMY_EXISTING, this.enemyManager.getStates());
 
     socket.on('disconnect', () => {
@@ -182,6 +189,10 @@ export class GameServer {
     // pinned text from the start.
     socket.emit(EVENTS.NOTE_EXISTING, this.noteStore.getAll());
 
+    // Send every persistent kill marker so the new player sees the city's hunt
+    // history (tombstones where enemies have fallen).
+    socket.emit(EVENTS.KILL_EXISTING, this.killStore.getAll());
+
     // Send the current enemies so the new player sees them immediately (positions
     // then stream every tick via ENEMY_UPDATE).
     socket.emit(EVENTS.ENEMY_EXISTING, this.enemyManager.getStates());
@@ -216,6 +227,10 @@ export class GameServer {
     const start = performance.now();
     const states = Array.from(this.players.values());
 
+    // Newly leaked cells this tick (player trails + enemy-death splashes), sent
+    // as one combined grid delta at the end.
+    const newCells: number[] = [];
+
     // 1. Broadcast positions (slim PlayerPos — static color/character already sent on join).
     if (states.length > 0) {
       const positions: PlayerPos[] = states.map(({ id, x, y }) => ({ id, x, y }));
@@ -223,22 +238,23 @@ export class GameServer {
     }
 
     // 1b. Advance enemies (server-authoritative NPCs). Fixed dt = the tick period
-    //     so motion is independent of broadcast jitter. Broadcast spawn/despawn
-    //     deltas, then stream every enemy's position to game + monitor.
-    const { spawned, despawned } = this.enemyManager.update(
-      states.map(({ x, y }) => ({ x, y })),
+    //     so motion is independent of broadcast jitter. Broadcast spawn / silent
+    //     despawn / KILLED deltas, then stream every enemy's position to game +
+    //     monitor. Player ids ride along so the hunt can credit nearby hunters.
+    const { spawned, despawned, died } = this.enemyManager.update(
+      states.map(({ id, x, y }) => ({ id, x, y })),
       1 / TICK_RATE
     );
     for (const e of spawned) this.io.to('game').to('monitor').emit(EVENTS.ENEMY_JOIN, e);
     for (const id of despawned) {
       this.io.to('game').to('monitor').emit(EVENTS.ENEMY_LEAVE, { id });
     }
+    for (const death of died) this.handleEnemyDeath(death, newCells);
     if (this.enemyManager.count > 0) {
       this.io.to('game').to('monitor').emit(EVENTS.ENEMY_UPDATE, this.enemyManager.getPositions());
     }
 
     // 2. Update the leak grid for each player, collecting newly marked cells.
-    const newCells: number[] = [];
     for (const player of states) {
       const { cellX, cellY } = this.leakGrid.worldToCell(player.x, player.y, MAP_BOUNDS);
       if (this.leakGrid.mark(cellX, cellY)) {
@@ -270,6 +286,40 @@ export class GameServer {
     this.lastTickMs = dur;
     this.avgTickMs = this.avgTickMs === 0 ? dur : this.avgTickMs * 0.95 + dur * 0.05;
     if (dur > this.maxTickMs) this.maxTickMs = dur;
+  }
+
+  /**
+   * An enemy was hunted down. Paint a celebratory leak splash where it fell
+   * (collecting the new cells into this tick's delta), drop a persistent kill
+   * marker, and broadcast the death so every client plays the scream→explosion
+   * FX (and the credited hunters' clients show the success popup).
+   */
+  private handleEnemyDeath(death: EnemyDie, newCells: number[]): void {
+    this.markSplash(death.x, death.y, newCells);
+    const marker = this.killStore.create(death.x, death.y, death.kind, MAP_BOUNDS);
+    this.io.to('game').to('monitor').emit(EVENTS.ENEMY_DIE, death);
+    this.io.to('game').to('monitor').emit(EVENTS.KILL_NEW, marker);
+    void this.killStore.saveToDiskAsync(KILLS_FILE);
+  }
+
+  /** Mark a filled disc of leak cells around a world point (a "burst" of leak). */
+  private markSplash(worldX: number, worldY: number, newCells: number[]): void {
+    const center = this.leakGrid.worldToCell(worldX, worldY, MAP_BOUNDS);
+    // Convert the world radius to a cell radius via the grid's cells-per-unit.
+    const rCells = Math.max(1, Math.round((ENEMY_KILL_SPLASH_RADIUS / MAP_BOUNDS.width) * GRID_SIZE));
+    const r2 = rCells * rCells;
+    for (let dy = -rCells; dy <= rCells; dy++) {
+      for (let dx = -rCells; dx <= rCells; dx++) {
+        if (dx * dx + dy * dy > r2) continue;
+        const cx = center.cellX + dx;
+        const cy = center.cellY + dy;
+        if (this.leakGrid.mark(cx, cy)) newCells.push(cy * GRID_SIZE + cx);
+      }
+    }
+  }
+
+  getKillCount(): number {
+    return this.killStore.getCount();
   }
 
   private randomColor(): string {

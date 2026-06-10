@@ -10,6 +10,8 @@ import {
   type EnemyState,
   type EnemyPos,
   type EnemyLeave,
+  type EnemyDie,
+  type KillMarker,
 } from '../../../shared/protocol';
 
 export interface NetworkCallbacks {
@@ -27,6 +29,9 @@ export interface NetworkCallbacks {
   onEnemyJoin: (enemy: EnemyState) => void;
   onEnemyLeave: (data: EnemyLeave) => void;
   onEnemyUpdate: (positions: EnemyPos[]) => void;
+  onEnemyDie: (death: EnemyDie) => void;
+  onKillsExisting: (markers: KillMarker[]) => void;
+  onKillNew: (marker: KillMarker) => void;
 }
 
 /** Socket.IO client: connects, forwards server events, throttles outgoing moves. */
@@ -86,6 +91,13 @@ export class NetworkClient {
     this.socket.on(EVENTS.ENEMY_UPDATE, (positions: EnemyPos[]) =>
       this.callbacks.onEnemyUpdate(positions)
     );
+    this.socket.on(EVENTS.ENEMY_DIE, (death: EnemyDie) => this.callbacks.onEnemyDie(death));
+
+    // Persistent kill markers: full set on connect, one event per new kill.
+    this.socket.on(EVENTS.KILL_EXISTING, (markers: KillMarker[]) =>
+      this.callbacks.onKillsExisting(markers)
+    );
+    this.socket.on(EVENTS.KILL_NEW, (marker: KillMarker) => this.callbacks.onKillNew(marker));
   }
 
   sendPosition(x: number, y: number): void {

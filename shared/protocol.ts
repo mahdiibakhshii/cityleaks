@@ -20,8 +20,12 @@ export const EVENTS = {
   // Enemies: server-authoritative wandering NPCs (mirror the player events).
   ENEMY_EXISTING: 'enemy:existing', // server → client: all enemies on connect
   ENEMY_JOIN: 'enemy:join', // server → client: one enemy spawned
-  ENEMY_LEAVE: 'enemy:leave', // server → client: one enemy despawned
-  ENEMY_UPDATE: 'enemy:update', // server → client: enemy positions each tick
+  ENEMY_LEAVE: 'enemy:leave', // server → client: one enemy despawned (silent, e.g. pop. scaling)
+  ENEMY_UPDATE: 'enemy:update', // server → client: enemy positions (+ life/panic) each tick
+  ENEMY_DIE: 'enemy:die', // server → client: one enemy KILLED (death FX + hunter attribution)
+  // Kill markers: persistent "an enemy died here" icons (mirror the sticky notes).
+  KILL_EXISTING: 'kill:existing', // server → client: all kill markers on connect
+  KILL_NEW: 'kill:new', // server → client: one newly placed kill marker
 } as const;
 
 // ─── Timing ───
@@ -172,9 +176,35 @@ export const ENEMY_PER_PLAYERS = 4; // ~1 enemy per this many players
 export const ENEMY_MIN = 2; // floor while ≥1 player is online
 export const ENEMY_MAX = 12; // hard cap on simultaneous enemies
 export const ENEMY_RADIUS = 9; // world units (collision + render)
-export const ENEMY_SPEED = 110; // world units/sec (a touch slower than players)
-export const ENEMY_FLEE_RADIUS = 240; // default comfort band — inner edge
+// Base roam speed. With ENEMY_PANIC_BOOST a fleeing enemy exceeds PLAYER_SPEED
+// (150), so you CANNOT simply out-run and tag it — you must corner/trap it.
+export const ENEMY_SPEED = 140; // world units/sec
+export const ENEMY_FLEE_RADIUS = 170; // panic band inner edge — it lets you get close, THEN bolts
 export const ENEMY_LEASH_RADIUS = 900; // default comfort band — outer edge
+
+// ─── The hunt: aggression, fatigue, and the two kill paths ───
+//
+// Enemies are prey. They flee HARDER the closer a player gets (panic sprint), but
+// sprinting burns STAMINA; an exhausted enemy is slow and catchable. Two ways to
+// kill one (server/src/EnemyManager.ts):
+//   • TRAP   — boxed in (walls + player bodies leave no open escape) → life drains
+//              fast → dead in ~half a second. The dramatic, coordinated kill.
+//   • EXHAUST — chased to empty stamina while kept point-blank → life bleeds out.
+//              Slower; what a lone, relentless hunter relies on (no body wall).
+// Tuned so a SOLO player can do it (hard, via dead-ends + wearing the enemy down)
+// while a GROUP unlocks the fast body-wall trap. `life`/`panic` ride on EnemyPos
+// so every client can tint (red→purple-black) + animate the panic/scream.
+export const ENEMY_PANIC_BOOST = 0.6; // +60% flee speed at point-blank → ~224 u/s, well above PLAYER_SPEED
+export const ENEMY_STAMINA_DRAIN = 0.32; // stamina/sec at full sprint (~3 s to empty — sprints longer)
+export const ENEMY_STAMINA_REGEN = 0.3; // stamina/sec recovered when not fleeing (bounces back fast)
+export const ENEMY_TIRED_SPEED = 0.62; // flee speed multiplier at empty stamina (tired but not crawling)
+export const ENEMY_LIFE_DRAIN_TRAP = 1.5; // life/sec while fully boxed in (~0.67 s kill)
+export const ENEMY_LIFE_DRAIN_EXHAUST = 0.22; // life/sec while exhausted AND held point-blank (slow bleed)
+export const ENEMY_LIFE_REGEN = 0.25; // life/sec recovered when no player is pressuring
+export const ENEMY_TRAP_RADIUS = 220; // players within this of the kill are credited hunters
+export const ENEMY_PLAYER_BLOCK = 46; // a player this close to an escape probe blocks that route
+export const ENEMY_ESCAPE_CLEARANCE = 36; // min open world units for a direction to count as escape
+export const ENEMY_KILL_SPLASH_RADIUS = 90; // leak-grid disc painted where an enemy dies (world units)
 
 export const ENEMY_TYPES: EnemyDef[] = [
   {
@@ -278,9 +308,12 @@ function computeBounds(): MapBounds {
 
 export const MAP_BOUNDS = computeBounds();
 
-// Spawn at the center of tile (7,6). findNearestWalkable() spirals out from
-// here to land on a walkable pixel if this exact point is inside a building.
-export const SPAWN = { x: 7.5 * TILE_W, y: 6.5 * TILE_H };
+// Player spawn, in tile (7,6) but lifted a quarter-tile NORTH (smaller Y = up on
+// screen, since +Y is down) onto an easier-to-leave open street — the dead-center
+// point sat in a cramped spot. findNearestWalkable() still spirals out from here
+// to land on a walkable pixel if this exact point is inside a building. Tune the
+// 0.25 lift to taste. (Enemies spawn near players on walkable ground, not here.)
+export const SPAWN = { x: 7.5 * TILE_W, y: (6.5 - 0.25) * TILE_H };
 
 // ─── Payload Interfaces ───
 export interface PlayerState {
@@ -312,24 +345,50 @@ export interface PlayerLeave {
 }
 
 // An enemy NPC. color/kind are static (sent on enemy:existing / enemy:join);
-// EnemyPos (below) carries only the position each tick. Parallels PlayerState.
+// EnemyPos (below) carries the live position + condition each tick. Parallels
+// PlayerState.
 export interface EnemyState {
   id: string;
   x: number;
   y: number;
   color: string;
   kind: string; // ENEMY_TYPES[].kind
+  life: number; // 0..1 remaining life (1 = healthy; drives the red→purple-black tint)
 }
 
-// Slim per-tick enemy position update (sent in enemy:update). color/kind static.
+// Slim per-tick enemy update (sent in enemy:update). color/kind are static; life
+// and panic change every tick and drive the tint + panic/scream animation.
 export interface EnemyPos {
   id: string;
   x: number;
   y: number;
+  life: number; // 0..1 remaining life
+  panic: number; // 0..1 how hard it's fleeing right now (telegraph)
 }
 
 export interface EnemyLeave {
   id: string;
+}
+
+// An enemy was KILLED by the players (not a silent population despawn). Triggers
+// the scream→explosion FX on every client; `by` lists the hunters near the kill
+// (within ENEMY_TRAP_RADIUS) so their clients show the success popup.
+export interface EnemyDie {
+  id: string;
+  x: number;
+  y: number;
+  kind: string;
+  by: string[]; // socket ids credited with the kill
+}
+
+// A persistent "an enemy died here" marker, ownerless + saved forever (mirrors
+// the sticky-note Note). Rendered as a tombstone icon on the map + monitor.
+export interface KillMarker {
+  id: string;
+  x: number;
+  y: number;
+  kind: string; // which enemy kind fell here
+  createdAt: number; // epoch ms
 }
 
 export interface PlayerMove {

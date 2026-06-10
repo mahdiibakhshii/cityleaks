@@ -12,10 +12,22 @@ import {
   type EnemyState,
   type EnemyPos,
   type EnemyLeave,
+  type EnemyDie,
+  type KillMarker,
+  enemyDef,
 } from '../../../shared/protocol';
 import { ASSETS, MONITOR } from '../config';
 import { PathLayer } from '../game/PathLayer';
 import { NoteLayer } from '../game/NoteLayer';
+import { KillLayer } from '../game/KillLayer';
+import { ExplosionBurst } from '../game/EnemyDeathFx';
+import { RemotePlayer } from '../game/RemotePlayer';
+
+// Explosion burst radius on the zoomed-out whole-map view (world units).
+const MONITOR_BURST_RADIUS = Math.round(MAP_BOUNDS.width / 26);
+// Player avatar render height on the whole-map view (world units) — large so the
+// pixel mascot is clearly recognizable at full-city zoom.
+const AVATAR_HEIGHT = Math.round(MAP_BOUNDS.width / 36);
 
 /**
  * Spectator / monitoring view. Shows the WHOLE map (a single downscaled
@@ -31,8 +43,10 @@ export class MonitorApp {
   private camera: THREE.OrthographicCamera;
   private pathLayer: PathLayer;
   private noteLayer: NoteLayer;
-  private dots: DotManager;
+  private killLayer: KillLayer;
+  private avatars: AvatarManager;
   private enemyDots: DotManager;
+  private bursts: ExplosionBurst[] = [];
   private socket: Socket;
   private clock = new THREE.Clock();
   private running = false;
@@ -63,9 +77,13 @@ export class MonitorApp {
     this.noteLayer = new NoteLayer(Math.round(MAP_BOUNDS.width / 40));
     this.scene.add(this.noteLayer.group);
 
-    // Live player dots (z=1).
-    this.dots = new DotManager();
-    this.scene.add(this.dots.group);
+    // Persistent kill tombstones — scaled up for the whole-map view.
+    this.killLayer = new KillLayer(Math.round(MAP_BOUNDS.width / 44));
+    this.scene.add(this.killLayer.group);
+
+    // Live players, rendered as their chosen character avatar (z=1).
+    this.avatars = new AvatarManager();
+    this.scene.add(this.avatars.group);
 
     // Live enemy dots (z=1.1, just above players so they read on the overview).
     this.enemyDots = new DotManager(1.1);
@@ -146,10 +164,12 @@ export class MonitorApp {
       if (this.hud) this.hud.textContent = 'Reconnecting…';
     });
 
-    socket.on(EVENTS.PLAYER_EXISTING, (players: PlayerState[]) => this.dots.sync(players));
-    socket.on(EVENTS.PLAYER_JOIN, (player: PlayerState) => this.dots.add(player));
-    socket.on(EVENTS.STATE_UPDATE, (positions: PlayerPos[]) => this.dots.updatePositions(positions));
-    socket.on(EVENTS.PLAYER_LEAVE, (data: PlayerLeave) => this.dots.remove(data.id));
+    socket.on(EVENTS.PLAYER_EXISTING, (players: PlayerState[]) => this.avatars.sync(players));
+    socket.on(EVENTS.PLAYER_JOIN, (player: PlayerState) => this.avatars.add(player));
+    socket.on(EVENTS.STATE_UPDATE, (positions: PlayerPos[]) =>
+      this.avatars.updatePositions(positions)
+    );
+    socket.on(EVENTS.PLAYER_LEAVE, (data: PlayerLeave) => this.avatars.remove(data.id));
 
     socket.on(EVENTS.GRID_FULL, (buffer: ArrayBuffer) => this.pathLayer.applyFull(buffer));
     socket.on(EVENTS.GRID_DELTA, (data: GridDelta) => this.pathLayer.applyDelta(data.cells));
@@ -163,6 +183,16 @@ export class MonitorApp {
       this.enemyDots.updatePositions(positions)
     );
     socket.on(EVENTS.ENEMY_LEAVE, (data: EnemyLeave) => this.enemyDots.remove(data.id));
+    socket.on(EVENTS.ENEMY_DIE, (death: EnemyDie) => {
+      this.enemyDots.remove(death.id);
+      // Pop a big explosion at the kill so the hunt reads on the whole-map view.
+      const burst = new ExplosionBurst(death.x, death.y, enemyDef(death.kind).color, MONITOR_BURST_RADIUS);
+      this.bursts.push(burst);
+      this.scene.add(burst.group);
+    });
+
+    socket.on(EVENTS.KILL_EXISTING, (markers: KillMarker[]) => this.killLayer.setMarkers(markers));
+    socket.on(EVENTS.KILL_NEW, (marker: KillMarker) => this.killLayer.addMarker(marker));
 
     socket.on(EVENTS.GRID_STATS, (stats: GridStats) => {
       this.stats = stats;
@@ -174,7 +204,7 @@ export class MonitorApp {
 
   private updateHud(): void {
     if (!this.hud) return;
-    const players = this.stats?.playerCount ?? this.dots.count;
+    const players = this.stats?.playerCount ?? this.avatars.count;
     const pct = this.stats ? `${this.stats.percentage.toFixed(2)}%` : '—';
     this.hud.textContent = `Players: ${players}  ·  Explored: ${pct}`;
   }
@@ -190,8 +220,19 @@ export class MonitorApp {
     requestAnimationFrame(this.animate);
     const dt = Math.min(this.clock.getDelta(), 0.1);
     this.pathLayer.update(dt);
-    this.dots.interpolate(dt);
+    this.avatars.interpolate(dt);
     this.enemyDots.interpolate(dt);
+    if (this.bursts.length) {
+      for (const b of this.bursts) b.update(dt);
+      this.bursts = this.bursts.filter((b) => {
+        if (b.finished) {
+          this.scene.remove(b.group);
+          b.dispose();
+          return false;
+        }
+        return true;
+      });
+    }
     this.renderer.render(this.scene, this.camera);
   };
 
@@ -204,6 +245,59 @@ export class MonitorApp {
     this.running = false;
     window.removeEventListener('resize', this.onResize);
     this.socket.close();
+  }
+}
+
+/**
+ * Renders live players on the whole-map view as their chosen CHARACTER AVATAR
+ * (the same pixel-art mascot they use in-game) rather than a plain dot — reusing
+ * RemotePlayer so the avatars interpolate + play their walk cycle. Named
+ * characters show their mascot; anonymous players show the figure tinted by
+ * their server color. Mirrors DotManager's API so the socket handlers are
+ * interchangeable.
+ */
+class AvatarManager {
+  readonly group = new THREE.Group();
+  private avatars = new Map<string, RemotePlayer>();
+
+  get count(): number {
+    return this.avatars.size;
+  }
+
+  /** Add/update avatars to exactly match the given players; remove the rest. */
+  sync(players: PlayerState[]): void {
+    const seen = new Set<string>();
+    for (const p of players) {
+      seen.add(p.id);
+      const existing = this.avatars.get(p.id);
+      if (existing) existing.setTarget(p.x, p.y);
+      else this.add(p);
+    }
+    for (const id of [...this.avatars.keys()]) if (!seen.has(id)) this.remove(id);
+  }
+
+  add(p: PlayerState): void {
+    if (this.avatars.has(p.id)) return;
+    const rp = new RemotePlayer(p.x, p.y, p.color, p.character, AVATAR_HEIGHT);
+    this.group.add(rp.mesh);
+    this.avatars.set(p.id, rp);
+  }
+
+  /** Update interpolation targets from a slim tick broadcast. */
+  updatePositions(positions: PlayerPos[]): void {
+    for (const p of positions) this.avatars.get(p.id)?.setTarget(p.x, p.y);
+  }
+
+  remove(id: string): void {
+    const rp = this.avatars.get(id);
+    if (!rp) return;
+    this.group.remove(rp.mesh);
+    rp.dispose();
+    this.avatars.delete(id);
+  }
+
+  interpolate(dt: number): void {
+    for (const rp of this.avatars.values()) rp.interpolate(dt);
   }
 }
 

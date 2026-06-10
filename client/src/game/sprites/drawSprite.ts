@@ -33,14 +33,6 @@ function px(ctx: Ctx, x: number, y: number, c: string): void {
   ctx.fillStyle = c;
   ctx.fillRect(x, y, 1, 1);
 }
-/** Darken a #rrggbb by a factor (0..1) → css rgb() string. */
-function shade(hex: string, f: number): string {
-  const n = parseInt(hex.replace('#', ''), 16);
-  const r = Math.round(((n >> 16) & 255) * f);
-  const g = Math.round(((n >> 8) & 255) * f);
-  const b = Math.round((n & 255) * f);
-  return `rgb(${r},${g},${b})`;
-}
 
 /**
  * Two alternating legs with boots/feet, the shared walk motion for the humanoid
@@ -187,30 +179,63 @@ function drawAnon(ctx: Ctx, f: number): void {
 }
 
 // ─── Ghost — the enemy (Pac-Man-style) ───
+//
+// Drawn NEUTRAL (light body, white eyes, dark pupils) and tinted at runtime via
+// the sprite's uTint so the enemy's color can shift live from healthy → dying
+// (red → purple-black) as its life drains. The dark pupils survive any tint, so
+// the eyes still read on a fully saturated body. Frame 2 is the SCREAM face,
+// forced during the death sequence (CharacterSprite.setFrameOverride).
+export const GHOST_FRAMES = 3;
+export const GHOST_SCREAM_FRAME = 2;
 
-function drawGhost(ctx: Ctx, f: number, color: string): void {
-  const body = color;
-  const dark = shade(color, 0.7);
-  const white = '#ffffff';
-  const pupil = '#20242e';
+const GHOST_BODY = '#e6e6f0'; // light, so the tint reads as the body color
+const GHOST_NOTCH = '#a6a6b6'; // darker skirt shade for definition under tint
+const GHOST_WHITE = '#ffffff'; // eye whites — brightest, so they pop when tinted
+const GHOST_PUPIL = '#191b24'; // near-black pupils — stay dark through any tint
 
+function ghostBell(ctx: Ctx, f: number): void {
   // domed top
-  rect(ctx, 5, 1, 6, 1, body);
-  rect(ctx, 4, 2, 8, 1, body);
-  rect(ctx, 3, 3, 10, 1, body);
-  rect(ctx, 2, 4, 12, 9, body); // main bell
-  // wavy skirt (humps shift by frame)
+  rect(ctx, 5, 1, 6, 1, GHOST_BODY);
+  rect(ctx, 4, 2, 8, 1, GHOST_BODY);
+  rect(ctx, 3, 3, 10, 1, GHOST_BODY);
+  rect(ctx, 2, 4, 12, 9, GHOST_BODY); // main bell
+  // wavy skirt (humps shift by frame so it "walks")
   const off = f === 0 ? 0 : 2;
   for (let i = 0; i < 3; i++) {
     const x = 2 + ((i * 4 + off) % 12);
-    rect(ctx, x, 13, 2, 2, body); // hump down
-    px(ctx, x + 2, 13, dark); // notch shade
+    rect(ctx, x, 13, 2, 2, GHOST_BODY); // hump down
+    px(ctx, x + 2, 13, GHOST_NOTCH); // notch shade
   }
-  // eyes look forward (right)
-  rect(ctx, 5, 5, 2, 3, white);
-  rect(ctx, 9, 5, 2, 3, white);
-  rect(ctx, 6, 6, 1, 2, pupil);
-  rect(ctx, 10, 6, 1, 2, pupil);
+}
+
+function drawGhost(ctx: Ctx, f: number): void {
+  if (f === GHOST_SCREAM_FRAME) {
+    drawGhostScream(ctx);
+    return;
+  }
+  ghostBell(ctx, f);
+  // calm eyes look forward (right)
+  rect(ctx, 5, 5, 2, 3, GHOST_WHITE);
+  rect(ctx, 9, 5, 2, 3, GHOST_WHITE);
+  rect(ctx, 6, 6, 1, 2, GHOST_PUPIL);
+  rect(ctx, 10, 6, 1, 2, GHOST_PUPIL);
+}
+
+/** The terrified, cornered face — wide eyes + a gaping mouth (used on death). */
+function drawGhostScream(ctx: Ctx): void {
+  ghostBell(ctx, 0);
+  // big round panicked eyes, pupils shrunk + raised
+  rect(ctx, 4, 4, 3, 4, GHOST_WHITE);
+  rect(ctx, 9, 4, 3, 4, GHOST_WHITE);
+  px(ctx, 5, 4, GHOST_PUPIL);
+  px(ctx, 10, 4, GHOST_PUPIL);
+  // raised "surprised" brows
+  rect(ctx, 4, 3, 3, 1, GHOST_NOTCH);
+  rect(ctx, 9, 3, 3, 1, GHOST_NOTCH);
+  // gaping mouth
+  rect(ctx, 6, 9, 4, 3, GHOST_PUPIL);
+  px(ctx, 6, 9, GHOST_BODY);
+  px(ctx, 9, 9, GHOST_BODY);
 }
 
 // ─── outline pass ───
@@ -283,13 +308,17 @@ export function getPlayerSpec(id: string | undefined | null): SpriteSpec {
   return (id && PLAYER_SPECS[id]) || ANON_SPEC;
 }
 
-/** Sprite spec for an enemy, body tinted with `color` (baked into the art). */
-export function getEnemySpec(color: string): SpriteSpec {
+/**
+ * Sprite spec for the enemy ghost — NEUTRAL (untinted) so a single baked atlas
+ * is shared across every enemy and tinted live per-instance (uTint) from healthy
+ * to dying. 3 frames: 0/1 = walk, 2 = scream (forced during the death sequence).
+ */
+export function getGhostSpec(): SpriteSpec {
   return {
     width: 16,
     height: 16,
-    frames: 2,
+    frames: GHOST_FRAMES,
     outline: '#15151a',
-    draw: (ctx, f) => drawGhost(ctx, f, color),
+    draw: drawGhost,
   };
 }
