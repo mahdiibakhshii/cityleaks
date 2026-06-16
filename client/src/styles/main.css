@@ -1,3 +1,14 @@
+@font-face {
+  font-family: 'Seikora';
+  src: url('/fonts/Seikora.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DesimateStonger';
+  src: url('/fonts/DesimateStonger-Regular.otf') format('opentype');
+  font-display: swap;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -1344,9 +1355,10 @@ body.admin-body canvas {
   flex-direction: row;
 }
 
-/* Left: the city map canvas, square, centred in the pane. */
+/* Pane 1: the city map — takes the remaining width + full height so the square
+   map canvas is as large as possible (the old layout wasted most of the pane). */
 .admin-notes-map-pane {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   position: relative;
   overflow: hidden;
@@ -1355,9 +1367,15 @@ body.admin-body canvas {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: clamp(8px, 1vw, 22px);
 }
 .admin-notes-map {
   display: block;
+  /* Largest square that fits the pane: height drives it, aspect-ratio keeps it
+     square, and max-width caps it (shrinking height too) on tall/narrow panes.
+     This keeps clientWidth === clientHeight, which drawNotesMap relies on. */
+  height: 100%;
+  width: auto;
   max-width: 100%;
   max-height: 100%;
   aspect-ratio: 1;
@@ -1376,9 +1394,9 @@ body.admin-body canvas {
   pointer-events: none;
 }
 
-/* Right: notes list + detail panel sidebar (mirrors #monitor-notes). */
-.admin-notes-sidebar {
-  width: clamp(260px, 28vw, 420px);
+/* Pane 2: the notes list. Fixed width, scrolls independently. */
+.admin-notes-list-pane {
+  width: clamp(220px, 20vw, 320px);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1386,9 +1404,19 @@ body.admin-body canvas {
   background: rgba(10, 11, 18, 0.96);
   border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
+/* Pane 3: options for the selected note. Fixed width, scrolls independently. */
+.admin-notes-detail-pane {
+  width: clamp(300px, 26vw, 440px);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(13, 14, 22, 0.97);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
 .admin-notes-sidebar-title {
   flex-shrink: 0;
-  padding: 10px 14px;
+  padding: 11px 14px;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -1397,41 +1425,43 @@ body.admin-body canvas {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 .admin-notes-list {
-  flex: 0 0 auto;
-  max-height: 46%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 7px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 6px;
 }
-/* Compact note row in the sidebar list. */
+/* A note row: text on top, a meta row (badges + kind) below. */
 .admin-note-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 7px;
-  padding: 7px 9px;
+  border-left: 3px solid rgba(42, 157, 244, 0.45);
+  border-radius: 8px;
+  padding: 9px 11px;
   color: #e8e8f0;
-  font-size: 12px;
-  line-height: 1.35;
+  font-size: 12.5px;
+  line-height: 1.4;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
 }
 .admin-note-row:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.14);
+  border-left-color: rgba(42, 157, 244, 0.7);
 }
 .admin-note-row.selected {
   border-color: rgba(42, 157, 244, 0.7);
-  background: rgba(42, 157, 244, 0.12);
+  border-left-color: #2a9df4;
+  background: rgba(42, 157, 244, 0.14);
 }
 .admin-note-row.creator {
-  border-color: rgba(255, 210, 63, 0.5);
+  border-left-color: rgba(255, 210, 63, 0.7);
   background: rgba(255, 210, 63, 0.07);
   color: #ffe680;
   font-style: italic;
@@ -1448,19 +1478,45 @@ body.admin-body canvas {
   font-size: 11px;
   color: #6c7a8a;
 }
-.admin-note-row-photo-badge {
+.admin-note-row-kind {
+  margin-left: auto;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.admin-note-row-badge.photo {
   color: #3ad17a;
+}
+.admin-note-row-badge.sticker {
+  color: #ffd23f;
 }
 
 /* Detail panel for the selected note. */
 .admin-notes-detail {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: clamp(10px, 0.9vw, 18px);
+  padding: clamp(12px, 1vw, 18px);
   display: flex;
   flex-direction: column;
   gap: clamp(8px, 0.7vw, 14px);
+}
+/* Tidy, evenly-spaced action button rows in the detail panel. */
+.admin-notes-detail .admin-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-notes-detail .admin-card-title {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.admin-notes-detail .admin-card-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 .admin-notes-detail-empty {
   color: #6c6c7c;
@@ -1521,19 +1577,100 @@ body.admin-body canvas {
   image-rendering: pixelated;
 }
 
-/* Mobile: stack map above sidebar */
-@media (max-width: 768px) {
+/* ─── Sticker designer ─── */
+.admin-sticker-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* Template / option pill buttons. */
+.admin-sticker-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.admin-chip {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cfd2dc;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  text-transform: capitalize;
+}
+.admin-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.admin-chip.active {
+  background: rgba(42, 157, 244, 0.22);
+  border-color: #2a9df4;
+  color: #eaf4ff;
+}
+.admin-sticker-hint {
+  font-size: 12px;
+  color: #8a8a9a;
+  font-style: italic;
+}
+/* The live preview: checkerboard-free white sticker on a dark mat. */
+.admin-sticker-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+.admin-sticker-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.admin-sticker-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.admin-sticker-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a8a9a;
+}
+.admin-sticker-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.admin-sticker-inline .admin-range {
+  flex: 1;
+  min-width: 100px;
+}
+.admin-sticker-text {
+  min-height: 56px;
+  resize: vertical;
+}
+
+/* Mobile / narrow: stack the three panes vertically. */
+@media (max-width: 900px) {
   .admin-notes-content {
     flex-direction: column;
   }
   .admin-notes-map-pane {
     flex: 0 0 auto;
-    height: 50vw;
-    max-height: 52vh;
+    height: min(80vw, 60vh);
   }
-  .admin-notes-sidebar {
+  .admin-notes-list-pane,
+  .admin-notes-detail-pane {
     width: 100%;
-    flex: 1;
+    flex: 0 0 auto;
+    max-height: 50vh;
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }

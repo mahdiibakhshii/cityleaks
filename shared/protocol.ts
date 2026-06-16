@@ -43,6 +43,7 @@ export const EVENTS = {
   ADMIN_NOTE_DELETE: 'admin:note:delete', // admin → server: delete a note — {id}
   ADMIN_NOTE_EDIT: 'admin:note:edit', // admin → server: edit a note — {id,text}
   ADMIN_NOTE_IMAGE_REMOVE: 'admin:note:image:remove', // admin → server: detach a note's photo — {id}
+  ADMIN_NOTE_STICKER: 'admin:note:sticker', // admin → server: save/clear a note's sticker design — {id, sticker|null}
   ADMIN_BROADCAST: 'admin:broadcast', // admin → server: broadcast a message — {text}
   ADMIN_RESET_PATHS: 'admin:reset:paths', // admin → server: wipe the leak grid
   ADMIN_RESET_NOTES: 'admin:reset:notes', // admin → server: wipe all notes
@@ -479,6 +480,89 @@ export interface Note {
   // endpoint (POST /api/admin/note-image).
   image?: string;
   imageAt?: number; // epoch ms the photo was attached (also cache-busts the URL)
+  // The printable "sticker design" generated for this note in the admin tool: a
+  // white-background layout of the note's text + the chat QR code, sized like a
+  // street sticker (several per A4). Stored as a self-describing CONFIG (not a
+  // rendered image) so the admin can reopen + tweak it and re-render/print on
+  // demand; kept SEPARATE from `image` (the real-sticker photo). Absent = no
+  // design yet. See StickerDesign + ADMIN_NOTE_STICKER.
+  sticker?: StickerDesign;
+}
+
+// ─── Sticker designer ───
+//
+// Bounds the server clamps an incoming design to (the admin renders client-side
+// at this pixel resolution — small, print-friendly, several per A4 sheet).
+export const STICKER = {
+  MIN_SIZE: 120,
+  MAX_SIZE: 2000,
+  MIN_FONT: 8,
+  MAX_FONT: 400,
+  MAX_TEXT: 600, // allows the note text plus added spaces / newlines
+  QR_MIN: 0.3, // QR may shrink to 30% of its auto slot (gives the text more room)
+  QR_MAX: 1, // ...or fill the whole slot
+} as const;
+
+export type StickerAlign = 'left' | 'center' | 'right';
+// Where the chat QR sits relative to the text ('none' = text-only sticker).
+export type StickerQrPos = 'right' | 'left' | 'bottom' | 'none';
+
+// A fully self-describing sticker layout. `template` is just the preset the admin
+// last picked (so the UI can re-highlight it); the actual render is driven by the
+// explicit w/h/fontSize/align/qrPos/text so it stays stable even if preset
+// definitions change later.
+export interface StickerDesign {
+  template: string; // preset id last chosen (label/starting point only)
+  w: number; // sticker pixel width  (design = print resolution)
+  h: number; // sticker pixel height
+  fontSize: number; // px
+  align: StickerAlign;
+  qrPos: StickerQrPos;
+  qrScale: number; // QR size as a fraction of its auto-computed slot (STICKER.QR_MIN..QR_MAX)
+  fontId: string; // key into STICKER_FONTS (client-side list); persisted so design re-opens correctly
+  text: string; // editable sticker text (may add spaces / newlines vs note.text)
+  updatedAt: number; // epoch ms
+}
+
+// Admin → server: save (`sticker` set) or clear (`sticker: null`) a note's design.
+export interface AdminNoteSticker {
+  id: string;
+  sticker: StickerDesign | null;
+}
+
+// Validate + clamp an untrusted sticker design (from the admin socket). Returns a
+// normalized StickerDesign, or null if it's structurally invalid. Mirrors
+// NoteStore.create's defensive validation so a malformed payload can't persist.
+export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const d = raw as Record<string, unknown>;
+  if (typeof d.text !== 'string') return null;
+  const text = d.text.slice(0, STICKER.MAX_TEXT);
+  if (text.trim().length === 0) return null;
+  const clamp = (v: unknown, lo: number, hi: number, dflt: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, Math.round(v))) : dflt;
+  const qrScale =
+    typeof d.qrScale === 'number' && Number.isFinite(d.qrScale)
+      ? Math.max(STICKER.QR_MIN, Math.min(STICKER.QR_MAX, d.qrScale))
+      : 1;
+  const align: StickerAlign =
+    d.align === 'left' || d.align === 'center' || d.align === 'right' ? d.align : 'left';
+  const qrPos: StickerQrPos =
+    d.qrPos === 'right' || d.qrPos === 'left' || d.qrPos === 'bottom' || d.qrPos === 'none'
+      ? d.qrPos
+      : 'right';
+  return {
+    template: typeof d.template === 'string' ? d.template.slice(0, 40) : 'custom',
+    w: clamp(d.w, STICKER.MIN_SIZE, STICKER.MAX_SIZE, 760),
+    h: clamp(d.h, STICKER.MIN_SIZE, STICKER.MAX_SIZE, 240),
+    fontSize: clamp(d.fontSize, STICKER.MIN_FONT, STICKER.MAX_FONT, 64),
+    align,
+    qrPos,
+    qrScale,
+    fontId: typeof d.fontId === 'string' && d.fontId.length > 0 ? d.fontId.slice(0, 40) : 'seikora',
+    text,
+    updatedAt: Date.now(),
+  };
 }
 
 // Client → server request to stick a note. The server validates text length and

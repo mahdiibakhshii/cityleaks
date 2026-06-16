@@ -18,6 +18,7 @@ import {
   type AdminPlayerInfo,
   type AdminStats,
   type AdminNoteEdit,
+  type AdminNoteSticker,
   type AdminBroadcast,
   type AdminKick,
   type AdminMapOpacity,
@@ -246,6 +247,19 @@ export class GameServer {
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
       auditLog('note image removed', `${id} (${adminIp})`);
+    });
+
+    // Save (or clear) a note's printable sticker design. The design is a
+    // self-describing config (validated/clamped in NoteStore.setSticker); pass
+    // sticker:null to remove. Broadcasts the updated note so every surface sees it.
+    socket.on(EVENTS.ADMIN_NOTE_STICKER, (data: AdminNoteSticker) => {
+      const id = data?.id;
+      if (!isValidNoteId(id)) return;
+      const note = this.noteStore.setSticker(id, data.sticker);
+      if (!note) return;
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
+      void this.noteStore.saveToDiskAsync(NOTES_FILE);
+      auditLog(data.sticker ? 'note sticker saved' : 'note sticker cleared', `${id} (${adminIp})`);
     });
 
     // ─── Broadcast a message to every player (transient, distinct style) ───

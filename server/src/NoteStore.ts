@@ -1,6 +1,11 @@
 import * as fs from 'fs';
 import { writeFileAtomic, writeFileAtomicSync } from './atomicWrite';
-import { NOTE_MAX_LENGTH, type Note, type NoteCreate } from '../../shared/protocol';
+import {
+  NOTE_MAX_LENGTH,
+  normalizeStickerDesign,
+  type Note,
+  type NoteCreate,
+} from '../../shared/protocol';
 import type { MapBounds } from '../../shared/protocol';
 
 /**
@@ -83,6 +88,25 @@ export class NoteStore {
     if (!note) return null;
     delete note.image;
     delete note.imageAt;
+    return note;
+  }
+
+  /**
+   * Save (or clear) a note's printable sticker design. `raw` is the untrusted
+   * design from the admin socket — validated + clamped here; pass null to remove.
+   * Returns the updated Note, or null if the id is unknown / the design is
+   * structurally invalid.
+   */
+  setSticker(id: string, raw: unknown): Note | null {
+    const note = this.notes.find((n) => n.id === id);
+    if (!note) return null;
+    if (raw === null) {
+      delete note.sticker;
+      return note;
+    }
+    const design = normalizeStickerDesign(raw);
+    if (!design) return null;
+    note.sticker = design;
     return note;
   }
 
