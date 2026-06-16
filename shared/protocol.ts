@@ -52,6 +52,11 @@ export const EVENTS = {
   // ({value} 0..1); server → monitor+admin broadcasts the current value (and
   // sends it to a monitor/admin on connect so they start in sync).
   ADMIN_MAP_OPACITY: 'admin:map-opacity',
+  // Anonymous per-note chat rooms. Each note gets a chat room at /c/<noteId>.
+  // Accessible only via the QR code printed on the physical sticker in the city.
+  CHAT_HISTORY: 'chat:history', // server → client: last N messages on connect
+  CHAT_MESSAGE: 'chat:message', // server → client: new message broadcast to room
+  CHAT_SEND: 'chat:send',       // client → server: post a message
 } as const;
 
 // ─── Timing ───
@@ -534,4 +539,37 @@ export interface AdminKick {
 }
 export interface AdminMapOpacity {
   value: number; // 0 (transparent) .. 1 (opaque)
+}
+
+// ─── Per-note anonymous chat rooms ───
+//
+// Every stuck note gets a chat room at /c/<noteId>. Accessible only via the QR
+// code on the physical sticker — closing the loop between the digital city and
+// the physical streets. Chatters are fully anonymous: the server assigns a color
+// per session; no login, no persistent identity.
+export const CHAT_MAX_MESSAGES = 200;  // ring buffer per room (oldest dropped)
+export const CHAT_MAX_MSG_LENGTH = 300; // server-enforced per-message character cap
+
+// A single chat message in a note's room.
+export interface ChatMessage {
+  id: string;       // unique: `cm${noteId}_${counter}`
+  noteId: string;
+  text: string;
+  color: string;    // hex color assigned by the server to this session
+  createdAt: number; // epoch ms
+}
+
+// Client → server: post a message (noteId comes from socket handshake).
+export interface ChatSend {
+  text: string;
+}
+
+// Server → client: the last N messages on connect.
+export interface ChatHistory {
+  noteId: string;
+  // The note context (the "original post"): its text, creator flag, and the
+  // resolved real-sticker photo URL (cache-busted) or null for text-only notes.
+  note: { text: string; admin?: boolean; image?: string | null };
+  messages: ChatMessage[];
+  yourColor: string; // the color the server assigned to this session
 }

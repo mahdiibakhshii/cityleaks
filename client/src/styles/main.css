@@ -1499,6 +1499,28 @@ body.admin-body canvas {
   color: #8a8a9a;
 }
 
+/* QR code section in the note detail panel */
+.admin-qr-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+.admin-qr-url {
+  font-size: 11px;
+  color: #5a9df4;
+  word-break: break-all;
+  font-family: monospace;
+}
+.admin-qr-canvas {
+  border-radius: 6px;
+  background: #fff;
+  display: block;
+  /* QR is 160px; let it scale up on larger screens but not stretch */
+  max-width: 160px;
+  image-rendering: pixelated;
+}
+
 /* Mobile: stack map above sidebar */
 @media (max-width: 768px) {
   .admin-notes-content {

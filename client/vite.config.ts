@@ -1,6 +1,24 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
+
+// Dev-only: rewrite the QR short URL /c/:noteId → /chat.html so the chat page
+// loads on the Vite dev server (in production Express handles this route). The
+// chat client reads the noteId back from window.location.pathname.
+function chatRouteRewrite(): Plugin {
+  return {
+    name: 'chat-route-rewrite',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url && /^\/c\/[^/?#]+/.test(req.url)) {
+          req.url = '/chat.html';
+        }
+        next();
+      });
+    },
+  };
+}
 
 export default defineConfig({
+  plugins: [chatRouteRewrite()],
   server: {
     port: 5173,
     host: true, // Expose on LAN so phones on the same network can connect.
@@ -29,11 +47,13 @@ export default defineConfig({
     outDir: 'dist',
     target: 'es2022',
     rollupOptions: {
-      // Three pages: the game (index.html), the monitor, and the admin console.
+      // Four pages: the game (index.html), the monitor, the admin console,
+      // and the per-note chat rooms served at /c/:noteId.
       input: {
         main: 'index.html',
         monitor: 'monitor.html',
         admin: 'admin.html',
+        chat: 'chat.html',
       },
     },
   },

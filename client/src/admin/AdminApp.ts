@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import QRCode from 'qrcode';
 import {
   EVENTS,
   MAP_BOUNDS,
@@ -691,6 +692,58 @@ export class AdminApp {
     if (this.uploadStatus) {
       host.appendChild(el('div', 'admin-upload-status', this.uploadStatus));
     }
+
+    // QR code for the note's chat room — print and stick next to the sticker.
+    host.appendChild(el('div', 'admin-card-title', 'Chat QR code'));
+    const qrSection = el('div', 'admin-qr-section');
+
+    const chatUrl = `${window.location.origin}/c/${note.id}`;
+    const urlLabel = el('div', 'admin-qr-url', chatUrl);
+    qrSection.appendChild(urlLabel);
+
+    const canvas = el('canvas', 'admin-qr-canvas') as HTMLCanvasElement;
+    qrSection.appendChild(canvas);
+
+    const qrActions = el('div', 'admin-note-actions');
+    const printBtn = el('button', 'admin-btn admin-btn-small', 'Print QR');
+    printBtn.addEventListener('click', () => {
+      const dataUrl = canvas.toDataURL('image/png');
+      const win = window.open('', '_blank');
+      if (!win) return;
+      win.document.write(`
+        <!DOCTYPE html><html><head><title>QR — ${note.id}</title>
+        <style>
+          body { margin:0; display:flex; flex-direction:column; align-items:center;
+                 justify-content:center; min-height:100vh; font-family:monospace;
+                 background:#fff; color:#000; gap:12px; }
+          img { width:200px; height:200px; image-rendering:pixelated; }
+          p { font-size:11px; word-break:break-all; max-width:220px; text-align:center; }
+          small { font-size:10px; color:#666; }
+        </style></head><body>
+        <img src="${dataUrl}" alt="QR code"/>
+        <p>${chatUrl}</p>
+        <small>Scan to join the anonymous chat</small>
+        <script>window.onload=()=>{window.print();}<\/script>
+        </body></html>`);
+      win.document.close();
+    });
+    const copyBtn = el('button', 'admin-btn admin-btn-small', 'Copy URL');
+    copyBtn.addEventListener('click', () => {
+      void navigator.clipboard.writeText(chatUrl).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy URL'; }, 2000);
+      });
+    });
+    qrActions.append(printBtn, copyBtn);
+    qrSection.appendChild(qrActions);
+    host.appendChild(qrSection);
+
+    // Render the QR code asynchronously (canvas is already in the DOM).
+    void QRCode.toCanvas(canvas, chatUrl, {
+      width: 160,
+      margin: 2,
+      color: { dark: '#000000', light: '#ffffff' },
+    });
   }
 
   /** Open a file picker, then upload the chosen image to the given note. */

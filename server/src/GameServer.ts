@@ -25,6 +25,7 @@ import {
 import { LeakGrid } from './LeakGrid';
 import { NoteStore } from './NoteStore';
 import { KillStore } from './KillStore';
+import { ChatStore } from './ChatStore';
 import { TDRoom } from './TDRoom';
 import { EnemyManager } from './EnemyManager';
 import { AdminAuth } from './AdminAuth';
@@ -58,6 +59,7 @@ export class GameServer {
   private leakGrid: LeakGrid;
   private noteStore: NoteStore;
   private killStore: KillStore;
+  private chatStore: ChatStore;
   private tdRoom: TDRoom;
   private enemyManager: EnemyManager;
   private adminAuth: AdminAuth;
@@ -80,6 +82,7 @@ export class GameServer {
     leakGrid: LeakGrid,
     noteStore: NoteStore,
     killStore: KillStore,
+    chatStore: ChatStore,
     tdRoom: TDRoom,
     enemyManager: EnemyManager,
     adminAuth: AdminAuth
@@ -88,6 +91,7 @@ export class GameServer {
     this.leakGrid = leakGrid;
     this.noteStore = noteStore;
     this.killStore = killStore;
+    this.chatStore = chatStore;
     this.tdRoom = tdRoom;
     this.enemyManager = enemyManager;
     this.adminAuth = adminAuth;
@@ -153,6 +157,9 @@ export class GameServer {
         return;
       }
 
+      // Chat clients are handled by the chat room handler in index.ts.
+      if (socket.handshake.query.role === 'chat') return;
+
       this.handleGameConnection(socket);
     });
   }
@@ -210,6 +217,8 @@ export class GameServer {
       if (!this.noteStore.remove(id)) return;
       // The note's photo (if any) is now orphaned — delete it too.
       fs.rm(path.join(NOTE_IMAGES_DIR, `${id}.webp`), { force: true }, () => {});
+      // Delete the note's chat room (messages + file on disk).
+      this.chatStore.deleteRoom(id);
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_REMOVE, { id });
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
       auditLog('note deleted', `${id} (${adminIp})`);
@@ -260,6 +269,7 @@ export class GameServer {
 
     socket.on(EVENTS.ADMIN_RESET_NOTES, () => {
       this.noteStore.clear();
+      this.chatStore.clearAll();
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_RESET);
       auditLog('RESET all notes', adminIp);

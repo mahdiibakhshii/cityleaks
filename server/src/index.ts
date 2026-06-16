@@ -7,13 +7,14 @@ import { GameServer } from './GameServer';
 import { LeakGrid } from './LeakGrid';
 import { NoteStore } from './NoteStore';
 import { KillStore } from './KillStore';
+import { ChatStore } from './ChatStore';
 import { TDRoom } from './TDRoom';
 import { CollisionField } from './CollisionField';
 import { EnemyManager } from './EnemyManager';
 import { AdminAuth, ADMIN_TOKEN_TTL_MS } from './AdminAuth';
 import { ADMIN_COOKIE, readAdminToken, auditLog, isValidNoteId } from './adminSecurity';
 import { writeFileAtomic } from './atomicWrite';
-import { EVENTS } from '../../shared/protocol';
+import { EVENTS, noteImageUrl, type ChatSend } from '../../shared/protocol';
 import {
   PORT,
   IS_PRODUCTION,
@@ -24,6 +25,7 @@ import {
   COLLISION_FILE,
   MASK_TILES_DIR,
   NOTE_IMAGES_DIR,
+  CHATS_DIR,
 } from './config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -50,6 +52,10 @@ noteStore.loadFromDisk(NOTES_FILE);
 const killStore = new KillStore();
 killStore.loadFromDisk(KILLS_FILE);
 
+// Per-note anonymous chat rooms.
+const chatStore = new ChatStore(CHATS_DIR);
+chatStore.loadFromDisk();
+
 const tdRoom = new TDRoom(io);
 
 // Admin auth: password → short-lived bearer token. Gates the admin page and the
@@ -74,7 +80,7 @@ const collisionField = new CollisionField(MASK_TILES_DIR, COLLISION_FILE);
 void collisionField.build();
 const enemyManager = new EnemyManager(collisionField);
 
-const gameServer = new GameServer(io, leakGrid, noteStore, killStore, tdRoom, enemyManager, adminAuth);
+const gameServer = new GameServer(io, leakGrid, noteStore, killStore, chatStore, tdRoom, enemyManager, adminAuth);
 
 // Behind nginx in production: trust the first proxy hop so req.ip is the real
 // client IP (nginx sets X-Forwarded-For), making per-IP login rate limiting work.
@@ -191,6 +197,12 @@ app.post(
   }
 );
 
+// Short URL for QR codes: /c/:noteId → chat.html?note=<noteId>
+// This is the URL printed on physical stickers; keep it short for small QR codes.
+app.get('/c/:noteId', (req, res) => {
+  res.sendFile(path.join(clientDist, 'chat.html'));
+});
+
 app.use(express.static(clientDist));
 
 // Health / status endpoint.
@@ -209,17 +221,92 @@ app.get('/api/status', (_req, res) => {
 
 gameServer.start();
 
+// ─── Chat room socket handling ───
+//
+// Chat clients connect with role=chat&note=<noteId>. Each note gets its own
+// Socket.IO room `chat:<noteId>`. The server assigns a random vivid color to
+// each session (no login, fully anonymous across sessions).
+//
+// Rate limiting: 3 messages per 5 s per socket, server-enforced.
+const CHAT_RATE_LIMIT = 3;
+const CHAT_RATE_WINDOW_MS = 5000;
+
+function randomChatColor(): string {
+  // Vivid saturated hue — readable on both light and dark backgrounds.
+  const h = Math.floor(Math.random() * 360);
+  const s = 70 + Math.floor(Math.random() * 20);
+  const l = 50 + Math.floor(Math.random() * 15);
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = (s / 100) * Math.min(l / 100, 1 - l / 100);
+  const f = (n: number) => {
+    const c = l / 100 - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return Math.round(255 * c).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+io.on('connection', (socket) => {
+  const role = socket.handshake.query.role;
+  if (role !== 'chat') return; // handled by GameServer for other roles
+
+  const rawNote = socket.handshake.query.note;
+  const noteId = typeof rawNote === 'string' ? rawNote : '';
+
+  // Validate noteId format and existence.
+  if (!isValidNoteId(noteId) || !noteStore.get(noteId)) {
+    socket.emit('chat:error', { error: 'unknown note' });
+    socket.disconnect();
+    return;
+  }
+
+  const room = `chat:${noteId}`;
+  void socket.join(room);
+
+  const color = randomChatColor();
+
+  // Rate limiter state for this socket.
+  let msgCount = 0;
+  let windowStart = Date.now();
+
+  // Send history + note context on connect.
+  const note = noteStore.get(noteId)!;
+  socket.emit(EVENTS.CHAT_HISTORY, {
+    noteId,
+    note: { text: note.text, admin: note.admin, image: noteImageUrl(note) },
+    messages: chatStore.getMessages(noteId),
+    yourColor: color,
+  });
+
+  socket.on(EVENTS.CHAT_SEND, (payload: ChatSend) => {
+    // Rate limit.
+    const now = Date.now();
+    if (now - windowStart > CHAT_RATE_WINDOW_MS) {
+      msgCount = 0;
+      windowStart = now;
+    }
+    if (msgCount >= CHAT_RATE_LIMIT) return; // silently drop
+    msgCount++;
+
+    const msg = chatStore.addMessage(noteId, payload?.text, color);
+    if (!msg) return;
+
+    io.to(room).emit(EVENTS.CHAT_MESSAGE, msg);
+    void chatStore.saveToDiskAsync(noteId);
+  });
+});
+
 httpServer.listen(PORT, () => {
   console.log(`CityLeaks server running on port ${PORT}`);
 });
 
 // Persist the grid on graceful shutdown.
 function shutdown(): void {
-  console.log('Shutting down — saving leak grid + notes + kills...');
+  console.log('Shutting down — saving leak grid + notes + kills + chats...');
   gameServer.stop();
   leakGrid.saveToDisk(GRID_FILE);
   noteStore.saveToDisk(NOTES_FILE);
   killStore.saveToDisk(KILLS_FILE);
+  chatStore.saveToDisk();
   httpServer.close(() => process.exit(0));
   // Force-exit if close hangs.
   setTimeout(() => process.exit(0), 2000).unref();

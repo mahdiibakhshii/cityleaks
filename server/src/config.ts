@@ -44,6 +44,10 @@ export const COLLISION_FILE = path.resolve(process.cwd(), 'data', 'collision.bin
 // up alongside notes.json (see deploy/sync-data.sh). Served at /note-images.
 export const NOTE_IMAGES_DIR = path.resolve(process.cwd(), 'data', 'note-images');
 
+// Where per-note chat room messages are persisted (one JSON file per note id).
+// Same data dir, gitignored, part of the sync/backup set.
+export const CHATS_DIR = path.resolve(process.cwd(), 'data', 'chats');
+
 // Directory of mask PNG tiles the server decodes to build its collision field.
 // Production: Vite copies client/public/ into client/dist/, so masks live in
 // client/dist/tiles/mask. Dev: they're served straight from client/public.

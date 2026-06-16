@@ -5,10 +5,10 @@
 #
 # The live, player-generated state lives ONLY on the server at
 # /opt/cityleaks/server/data/ (gitignored, untouched by deploys). The files that
-# matter are the "leak" paths, the sticky notes (words), the kill markers, and
-# the admins' real-sticker photos (one webp per note id):
+# matter are the "leak" paths, the sticky notes (words), the kill markers, the
+# admins' real-sticker photos (one webp per note id), and the per-note chats:
 #
-#     leak-grid.bin   notes.json   kills.json   note-images/
+#     leak-grid.bin   notes.json   kills.json   note-images/   chats/
 #
 # (collision.bin is a derived cache rebuilt from the mask tiles — never synced.)
 #
@@ -41,9 +41,10 @@ PM2_NAME="${PM2_NAME:-cityleaks}"
 KEEP="${KEEP:-20}"
 
 REMOTE_DATA="$REMOTE_APP/server/data"
-# Player-generated state to sync. note-images/ is a directory (one webp per note
-# id); tar handles it like the files. collision.bin is a derived cache — excluded.
-DATA_FILES=(leak-grid.bin notes.json kills.json note-images)
+# Player-generated state to sync. note-images/ + chats/ are directories (one
+# webp / one JSON per note id); tar handles them like the files. collision.bin is
+# a derived cache — excluded.
+DATA_FILES=(leak-grid.bin notes.json kills.json note-images chats)
 
 # Repo root = parent of this script's dir, regardless of where it's invoked from.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
