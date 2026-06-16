@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { GRID_SIZE, type MapBounds } from '../../shared/protocol';
+import { writeFileAtomic, writeFileAtomicSync } from './atomicWrite';
 
 /**
  * Bit-packed 1000×1000 grid of visited ("leaked") cells.
@@ -88,11 +88,7 @@ export class LeakGrid {
 
   /** Synchronous save — use only on shutdown (must finish before exit). */
   saveToDisk(filePath: string): void {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(filePath, this.grid);
+    writeFileAtomicSync(filePath, this.grid);
     console.log(
       `Leak grid saved: ${this.leakedCount} cells (${this.getPercentage().toFixed(2)}%)`
     );
@@ -105,8 +101,7 @@ export class LeakGrid {
    */
   async saveToDiskAsync(filePath: string): Promise<void> {
     const snapshot = Buffer.from(this.grid);
-    await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.promises.writeFile(filePath, snapshot);
+    await writeFileAtomic(filePath, snapshot);
     console.log(
       `Leak grid saved: ${this.leakedCount} cells (${this.getPercentage().toFixed(2)}%)`
     );

@@ -9,6 +9,9 @@ server/dist/
 # never in git, so deploys (git pull) don't clobber the live grid/notes.
 server/data/
 
+# Local data backups created by deploy/sync-data.sh (pulled prod snapshots).
+backups/
+
 # NOTE: client/public/tiles/ IS committed — the server serves these. Regenerate
 # from originals with tools/split_tiles.py only when the source map changes.
 

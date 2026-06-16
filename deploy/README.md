@@ -19,6 +19,8 @@ GitHub push to main ─▶ Actions: build client ─▶ rsync dist + git pull on
 | `bootstrap-app.sh` | First app bring-up: clone, build, PM2 start, nginx site, firewall. |
 | `ecosystem.config.cjs` | PM2 process definition (runs `node --import tsx src/index.ts`). |
 | `nginx-cityleaks.conf` | Reverse proxy `:80 → :3000` with WebSocket upgrade headers. |
+| `sync-data.sh` | Sync live player data (paths/notes/kills) VPS↔local + backups. |
+| `sync-data.ps1` | Windows-native PowerShell wrapper around `sync-data.sh`. |
 | `../.github/workflows/deploy.yml` | CI/CD: build + deploy on push to `main`. |
 
 ## First-time setup (already done once)
@@ -57,6 +59,40 @@ Set under repo → Settings → Secrets and variables → Actions:
 | `SSH_HOST` | server IPv4 |
 | `SSH_USER` | `root` |
 | `SSH_PRIVATE_KEY` | private half of the deploy keypair (public half is in the server's `~/.ssh/authorized_keys`) |
+
+## Data sync & backups
+
+The live, player-generated state — the **leak paths** (`leak-grid.bin`), **sticky
+notes / words** (`notes.json`), and **kill markers** (`kills.json`) — lives ONLY
+on the server at `/opt/cityleaks/server/data/` (gitignored, untouched by
+deploys). `sync-data.sh` copies it down for local dev / backups, and can push a
+backup back up for disaster recovery. (`collision.bin` is a derived cache — never
+synced; it rebuilds itself from the mask tiles.)
+
+Run from the repo root. **PowerShell** (Windows-native): `.\deploy\sync-data.ps1 <cmd>`.
+**Git Bash / Linux**: `bash deploy/sync-data.sh <cmd>`.
+
+```powershell
+.\deploy\sync-data.ps1 pull        # copy live data DOWN into server/data/ (snapshots local first)
+.\deploy\sync-data.ps1 backup      # save a timestamped .tar.gz of live PROD data into backups/
+.\deploy\sync-data.ps1 list        # list local backups
+.\deploy\sync-data.ps1 restore .\backups\prod-YYYYMMDD-HHMMSS.tar.gz   # push a backup UP to prod (guarded)
+```
+
+- **Safe on the live server.** The server writes data atomically (temp file +
+  rename, `server/src/atomicWrite.ts`), so a `pull`/`backup` never catches a
+  half-written file — and a crash mid-save can't corrupt the live data either.
+- **Backups** land in `backups/` (gitignored), timestamped, newest `KEEP` (=20)
+  retained per kind: `prod-*` (manual), `local-prepull-*` (auto before each pull),
+  `prod-prerestore-*` (auto before each restore).
+- **`restore` is guarded:** it lists the archive, asks for confirmation, takes a
+  fresh safety backup of prod, then `pm2 stop → push files → pm2 restart` so the
+  server reloads the restored data from disk (stopping first ensures its periodic
+  save doesn't overwrite the push).
+- **Config via env:** `SSH_HOST`, `SSH_USER`, `SSH_KEY` (default
+  `~/.ssh/cityleaks_hetzner`), `REMOTE_APP`, `PM2_NAME`, `KEEP`. Uses `ssh`/`scp`
+  + `tar` (no `rsync` needed). If `ssh` complains the key is "too open", tighten
+  it with `icacls`/`chmod 600`.
 
 ## Useful server commands
 

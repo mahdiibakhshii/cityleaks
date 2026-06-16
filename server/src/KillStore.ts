@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
+import { writeFileAtomic, writeFileAtomicSync } from './atomicWrite';
 import type { KillMarker, MapBounds } from '../../shared/protocol';
 
 /**
@@ -75,9 +75,7 @@ export class KillStore {
 
   /** Synchronous save — use only on shutdown (must finish before exit). */
   saveToDisk(filePath: string): void {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify(this.kills));
+    writeFileAtomicSync(filePath, JSON.stringify(this.kills));
     console.log(`Kill markers saved: ${this.kills.length}`);
   }
 
@@ -90,8 +88,7 @@ export class KillStore {
     this.saving = true;
     try {
       const snapshot = JSON.stringify(this.kills);
-      await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-      await fs.promises.writeFile(filePath, snapshot);
+      await writeFileAtomic(filePath, snapshot);
     } finally {
       this.saving = false;
       if (this.saveQueued) {

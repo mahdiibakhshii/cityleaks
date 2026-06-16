@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from 'path';
+import { writeFileAtomic, writeFileAtomicSync } from './atomicWrite';
 import { NOTE_MAX_LENGTH, type Note, type NoteCreate } from '../../shared/protocol';
 import type { MapBounds } from '../../shared/protocol';
 
@@ -114,9 +114,7 @@ export class NoteStore {
 
   /** Synchronous save — use only on shutdown (must finish before exit). */
   saveToDisk(filePath: string): void {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify(this.notes));
+    writeFileAtomicSync(filePath, JSON.stringify(this.notes));
     console.log(`Notes saved: ${this.notes.length}`);
   }
 
@@ -133,8 +131,7 @@ export class NoteStore {
     this.saving = true;
     try {
       const snapshot = JSON.stringify(this.notes);
-      await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
-      await fs.promises.writeFile(filePath, snapshot);
+      await writeFileAtomic(filePath, snapshot);
     } finally {
       this.saving = false;
       if (this.saveQueued) {

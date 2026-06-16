@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { PNG } from 'pngjs';
+import { writeFileAtomic } from './atomicWrite';
 import {
   COLLISION_GRID_SIZE,
   MAP,
@@ -288,8 +289,7 @@ export class CollisionField {
       const header = Buffer.alloc(CACHE_HEADER_BYTES);
       header.writeInt32LE(this.size, 0);
       header.writeUInt32LE(fingerprint, 4);
-      await fs.promises.mkdir(path.dirname(this.cacheFile), { recursive: true });
-      await fs.promises.writeFile(this.cacheFile, Buffer.concat([header, Buffer.from(this.grid)]));
+      await writeFileAtomic(this.cacheFile, Buffer.concat([header, Buffer.from(this.grid)]));
       console.log(`CollisionField: cache written to ${this.cacheFile}.`);
     } catch (err) {
       console.warn('CollisionField: failed to write cache (non-fatal):', err);
