@@ -8,19 +8,36 @@ html,
 body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
   background: #1a1a2e;
-  touch-action: none; /* Prevent pinch-zoom / scroll / swipe gestures. */
-  -webkit-touch-callout: none;
-  user-select: none;
-  -webkit-user-select: none;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-canvas {
+/* Game + monitor: full-screen immersive — no scroll, no browser gestures. */
+body.game-page,
+body.monitor-page {
+  overflow: hidden;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Game + monitor canvases fill their container exactly. */
+body.game-page canvas,
+body.monitor-page canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+/* Admin page: scrollable, full interactions. Canvases size naturally. */
+body.admin-body {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+}
+body.admin-body canvas {
+  display: block;
 }
 
 #joystick-zone {
@@ -1201,52 +1218,164 @@ canvas {
 }
 
 /* ─── Admin notes page (dedicated note manager) ───
-   A focused view (reached from the dashboard) for moderating notes + attaching
-   the real-sticker photos: a big overview map of note pins on the left, a detail
-   panel (edit / delete / photo) on the right. In-page view swap — no new route. */
+   Full-screen overlay mirroring the monitor layout: map on the left, compact
+   scrollable notes list + detail panel on the right sidebar. In-page view swap
+   — no new route. Uses position:fixed so it always covers the viewport regardless
+   of the dashboard's scroll position. */
 .admin-notes-page {
-  padding: clamp(18px, 2vw, 40px);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 1.6vw, 32px);
-  min-height: 100vh;
-  box-sizing: border-box;
+  background: #1a1a2e;
+  color: #e8e8f0;
 }
-.admin-notes-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
-  gap: clamp(18px, 1.8vw, 36px);
-  align-items: start;
+.admin-notes-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: clamp(10px, 0.8vw, 18px) clamp(14px, 1.2vw, 26px);
+  background: rgba(13, 13, 22, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-@media (max-width: 900px) {
-  .admin-notes-layout {
-    grid-template-columns: 1fr;
-  }
+.admin-notes-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Left: the city map canvas, square, centred in the pane. */
+.admin-notes-map-pane {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  background: #11131a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .admin-notes-map {
-  width: 100%;
-  height: auto;
   display: block;
-  border-radius: 12px;
-  background: #11131a;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1;
   cursor: crosshair;
 }
-.admin-note-detail {
-  background: #16161f;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  padding: clamp(18px, 1.6vw, 34px);
+.admin-notes-legend {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: #6c6c7c;
+  background: rgba(10, 11, 18, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+/* Right: notes list + detail panel sidebar (mirrors #monitor-notes). */
+.admin-notes-sidebar {
+  width: clamp(260px, 28vw, 420px);
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 1vw, 22px);
+  overflow: hidden;
+  background: rgba(10, 11, 18, 0.96);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
-.admin-note-detail.admin-note-creator {
+.admin-notes-sidebar-title {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a8a9a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.admin-notes-list {
+  flex: 0 0 auto;
+  max-height: 46%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* Compact note row in the sidebar list. */
+.admin-note-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 7px;
+  padding: 7px 9px;
+  color: #e8e8f0;
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.admin-note-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.admin-note-row.selected {
+  border-color: rgba(42, 157, 244, 0.7);
+  background: rgba(42, 157, 244, 0.12);
+}
+.admin-note-row.creator {
   border-color: rgba(255, 210, 63, 0.5);
+  background: rgba(255, 210, 63, 0.07);
+  color: #ffe680;
+  font-style: italic;
+}
+.admin-note-row-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-note-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6c7a8a;
+}
+.admin-note-row-photo-badge {
+  color: #3ad17a;
+}
+
+/* Detail panel for the selected note. */
+.admin-notes-detail {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(10px, 0.9vw, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 0.7vw, 14px);
+}
+.admin-notes-detail-empty {
+  color: #6c6c7c;
+  font-style: italic;
+  font-size: 13px;
+  padding: 12px 0;
+  text-align: center;
 }
 .admin-note-photo {
   display: block;
   width: 100%;
-  max-height: 320px;
+  max-height: 260px;
   object-fit: contain;
   background: #000;
   border: 3px solid #fff;
@@ -1254,10 +1383,11 @@ canvas {
 }
 .admin-dropzone {
   border: 2px dashed rgba(255, 255, 255, 0.25);
-  border-radius: 12px;
-  padding: clamp(18px, 2vw, 34px);
+  border-radius: 10px;
+  padding: clamp(14px, 1.4vw, 24px);
   text-align: center;
   color: #8a8a9a;
+  font-size: 13px;
   cursor: pointer;
   transition: border-color 120ms ease, background 120ms ease;
 }
@@ -1268,6 +1398,24 @@ canvas {
   color: #cfe8ff;
 }
 .admin-upload-status {
-  font-size: clamp(13px, 0.95vw, 20px);
+  font-size: 12px;
   color: #8a8a9a;
+}
+
+/* Mobile: stack map above sidebar */
+@media (max-width: 768px) {
+  .admin-notes-content {
+    flex-direction: column;
+  }
+  .admin-notes-map-pane {
+    flex: 0 0 auto;
+    height: 50vw;
+    max-height: 52vh;
+  }
+  .admin-notes-sidebar {
+    width: 100%;
+    flex: 1;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }

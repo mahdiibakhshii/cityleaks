@@ -56,7 +56,10 @@ export class AdminApp {
 
   // Dedicated notes-manager view (in-page swap from the dashboard).
   private notesCanvas: HTMLCanvasElement | null = null;
+  private notesListEl: HTMLElement | null = null;
+  private notesListTitle: HTMLElement | null = null;
   private notesDetailEl: HTMLElement | null = null;
+  private notesMapRO: ResizeObserver | null = null;
   private selectedNoteId: string | null = null;
   private uploadStatus = '';
 
@@ -362,69 +365,138 @@ export class AdminApp {
     this.renderOverview();
   }
 
-  // ─── Dedicated notes page (map + detail + photo upload) ───
+  // ─── Dedicated notes page (map + list + detail panel) ───
 
   /**
-   * The note-manager view: a big overview map of note pins (click to select) and
-   * a detail panel to edit / delete the selected note and attach the real-world
-   * photo of its physical sticker. An in-page swap of the dashboard — no route.
+   * Full-screen overlay mirroring the monitor layout: the city map on the left
+   * (click a pin to select a note) and a sidebar on the right with a compact
+   * scrollable notes list at the top and a detail panel (edit / delete / photo)
+   * below. In-page view swap — no new route.
    */
   private renderNotesPage(): void {
-    // Null the dashboard refs so its ~1 Hz renderers no-op while we're here.
+    // Null dashboard refs so their renderers no-op while we're on this view.
     this.statsEl = null;
     this.playersEl = null;
     this.notesEl = null;
     this.overview = null;
     this.opacityInput = null;
     this.opacityLabel = null;
+    this.notesMapRO?.disconnect();
+    this.notesMapRO = null;
 
     this.root.innerHTML = '';
     const page = el('div', 'admin-notes-page');
 
-    const header = el('div', 'admin-header');
+    // Header bar
+    const header = el('div', 'admin-notes-header');
     header.appendChild(el('div', 'admin-title', 'Notes'));
-    const back = el('button', 'admin-btn', '← Back');
+    const back = el('button', 'admin-btn', '← Dashboard');
     back.addEventListener('click', () => {
       this.selectedNoteId = null;
+      this.notesMapRO?.disconnect();
+      this.notesMapRO = null;
       this.renderDashboard();
     });
     header.appendChild(back);
     page.appendChild(header);
 
-    const layout = el('div', 'admin-notes-layout');
+    // Content area: map left + sidebar right
+    const content = el('div', 'admin-notes-content');
 
-    const mapCard = el('div', 'admin-card');
-    mapCard.appendChild(el('div', 'admin-card-title', 'Map — click a note'));
+    // Left: map pane
+    const mapPane = el('div', 'admin-notes-map-pane');
     this.notesCanvas = el('canvas', 'admin-notes-map');
     this.notesCanvas.addEventListener('click', (e) => this.handleNotesMapClick(e));
-    mapCard.appendChild(this.notesCanvas);
-    mapCard.appendChild(el('div', 'admin-legend', '● note   ▲ creator note   ◎ selected   📷 has photo'));
-    layout.appendChild(mapCard);
+    mapPane.appendChild(this.notesCanvas);
+    mapPane.appendChild(
+      el('div', 'admin-notes-legend', '● note   ▲ creator   ◎ selected   📷 photo')
+    );
+    content.appendChild(mapPane);
 
-    this.notesDetailEl = el('div', 'admin-note-detail');
-    layout.appendChild(this.notesDetailEl);
+    // Right: sidebar
+    const sidebar = el('div', 'admin-notes-sidebar');
 
-    page.appendChild(layout);
+    this.notesListTitle = el('div', 'admin-notes-sidebar-title', `Notes (${this.notes.size})`);
+    sidebar.appendChild(this.notesListTitle);
+
+    this.notesListEl = el('div', 'admin-notes-list');
+    sidebar.appendChild(this.notesListEl);
+
+    this.notesDetailEl = el('div', 'admin-notes-detail');
+    sidebar.appendChild(this.notesDetailEl);
+
+    content.appendChild(sidebar);
+    page.appendChild(content);
     this.root.appendChild(page);
 
-    // Reuse / lazily load the overview image, then draw.
+    // Observe canvas resizes so the map redraws whenever the pane resizes.
+    this.notesMapRO = new ResizeObserver(() => this.drawNotesMap());
+    this.notesMapRO.observe(this.notesCanvas);
+
+    // Lazily load the overview image then draw.
     if (!this.overviewImg) {
       this.overviewImg = new Image();
       this.overviewImg.onload = () => this.drawNotesMap();
       this.overviewImg.src = ASSETS.OVERVIEW_PATH;
     }
+    this.renderNotesList();
     this.drawNotesMap();
     this.renderNoteDetail();
   }
 
-  /** Live-refresh the notes page (if open) after a NOTE_* change. */
+  /** Live-refresh the notes page (if open) after a NOTE_* event. */
   private refreshNotesView(): void {
     if (!this.notesCanvas) return;
     if (this.selectedNoteId && !this.notes.has(this.selectedNoteId)) {
       this.selectedNoteId = null;
     }
+    if (this.notesListTitle) {
+      this.notesListTitle.textContent = `Notes (${this.notes.size})`;
+    }
+    this.renderNotesList();
     this.drawNotesMap();
     this.renderNoteDetail();
+  }
+
+  /** Compact monitor-style list of all notes in the sidebar. */
+  private renderNotesList(): void {
+    const host = this.notesListEl;
+    if (!host) return;
+    host.innerHTML = '';
+    const sorted = [...this.notes.values()].sort((a, b) => b.createdAt - a.createdAt);
+    if (sorted.length === 0) {
+      host.appendChild(el('div', 'admin-notes-detail-empty', 'No notes yet.'));
+      return;
+    }
+    for (const note of sorted) {
+      const classes = [
+        'admin-note-row',
+        note.admin ? 'creator' : '',
+        note.id === this.selectedNoteId ? 'selected' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      const row = el('div', classes);
+
+      const textEl = el('div', 'admin-note-row-text', note.text);
+      row.appendChild(textEl);
+
+      const meta = el('div', 'admin-note-row-meta');
+      if (note.image) meta.appendChild(el('span', 'admin-note-row-photo-badge', '📷'));
+      meta.appendChild(el('span', '', note.admin ? 'Creator note' : 'Note'));
+      row.appendChild(meta);
+
+      row.addEventListener('click', () => {
+        this.selectedNoteId = note.id;
+        this.uploadStatus = '';
+        this.drawNotesMap();
+        this.renderNotesList();
+        this.renderNoteDetail();
+        // Scroll detail panel into view on mobile
+        this.notesDetailEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      host.appendChild(row);
+    }
   }
 
   /** Draw the overview with a pin per note; the selected note is ringed. */
@@ -432,10 +504,11 @@ export class AdminApp {
     const canvas = this.notesCanvas;
     const img = this.overviewImg;
     if (!canvas) return;
-    const cssW = canvas.clientWidth || 640;
-    const aspect = MAP_BOUNDS.height / MAP_BOUNDS.width;
-    canvas.width = Math.round(cssW);
-    canvas.height = Math.round(cssW * aspect);
+    // The canvas has aspect-ratio:1 CSS so clientWidth === clientHeight.
+    // Use clientWidth as the square internal resolution (falls back to 640).
+    const size = canvas.clientWidth || 640;
+    canvas.width = size;
+    canvas.height = size;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -510,14 +583,14 @@ export class AdminApp {
     const host = this.notesDetailEl;
     if (!host) return;
     host.innerHTML = '';
-    host.classList.remove('admin-note-creator');
 
     const note = this.selectedNoteId ? this.notes.get(this.selectedNoteId) : null;
     if (!note) {
-      host.appendChild(el('div', 'admin-empty', 'Click a note on the map to manage it.'));
+      host.appendChild(
+        el('div', 'admin-notes-detail-empty', 'Click a note on the map or list to manage it.')
+      );
       return;
     }
-    if (note.admin) host.classList.add('admin-note-creator');
 
     host.appendChild(el('div', 'admin-card-title', note.admin ? 'Creator note' : 'Note'));
 
