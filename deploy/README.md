@@ -60,6 +60,31 @@ Set under repo → Settings → Secrets and variables → Actions:
 | `SSH_USER` | `root` |
 | `SSH_PRIVATE_KEY` | private half of the deploy keypair (public half is in the server's `~/.ssh/authorized_keys`) |
 
+## Admin password (REQUIRED in production)
+
+The admin console can wipe all notes/paths/kills, so in production the server
+**refuses to boot unless `ADMIN_PASSWORD` is set to a strong value** (≥10 chars,
+not the public default `252525`). The secret is **never committed** — it's read
+from the server environment and passed through by `ecosystem.config.cjs`.
+
+Set it once on the server, then restart so PM2 picks it up:
+
+```bash
+# On the server (root@…). Use a long random value.
+echo 'ADMIN_PASSWORD=<a-long-random-passphrase>' >> /etc/environment
+# Make it available to the current session + PM2 right now:
+export ADMIN_PASSWORD='<the-same-value>'
+cd /opt/cityleaks && pm2 restart cityleaks --update-env && pm2 save
+# Verify it booted (no FATAL line):
+pm2 logs cityleaks --lines 20
+```
+
+`/etc/environment` is loaded for the deploy's SSH session too, so the
+`pm2 restart … --update-env` in `.github/workflows/deploy.yml` keeps the password
+across deploys. **Do this BEFORE the next deploy** — otherwise the new build will
+hard-refuse to boot and PM2 will crash-loop. (Tokens/lockouts are in-memory, so a
+restart logs admins out and clears any login lockout — expected.)
+
 ## Data sync & backups
 
 The live, player-generated state — the **leak paths** (`leak-grid.bin`), **sticky

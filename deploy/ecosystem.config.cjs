@@ -15,6 +15,11 @@ module.exports = {
         NODE_ENV: 'production',
         UV_THREADPOOL_SIZE: '8',
         NODE_OPTIONS: '--max-old-space-size=1536',
+        // Admin password is a SECRET — never hardcode it here (public repo).
+        // Provide it via the server environment (e.g. /etc/environment) and it is
+        // passed through below. In production the server REFUSES TO BOOT unless
+        // ADMIN_PASSWORD is set to a strong value (≥10 chars, not the default).
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
       },
       autorestart: true,
       max_restarts: 20,

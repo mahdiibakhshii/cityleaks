@@ -30,10 +30,11 @@ export const EVENTS = {
   KILL_EXISTING: 'kill:existing', // server → client: all kill markers on connect
   KILL_NEW: 'kill:new', // server → client: one newly placed kill marker
   KILL_RESET: 'kill:reset', // server → client: all kill markers cleared (admin)
-  // Admin (server-enforced password gate). The admin page connects role=admin
-  // with a token; the live game grants the Batman identity only with a valid
-  // token. All client→server admin actions are trusted because the socket is
-  // already in the authed `admin` room.
+  // Admin (server-enforced password gate). The admin page connects role=admin;
+  // auth is the httpOnly session cookie (set at login), read from the socket
+  // handshake — never a token in the query string. The live game grants the
+  // Batman identity only when that same cookie is valid. All client→server admin
+  // actions are trusted because the socket is already in the authed `admin` room.
   ADMIN_OK: 'admin:ok', // server → admin: token accepted
   ADMIN_DENIED: 'admin:denied', // server → admin: token rejected (then disconnect)
   ADMIN_STATS: 'admin:stats', // server → admin: live dashboard numbers (~1 Hz)
@@ -41,6 +42,7 @@ export const EVENTS = {
   ADMIN_ANNOUNCE: 'admin:announce', // server → game+monitor: transient broadcast message
   ADMIN_NOTE_DELETE: 'admin:note:delete', // admin → server: delete a note — {id}
   ADMIN_NOTE_EDIT: 'admin:note:edit', // admin → server: edit a note — {id,text}
+  ADMIN_NOTE_IMAGE_REMOVE: 'admin:note:image:remove', // admin → server: detach a note's photo — {id}
   ADMIN_BROADCAST: 'admin:broadcast', // admin → server: broadcast a message — {text}
   ADMIN_RESET_PATHS: 'admin:reset:paths', // admin → server: wipe the leak grid
   ADMIN_RESET_NOTES: 'admin:reset:notes', // admin → server: wipe all notes
@@ -465,6 +467,13 @@ export interface Note {
   text: string;
   createdAt: number; // epoch ms
   admin?: boolean; // true = a "creator" note stuck by Batman (distinct icon + style)
+  // A photo of the note's REAL physical sticker, placed in the city by an admin.
+  // Relative URL served by the server (e.g. "/note-images/n12.webp"); absent =
+  // text-only. The digital↔physical "feedback": the words returned as evidence
+  // of their physical twin on a Vienna wall. Uploaded only via the authed admin
+  // endpoint (POST /api/admin/note-image).
+  image?: string;
+  imageAt?: number; // epoch ms the photo was attached (also cache-busts the URL)
 }
 
 // Client → server request to stick a note. The server validates text length and
@@ -473,6 +482,14 @@ export interface NoteCreate {
   x: number;
   y: number;
   text: string;
+}
+
+// Resolve a note's photo to a cache-busted URL (the filename is reused on
+// replace, so we version it by imageAt). Returns null for text-only notes. Used
+// by every surface that shows the real-sticker photo (game / monitor / admin).
+export function noteImageUrl(note: Note): string | null {
+  if (!note.image) return null;
+  return note.imageAt ? `${note.image}?v=${note.imageAt}` : note.image;
 }
 
 // ─── Admin payloads ───

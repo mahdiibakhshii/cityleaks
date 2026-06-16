@@ -6,9 +6,13 @@
     <meta name="theme-color" content="#0d0d16" />
     <title>CityLeaks — Monitor</title>
   </head>
-  <body>
-    <!-- Three.js canvas is appended by MonitorApp.ts -->
-    <div id="monitor-hud">Connecting…</div>
+  <body class="monitor-page">
+    <!-- Map region — the Three.js canvas is appended here by MonitorApp.ts.
+         On mobile this is the top ~60%; the notes panel stacks below it. -->
+    <div id="monitor-map">
+      <div id="monitor-hud">Connecting…</div>
+    </div>
+    <!-- #monitor-notes is built + appended (as a body child) by MonitorApp.ts. -->
     <script type="module" src="/src/monitor.ts"></script>
   </body>
 </html>

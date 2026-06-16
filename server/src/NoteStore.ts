@@ -55,6 +55,37 @@ export class NoteStore {
     return note;
   }
 
+  /** A single note by id, or undefined. */
+  get(id: string): Note | undefined {
+    return this.notes.find((n) => n.id === id);
+  }
+
+  /**
+   * Attach (or replace) a note's real-sticker photo. `url` is the relative URL
+   * the server serves the image at; `at` cache-busts it. Returns the updated
+   * Note, or null if the id is unknown. The actual file write happens in the
+   * upload endpoint — this only records the pointer.
+   */
+  setImage(id: string, url: string, at: number): Note | null {
+    const note = this.notes.find((n) => n.id === id);
+    if (!note) return null;
+    note.image = url;
+    note.imageAt = at;
+    return note;
+  }
+
+  /**
+   * Detach a note's photo. Returns the updated Note (image cleared), or null if
+   * the id is unknown. The caller is responsible for deleting the file.
+   */
+  clearImage(id: string): Note | null {
+    const note = this.notes.find((n) => n.id === id);
+    if (!note) return null;
+    delete note.image;
+    delete note.imageAt;
+    return note;
+  }
+
   /** Delete a note by id. Returns true if a note was removed. */
   remove(id: string): boolean {
     const before = this.notes.length;

@@ -27,6 +27,10 @@ export class NoteUI {
   private counter: HTMLSpanElement;
   private reveal: HTMLDivElement;
   private revealText: HTMLDivElement;
+  // Postcard variant (shown when a note has a real-sticker photo).
+  private revealCard: HTMLDivElement;
+  private revealCardImg: HTMLImageElement;
+  private revealCardText: HTMLDivElement;
   private currentRevealKey: string | null = null;
 
   // Transient admin broadcast overlay (distinct from note reveals).
@@ -43,6 +47,29 @@ export class NoteUI {
     this.revealText = document.createElement('div');
     this.revealText.className = 'note-reveal-text';
     this.reveal.appendChild(this.revealText);
+
+    // Postcard variant: the real-sticker photo paired with the digital words —
+    // the loop from screen → physical wall → screen. Hidden until a note with a
+    // photo is revealed; then it replaces the plain text reveal.
+    this.revealCard = document.createElement('div');
+    this.revealCard.className = 'note-card';
+    this.revealCard.style.display = 'none';
+    const figure = document.createElement('figure');
+    figure.className = 'note-card-photo';
+    this.revealCardImg = document.createElement('img');
+    this.revealCardImg.alt = '';
+    figure.appendChild(this.revealCardImg);
+    const body = document.createElement('div');
+    body.className = 'note-card-body';
+    this.revealCardText = document.createElement('div');
+    this.revealCardText.className = 'note-card-text';
+    const tag = document.createElement('div');
+    tag.className = 'note-card-tag';
+    tag.textContent = '📍 the real sticker, on a wall in the city';
+    body.append(this.revealCardText, tag);
+    this.revealCard.append(figure, body);
+    this.reveal.appendChild(this.revealCard);
+
     document.body.appendChild(this.reveal);
 
     // ─── Admin broadcast overlay (non-interactive, auto-dismissed) ───
@@ -116,14 +143,27 @@ export class NoteUI {
    * Show a note's text fullscreen. Keyed by id so we only re-fit the font when
    * the revealed note actually changes (called every frame while in range).
    */
-  showReveal(text: string, key: string, isAdmin = false): void {
+  showReveal(text: string, key: string, isAdmin = false, image: string | null = null): void {
     if (this.currentRevealKey === key) return;
     this.currentRevealKey = key;
-    this.revealText.textContent = text;
     // "Creator" (Batman) notes reveal in a distinct style.
     this.reveal.classList.toggle('admin', isAdmin);
     this.reveal.classList.add('visible');
-    this.fitRevealText();
+
+    if (image) {
+      // Postcard mode: the real-sticker photo + the digital words. CSS sizes the
+      // text (no JS font-fit needed), so we skip fitRevealText here.
+      this.revealText.style.display = 'none';
+      this.revealCard.style.display = '';
+      this.revealCard.classList.toggle('admin', isAdmin);
+      this.revealCardText.textContent = text;
+      this.revealCardImg.src = image;
+    } else {
+      this.revealCard.style.display = 'none';
+      this.revealText.style.display = '';
+      this.revealText.textContent = text;
+      this.fitRevealText();
+    }
   }
 
   /**
@@ -175,7 +215,10 @@ export class NoteUI {
   }
 
   private onResize = (): void => {
-    if (this.currentRevealKey !== null) this.fitRevealText();
+    // Only the text reveal needs re-fitting; the postcard is CSS-sized.
+    if (this.currentRevealKey !== null && this.revealText.style.display !== 'none') {
+      this.fitRevealText();
+    }
   };
 
   // ─── Compose modal ───

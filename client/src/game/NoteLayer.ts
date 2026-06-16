@@ -73,14 +73,16 @@ export class NoteLayer {
     if (this.revealedId === id) this.revealedId = null;
   }
 
-  /** Update a note's stored text in place (admin edit → NOTE_UPDATE). */
+  /** Update a note's stored data in place (admin edit / photo → NOTE_UPDATE).
+   *  Keeps the existing sprite but refreshes text + image so the next reveal
+   *  shows the new content. */
   updateNote(note: Note): void {
     const entry = this.notes.get(note.id);
     if (!entry) {
       this.addNote(note);
       return;
     }
-    entry.note.text = note.text;
+    entry.note = note;
   }
 
   /**

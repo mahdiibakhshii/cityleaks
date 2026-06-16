@@ -11,9 +11,21 @@ export { MAP_BOUNDS, SPAWN, COLLISION_GRID_SIZE };
 
 export const PORT = Number(process.env.PORT) || 3000;
 
-// Admin page password. Override in production via env (ADMIN_PASSWORD=…); the
-// default matches the simple local code requested for the installation.
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '252525';
+// True when running under PM2 in production (NODE_ENV set in ecosystem.config.cjs).
+// Gates the hard-refuse-on-weak-password boot check + the Secure cookie flag.
+export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// Admin page password. Override via env (ADMIN_PASSWORD=…). The weak default is
+// for LOCAL DEV ONLY — in production the server refuses to boot unless a strong
+// password is set (see ADMIN_PASSWORD_INSECURE + the check in index.ts).
+const DEFAULT_ADMIN_PASSWORD = '252525';
+const MIN_ADMIN_PASSWORD_LENGTH = 10;
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+
+// The configured admin password is unsafe for production: it's the public
+// default, or too short to resist guessing even with rate limiting.
+export const ADMIN_PASSWORD_INSECURE =
+  ADMIN_PASSWORD === DEFAULT_ADMIN_PASSWORD || ADMIN_PASSWORD.length < MIN_ADMIN_PASSWORD_LENGTH;
 
 // Where the leak grid is persisted. Resolved relative to the server's cwd.
 export const GRID_FILE = path.resolve(process.cwd(), 'data', 'leak-grid.bin');
@@ -26,6 +38,11 @@ export const KILLS_FILE = path.resolve(process.cwd(), 'data', 'kills.json');
 
 // Cached server collision field (built once from the mask tiles). Same data dir.
 export const COLLISION_FILE = path.resolve(process.cwd(), 'data', 'collision.bin');
+
+// Where admins' real-sticker photos are stored (one webp per note id). Same data
+// dir as the notes themselves so it's persistent, gitignored, and synced/backed
+// up alongside notes.json (see deploy/sync-data.sh). Served at /note-images.
+export const NOTE_IMAGES_DIR = path.resolve(process.cwd(), 'data', 'note-images');
 
 // Directory of mask PNG tiles the server decodes to build its collision field.
 // Production: Vite copies client/public/ into client/dist/, so masks live in

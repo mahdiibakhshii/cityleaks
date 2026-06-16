@@ -4,6 +4,7 @@ import {
   MAP_BOUNDS,
   getCharacter,
   ANON_CHARACTER_ID,
+  noteImageUrl,
   type Note,
   type KillMarker,
   type AdminStats,
@@ -38,7 +39,6 @@ function el<K extends keyof HTMLElementTagNameMap>(
 export class AdminApp {
   private root: HTMLElement;
   private socket: Socket | null = null;
-  private token = '';
 
   // Live state.
   private notes = new Map<string, Note>();
@@ -54,12 +54,31 @@ export class AdminApp {
   private opacityInput: HTMLInputElement | null = null;
   private opacityLabel: HTMLElement | null = null;
 
+  // Dedicated notes-manager view (in-page swap from the dashboard).
+  private notesCanvas: HTMLCanvasElement | null = null;
+  private notesDetailEl: HTMLElement | null = null;
+  private selectedNoteId: string | null = null;
+  private uploadStatus = '';
+
   constructor() {
     this.root = document.getElementById('admin-root') ?? document.body;
   }
 
   start(): void {
-    this.renderLogin();
+    // Try to resume an existing session: the admin token is an httpOnly cookie we
+    // can't read from JS, so we just attempt the authed socket connect. A valid
+    // cookie → straight to the dashboard (survives reloads for the cookie's TTL);
+    // no/expired cookie → the server denies and we fall back to the login form.
+    this.renderChecking();
+    this.connect();
+  }
+
+  private renderChecking(): void {
+    this.root.innerHTML = '';
+    const wrap = el('div', 'admin-login');
+    wrap.appendChild(el('div', 'admin-login-title', 'CityLeaks Admin'));
+    wrap.appendChild(el('div', 'admin-login-error', 'Checking session…'));
+    this.root.appendChild(wrap);
   }
 
   // ─── Login ───
@@ -100,13 +119,19 @@ export class AdminApp {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
+        credentials: 'same-origin', // accept the Set-Cookie session
       });
+      if (res.status === 429) {
+        const data = (await res.json().catch(() => ({}))) as { retryAfterMs?: number };
+        const mins = Math.ceil((data.retryAfterMs ?? 0) / 60000);
+        error.textContent = `Too many attempts. Try again in ~${Math.max(1, mins)} min.`;
+        return;
+      }
       if (!res.ok) {
         error.textContent = 'Wrong password.';
         return;
       }
-      const data = (await res.json()) as { token: string };
-      this.token = data.token;
+      // Success: the server set the httpOnly session cookie; connect with it.
       this.connect();
     } catch {
       error.textContent = 'Could not reach the server.';
@@ -116,16 +141,25 @@ export class AdminApp {
   // ─── Socket ───
 
   private connect(): void {
+    // Don't stack sockets if we retry after a denial.
+    if (this.socket) {
+      this.socket.close();
+      this.socket = null;
+    }
+    // The admin token is the httpOnly session cookie (sent automatically with the
+    // same-origin handshake) — never a query param.
     const socket = io({
-      query: { role: 'admin', token: this.token },
+      query: { role: 'admin' },
       transports: ['websocket', 'polling'],
       reconnection: true,
     });
     this.socket = socket;
 
     socket.on(EVENTS.ADMIN_DENIED, () => {
-      this.token = '';
-      this.renderLogin('Session rejected. Log in again.');
+      // Invalid/expired session: stop reconnecting and show the login form.
+      socket.close();
+      if (this.socket === socket) this.socket = null;
+      this.renderLogin();
     });
     socket.on(EVENTS.ADMIN_OK, () => this.renderDashboard());
 
@@ -136,25 +170,30 @@ export class AdminApp {
       this.notes = new Map(notes.map((n) => [n.id, n]));
       this.renderNotes();
       this.renderOverview();
+      this.refreshNotesView();
     });
     socket.on(EVENTS.NOTE_NEW, (note: Note) => {
       this.notes.set(note.id, note);
       this.renderNotes();
       this.renderOverview();
+      this.refreshNotesView();
     });
     socket.on(EVENTS.NOTE_UPDATE, (note: Note) => {
       this.notes.set(note.id, note);
       this.renderNotes();
+      this.refreshNotesView();
     });
     socket.on(EVENTS.NOTE_REMOVE, (data: { id: string }) => {
       this.notes.delete(data.id);
       this.renderNotes();
       this.renderOverview();
+      this.refreshNotesView();
     });
     socket.on(EVENTS.NOTE_RESET, () => {
       this.notes.clear();
       this.renderNotes();
       this.renderOverview();
+      this.refreshNotesView();
     });
 
     socket.on(EVENTS.KILL_EXISTING, (markers: KillMarker[]) => {
@@ -187,19 +226,44 @@ export class AdminApp {
     this.socket?.emit(event, payload);
   }
 
+  /** Revoke the session server-side, clear the cookie, drop back to login. */
+  private async logout(): Promise<void> {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+    } catch {
+      // Ignore network errors — we still tear down the client session below.
+    }
+    if (this.socket) {
+      this.socket.close();
+      this.socket = null;
+    }
+    this.selectedNoteId = null;
+    this.renderLogin();
+  }
+
   // ─── Dashboard layout ───
 
   private renderDashboard(): void {
+    // Leaving the notes view: drop its refs so its live-refresh no-ops.
+    this.notesCanvas = null;
+    this.notesDetailEl = null;
     this.root.innerHTML = '';
     const page = el('div', 'admin-page');
 
     const header = el('div', 'admin-header');
     header.appendChild(el('div', 'admin-title', 'CityLeaks — Admin'));
+    const notesPageBtn = el('button', 'admin-btn', '🗒 Manage notes');
+    notesPageBtn.addEventListener('click', () => this.renderNotesPage());
+    header.appendChild(notesPageBtn);
     const batman = el('button', 'admin-btn admin-btn-batman', '🦇 Play as Batman');
     batman.addEventListener('click', () => {
-      window.open(`/?admin=${encodeURIComponent(this.token)}`, '_blank');
+      // Same-origin: the admin session cookie authorizes Batman server-side.
+      window.open('/?batman=1', '_blank');
     });
     header.appendChild(batman);
+    const logout = el('button', 'admin-btn', 'Log out');
+    logout.addEventListener('click', () => void this.logout());
+    header.appendChild(logout);
     page.appendChild(header);
 
     const grid = el('div', 'admin-grid');
@@ -296,6 +360,263 @@ export class AdminApp {
 
     this.renderNotes();
     this.renderOverview();
+  }
+
+  // ─── Dedicated notes page (map + detail + photo upload) ───
+
+  /**
+   * The note-manager view: a big overview map of note pins (click to select) and
+   * a detail panel to edit / delete the selected note and attach the real-world
+   * photo of its physical sticker. An in-page swap of the dashboard — no route.
+   */
+  private renderNotesPage(): void {
+    // Null the dashboard refs so its ~1 Hz renderers no-op while we're here.
+    this.statsEl = null;
+    this.playersEl = null;
+    this.notesEl = null;
+    this.overview = null;
+    this.opacityInput = null;
+    this.opacityLabel = null;
+
+    this.root.innerHTML = '';
+    const page = el('div', 'admin-notes-page');
+
+    const header = el('div', 'admin-header');
+    header.appendChild(el('div', 'admin-title', 'Notes'));
+    const back = el('button', 'admin-btn', '← Back');
+    back.addEventListener('click', () => {
+      this.selectedNoteId = null;
+      this.renderDashboard();
+    });
+    header.appendChild(back);
+    page.appendChild(header);
+
+    const layout = el('div', 'admin-notes-layout');
+
+    const mapCard = el('div', 'admin-card');
+    mapCard.appendChild(el('div', 'admin-card-title', 'Map — click a note'));
+    this.notesCanvas = el('canvas', 'admin-notes-map');
+    this.notesCanvas.addEventListener('click', (e) => this.handleNotesMapClick(e));
+    mapCard.appendChild(this.notesCanvas);
+    mapCard.appendChild(el('div', 'admin-legend', '● note   ▲ creator note   ◎ selected   📷 has photo'));
+    layout.appendChild(mapCard);
+
+    this.notesDetailEl = el('div', 'admin-note-detail');
+    layout.appendChild(this.notesDetailEl);
+
+    page.appendChild(layout);
+    this.root.appendChild(page);
+
+    // Reuse / lazily load the overview image, then draw.
+    if (!this.overviewImg) {
+      this.overviewImg = new Image();
+      this.overviewImg.onload = () => this.drawNotesMap();
+      this.overviewImg.src = ASSETS.OVERVIEW_PATH;
+    }
+    this.drawNotesMap();
+    this.renderNoteDetail();
+  }
+
+  /** Live-refresh the notes page (if open) after a NOTE_* change. */
+  private refreshNotesView(): void {
+    if (!this.notesCanvas) return;
+    if (this.selectedNoteId && !this.notes.has(this.selectedNoteId)) {
+      this.selectedNoteId = null;
+    }
+    this.drawNotesMap();
+    this.renderNoteDetail();
+  }
+
+  /** Draw the overview with a pin per note; the selected note is ringed. */
+  private drawNotesMap(): void {
+    const canvas = this.notesCanvas;
+    const img = this.overviewImg;
+    if (!canvas) return;
+    const cssW = canvas.clientWidth || 640;
+    const aspect = MAP_BOUNDS.height / MAP_BOUNDS.width;
+    canvas.width = Math.round(cssW);
+    canvas.height = Math.round(cssW * aspect);
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = '#11131a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    const toX = (wx: number) => ((wx - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * canvas.width;
+    const toY = (wy: number) => ((wy - MAP_BOUNDS.minY) / MAP_BOUNDS.height) * canvas.height;
+
+    for (const n of this.notes.values()) {
+      const x = toX(n.x);
+      const y = toY(n.y);
+      const r = n.id === this.selectedNoteId ? 7 : 4;
+      if (n.admin) {
+        ctx.fillStyle = '#ffd23f';
+        ctx.beginPath();
+        ctx.moveTo(x, y - r);
+        ctx.lineTo(x - r, y + r * 0.8);
+        ctx.lineTo(x + r, y + r * 0.8);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.fillStyle = n.image ? '#3ad17a' : '#2a9df4'; // green once it has a photo
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (n.id === this.selectedNoteId) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  /** Select the nearest note to a click on the notes map (within a few px). */
+  private handleNotesMapClick(e: MouseEvent): void {
+    const canvas = this.notesCanvas;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const py = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    const toX = (wx: number) => ((wx - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * canvas.width;
+    const toY = (wy: number) => ((wy - MAP_BOUNDS.minY) / MAP_BOUNDS.height) * canvas.height;
+
+    let best: string | null = null;
+    let bestD = 18; // px hit radius
+    for (const n of this.notes.values()) {
+      const d = Math.hypot(px - toX(n.x), py - toY(n.y));
+      if (d < bestD) {
+        bestD = d;
+        best = n.id;
+      }
+    }
+    if (best) {
+      this.selectedNoteId = best;
+      this.uploadStatus = '';
+      this.drawNotesMap();
+      this.renderNoteDetail();
+    }
+  }
+
+  /** Render the detail panel for the selected note (edit / delete / photo). */
+  private renderNoteDetail(): void {
+    const host = this.notesDetailEl;
+    if (!host) return;
+    host.innerHTML = '';
+    host.classList.remove('admin-note-creator');
+
+    const note = this.selectedNoteId ? this.notes.get(this.selectedNoteId) : null;
+    if (!note) {
+      host.appendChild(el('div', 'admin-empty', 'Click a note on the map to manage it.'));
+      return;
+    }
+    if (note.admin) host.classList.add('admin-note-creator');
+
+    host.appendChild(el('div', 'admin-card-title', note.admin ? 'Creator note' : 'Note'));
+
+    // Editable text.
+    const ta = el('textarea', 'admin-textarea');
+    ta.value = note.text;
+    host.appendChild(ta);
+
+    const textActions = el('div', 'admin-note-actions');
+    const save = el('button', 'admin-btn admin-btn-small admin-btn-primary', 'Save text');
+    save.addEventListener('click', () => {
+      const text = ta.value.trim();
+      if (text) this.emit(EVENTS.ADMIN_NOTE_EDIT, { id: note.id, text });
+    });
+    const del = el('button', 'admin-btn admin-btn-small admin-btn-danger', 'Delete note');
+    del.addEventListener('click', () => {
+      if (window.confirm('Delete this note?')) {
+        this.emit(EVENTS.ADMIN_NOTE_DELETE, { id: note.id });
+        this.selectedNoteId = null;
+      }
+    });
+    textActions.append(save, del);
+    host.appendChild(textActions);
+
+    // Photo of the physical sticker.
+    host.appendChild(el('div', 'admin-card-title', 'Real-sticker photo'));
+    if (note.image) {
+      const photo = el('img', 'admin-note-photo') as HTMLImageElement;
+      photo.src = noteImageUrl(note) ?? note.image;
+      photo.alt = 'real sticker';
+      host.appendChild(photo);
+      const photoActions = el('div', 'admin-note-actions');
+      const replace = el('button', 'admin-btn admin-btn-small', 'Replace photo');
+      replace.addEventListener('click', () => this.pickNoteImage(note.id));
+      const remove = el('button', 'admin-btn admin-btn-small admin-btn-danger', 'Remove photo');
+      remove.addEventListener('click', () => {
+        if (window.confirm('Remove this photo?')) {
+          this.emit(EVENTS.ADMIN_NOTE_IMAGE_REMOVE, { id: note.id });
+        }
+      });
+      photoActions.append(replace, remove);
+      host.appendChild(photoActions);
+    } else {
+      const drop = el('div', 'admin-dropzone', 'Drop a photo here, or click to choose');
+      drop.addEventListener('click', () => this.pickNoteImage(note.id));
+      drop.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        drop.classList.add('dragover');
+      });
+      drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+      drop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        drop.classList.remove('dragover');
+        const file = e.dataTransfer?.files?.[0];
+        if (file) void this.uploadNoteImage(note.id, file);
+      });
+      host.appendChild(drop);
+    }
+
+    if (this.uploadStatus) {
+      host.appendChild(el('div', 'admin-upload-status', this.uploadStatus));
+    }
+  }
+
+  /** Open a file picker, then upload the chosen image to the given note. */
+  private pickNoteImage(id: string): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (file) void this.uploadNoteImage(id, file);
+    });
+    input.click();
+  }
+
+  /** Resize the photo to webp client-side, then POST it to the authed endpoint. */
+  private async uploadNoteImage(id: string, file: File): Promise<void> {
+    this.uploadStatus = 'Uploading…';
+    this.renderNoteDetail();
+    try {
+      const blob = await resizeToWebp(file, 1600, 0.85);
+      const res = await fetch(`/api/admin/note-image?id=${encodeURIComponent(id)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/webp' },
+        body: blob,
+        credentials: 'same-origin', // send the admin session cookie
+      });
+      if (!res.ok) {
+        this.uploadStatus = `Upload failed (${res.status}).`;
+      } else {
+        // The server broadcasts NOTE_UPDATE, which refreshes the view; clear status.
+        this.uploadStatus = '';
+      }
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      this.uploadStatus = 'Upload failed — could not read/encode the image.';
+    }
+    this.renderNoteDetail();
   }
 
   private card(title: string): HTMLElement {
@@ -465,6 +786,32 @@ export class AdminApp {
       ctx.stroke();
     }
   }
+}
+
+/**
+ * Downscale + re-encode an image File to a webp Blob entirely in the browser, so
+ * the server stays dependency-free (no `sharp`) and uploads stay small. Caps the
+ * longest edge to `maxDim`; never upscales.
+ */
+async function resizeToWebp(file: File, maxDim: number, quality: number): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('no 2d context');
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close?.();
+  return await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('webp encode failed'))),
+      'image/webp',
+      quality
+    );
+  });
 }
 
 function formatUptime(seconds: number): string {

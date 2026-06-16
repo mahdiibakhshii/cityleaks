@@ -104,6 +104,121 @@ canvas {
   letter-spacing: 0.01em;
 }
 
+/* ─── Note "postcard" (digital↔physical) ───
+   When a note has a photo of its REAL physical sticker, the reveal shows a
+   postcard pairing the photographed sticker with the digital words — the loop
+   from screen → wall → screen. SHARED across the in-game reveal, the monitor
+   lightbox, and the admin notes page so all three look identical. Photo uses
+   object-fit:contain (the sticker is never cropped); a white frame reads as the
+   physical print. Side-by-side in landscape, stacked photo-over-text in
+   portrait. */
+.note-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: clamp(12px, 2vmin, 28px);
+  max-width: min(94vw, 1100px);
+  max-height: 88vh;
+  padding: clamp(14px, 2.2vmin, 28px);
+  background: rgba(14, 15, 22, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+}
+.note-card-photo {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+.note-card-photo img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(52vw, 620px);
+  max-height: 76vh;
+  object-fit: contain;
+  background: #000;
+  border: 4px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+}
+.note-card-body {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4vmin, 16px);
+}
+.note-card-text {
+  font-weight: 800;
+  line-height: 1.2;
+  color: #fff;
+  font-size: clamp(20px, 3.2vmin, 46px);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 0, 0, 0.85);
+}
+.note-card-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(12px, 1.6vmin, 18px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #9fd0ff;
+  text-decoration: none;
+}
+.note-card-tag:hover {
+  text-decoration: underline;
+}
+.note-card.admin {
+  border-color: rgba(255, 210, 63, 0.55);
+}
+.note-card.admin .note-card-text {
+  color: #ffd23f;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+}
+@media (orientation: portrait) {
+  .note-card {
+    flex-direction: column;
+  }
+  .note-card-photo img {
+    max-width: 84vw;
+    max-height: 48vh;
+  }
+  .note-card-body {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Fullscreen photo lightbox (monitor): tapping a popup thumbnail opens the
+   postcard big. Interactive (unlike the in-game reveal) so it can be dismissed. */
+.note-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+  background: rgba(0, 0, 0, 0.82);
+}
+.note-lightbox.visible {
+  display: flex;
+}
+.note-lightbox-close {
+  position: fixed;
+  top: 14px;
+  right: 22px;
+  z-index: 61;
+  font-size: 34px;
+  line-height: 1;
+  color: #fff;
+  cursor: pointer;
+}
+
 /* Transient admin broadcast: a banner the whole city sees for a few seconds.
    Sits just above note reveals; non-interactive so movement/joystick keep
    working underneath. */
@@ -571,8 +686,28 @@ canvas {
   }
 }
 
+/* ─── Monitor page layout ───
+   Desktop: the map canvas fills the viewport and the notes list is an overlay
+   docked to the right. Mobile: a vertical stack — map on top (~60%), notes list
+   below (~40%) — so the notes no longer cover an unusable map. Scoped to
+   `.monitor-page` so the game/admin pages (which share this stylesheet) are
+   unaffected. */
+.monitor-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The map region the Three.js canvas is mounted into. Fills the viewport on
+   desktop (notes are an out-of-flow overlay); becomes the top pane on mobile. */
+#monitor-map {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 #monitor-hud {
-  position: fixed;
+  position: absolute;
   top: 10px;
   left: 12px;
   z-index: 20;
@@ -593,7 +728,7 @@ canvas {
   right: 0;
   bottom: 0;
   z-index: 18;
-  width: clamp(360px, 34vw, 640px);
+  width: clamp(220px, 22vw, 340px);
   display: flex;
   flex-direction: column;
   background: rgba(10, 11, 18, 0.72);
@@ -602,8 +737,8 @@ canvas {
 }
 .monitor-notes-title {
   flex-shrink: 0;
-  padding: clamp(16px, 1.4vw, 26px) clamp(18px, 1.4vw, 28px);
-  font-size: clamp(18px, 1.5vw, 30px);
+  padding: 10px 14px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -613,21 +748,86 @@ canvas {
 .monitor-notes-list {
   flex: 1;
   overflow-y: auto;
-  padding: clamp(14px, 1.2vw, 22px);
+  -webkit-overflow-scrolling: touch;
+  /* Body sets touch-action:none (no page scroll); re-enable vertical drag-scroll
+     inside the list so the mobile notes pane is scrollable. */
+  touch-action: pan-y;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 1vw, 18px);
+  gap: 6px;
 }
 .monitor-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: clamp(12px, 1vw, 20px) clamp(14px, 1.1vw, 22px);
+  border-radius: 7px;
+  padding: 7px 9px;
   color: #e8e8f0;
-  font-size: clamp(17px, 1.4vw, 28px);
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.35;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+/* Card body (text + geo link), separated from the actions row below it. */
+.monitor-note-body {
+  display: flex;
+  flex-direction: column;
+}
+/* Per-note actions row — reserved for upcoming buttons (edit/delete/flag/share).
+   Hidden while empty so cards stay compact until buttons are added. */
+.monitor-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 1px;
+}
+.monitor-note-actions:empty {
+  display: none;
+}
+.monitor-note-btn {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cfe1ff;
+  background: rgba(42, 157, 244, 0.14);
+  border: 1px solid rgba(42, 157, 244, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.monitor-note-btn:hover {
+  background: rgba(42, 157, 244, 0.26);
+  border-color: rgba(42, 157, 244, 0.6);
+  color: #fff;
+}
+.monitor-note:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.monitor-note.active {
+  border-color: rgba(42, 157, 244, 0.7);
+  background: rgba(42, 157, 244, 0.12);
+}
+.monitor-note-text {
+  display: block;
+}
+/* Coordinate / Google-Maps link row under each note's text. */
+.monitor-note-geo {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: #2a9df4;
+  text-decoration: none;
+}
+.monitor-note-geo:hover {
+  text-decoration: underline;
 }
 .monitor-note-creator {
   border-color: rgba(255, 210, 63, 0.55);
@@ -635,10 +835,134 @@ canvas {
   color: #ffe680;
   font-style: italic;
 }
+.monitor-note-creator .monitor-note-geo {
+  color: #ffd23f;
+}
 .monitor-note-empty {
   color: #6c6c7c;
   font-style: italic;
   padding: 4px 2px;
+}
+
+/* ─── On-map note popup (click an icon to read it) ─── */
+#monitor-note-popup {
+  position: fixed;
+  z-index: 22;
+  max-width: min(280px, 60vw);
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  padding: 10px 12px;
+  background: rgba(16, 18, 28, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  color: #e8e8f0;
+  font-size: 14px;
+  line-height: 1.4;
+  pointer-events: auto;
+  display: none;
+}
+#monitor-note-popup.visible {
+  display: block;
+}
+#monitor-note-popup.admin {
+  border-color: rgba(255, 210, 63, 0.6);
+  color: #ffe680;
+}
+/* Little downward arrow connecting the popup to the icon below it. */
+#monitor-note-popup::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid rgba(16, 18, 28, 0.96);
+}
+.monitor-popup-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.monitor-popup-geo {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: #2a9df4;
+  text-decoration: none;
+}
+.monitor-popup-geo:hover {
+  text-decoration: underline;
+}
+/* Thumbnail of the note's real-sticker photo inside the popup; click to enlarge. */
+.monitor-popup-thumb {
+  display: block;
+  margin-top: 8px;
+  width: 100%;
+  max-height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid #fff;
+  cursor: zoom-in;
+}
+.monitor-popup-close {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  font-size: 16px;
+  line-height: 1;
+  color: #8a8a9a;
+  cursor: pointer;
+}
+.monitor-popup-close:hover {
+  color: #fff;
+}
+
+/* Calibration readout (/monitor?calibrate=1) — bottom-left image-coord probe. */
+#monitor-calibrate {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 22;
+  max-width: 60vw;
+  padding: 8px 12px;
+  background: rgba(13, 13, 22, 0.85);
+  border: 1px solid rgba(42, 157, 244, 0.5);
+  border-radius: 6px;
+  color: #cfe8ff;
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+/* ─── Monitor: mobile vertical layout ───
+   On narrow / touch screens the right-docked notes overlay would cover most of
+   the map. Instead stack vertically: map on top (~60% of the height), notes
+   list scrolling below it (~40%). Triggered by width OR a coarse pointer so it
+   also catches large phones / small tablets held in portrait. */
+@media (max-width: 768px), (pointer: coarse) and (max-width: 1024px) {
+  .monitor-page #monitor-map {
+    /* Square pane: the map (a square image) fills it with no stretch and no
+       letterbox bars. Height = full screen width via aspect-ratio. Capped so a
+       landscape phone can't push the notes list off-screen. */
+    flex: 0 0 auto;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 70vh;
+  }
+  .monitor-page #monitor-notes {
+    /* Drop out of the fixed right-overlay and join the flex column below the
+       square map, taking the remaining height. */
+    position: static;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: none;
+    background: rgba(10, 11, 18, 0.92);
+  }
 }
 
 /* ─── Admin dashboard (/admin) ─── */
@@ -874,4 +1198,76 @@ canvas {
   display: inline-block;
   width: auto;
   margin-bottom: 0;
+}
+
+/* ─── Admin notes page (dedicated note manager) ───
+   A focused view (reached from the dashboard) for moderating notes + attaching
+   the real-sticker photos: a big overview map of note pins on the left, a detail
+   panel (edit / delete / photo) on the right. In-page view swap — no new route. */
+.admin-notes-page {
+  padding: clamp(18px, 2vw, 40px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 1.6vw, 32px);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.admin-notes-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+  gap: clamp(18px, 1.8vw, 36px);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .admin-notes-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.admin-notes-map {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  background: #11131a;
+  cursor: crosshair;
+}
+.admin-note-detail {
+  background: #16161f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: clamp(18px, 1.6vw, 34px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1vw, 22px);
+}
+.admin-note-detail.admin-note-creator {
+  border-color: rgba(255, 210, 63, 0.5);
+}
+.admin-note-photo {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: #000;
+  border: 3px solid #fff;
+  border-radius: 8px;
+}
+.admin-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: clamp(18px, 2vw, 34px);
+  text-align: center;
+  color: #8a8a9a;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.admin-dropzone:hover,
+.admin-dropzone.dragover {
+  border-color: #2a9df4;
+  background: rgba(42, 157, 244, 0.08);
+  color: #cfe8ff;
+}
+.admin-upload-status {
+  font-size: clamp(13px, 0.95vw, 20px);
+  color: #8a8a9a;
 }

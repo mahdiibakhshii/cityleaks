@@ -17,6 +17,12 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
+      // Admins' real-sticker photos are served by the game server from its data
+      // dir; proxy them in dev so the admin/monitor/game pages can load them.
+      '/note-images': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
   build: {

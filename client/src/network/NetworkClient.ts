@@ -48,18 +48,18 @@ export class NetworkClient {
   private socket: Socket;
   private callbacks: NetworkCallbacks;
 
-  constructor(callbacks: NetworkCallbacks, characterId: string, adminToken?: string) {
+  constructor(callbacks: NetworkCallbacks, characterId: string) {
     this.callbacks = callbacks;
 
     // In dev, Vite proxies /socket.io to the server. Default same-origin connect.
     // The chosen character rides in the handshake query (like `role`); the server
     // uses it to assign our shape + signature color and echo both to all clients.
-    // An adminToken (present only for a Batman session) authorizes that identity
-    // server-side; without it, character=batman falls back to the anonymous circle.
+    // Batman authorization comes from the admin session COOKIE (sent automatically
+    // with the same-origin handshake) — never a token in the query string.
     this.socket = io({
       transports: ['websocket', 'polling'],
       reconnection: true,
-      query: adminToken ? { character: characterId, adminToken } : { character: characterId },
+      query: { character: characterId },
     });
 
     this.socket.on('connect', () => this.callbacks.onConnectionChange(true));

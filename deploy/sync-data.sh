@@ -5,9 +5,10 @@
 #
 # The live, player-generated state lives ONLY on the server at
 # /opt/cityleaks/server/data/ (gitignored, untouched by deploys). The files that
-# matter are the "leak" paths, the sticky notes (words), and the kill markers:
+# matter are the "leak" paths, the sticky notes (words), the kill markers, and
+# the admins' real-sticker photos (one webp per note id):
 #
-#     leak-grid.bin   notes.json   kills.json
+#     leak-grid.bin   notes.json   kills.json   note-images/
 #
 # (collision.bin is a derived cache rebuilt from the mask tiles — never synced.)
 #
@@ -40,7 +41,9 @@ PM2_NAME="${PM2_NAME:-cityleaks}"
 KEEP="${KEEP:-20}"
 
 REMOTE_DATA="$REMOTE_APP/server/data"
-DATA_FILES=(leak-grid.bin notes.json kills.json)
+# Player-generated state to sync. note-images/ is a directory (one webp per note
+# id); tar handles it like the files. collision.bin is a derived cache — excluded.
+DATA_FILES=(leak-grid.bin notes.json kills.json note-images)
 
 # Repo root = parent of this script's dir, regardless of where it's invoked from.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -91,7 +94,7 @@ backup_prod_to() {
 # Snapshot whatever local data files currently exist into a .tar.gz.
 backup_local_to() {
   local out="$1" present=()
-  for f in "${DATA_FILES[@]}"; do [ -f "$LOCAL_DATA/$f" ] && present+=("$f"); done
+  for f in "${DATA_FILES[@]}"; do [ -e "$LOCAL_DATA/$f" ] && present+=("$f"); done
   [ ${#present[@]} -eq 0 ] && { log "No local data to snapshot — skipping."; return 0; }
   mkdir -p "$(dirname "$out")"
   tar -C "$LOCAL_DATA" -czf "$out" "${present[@]}"
@@ -108,7 +111,7 @@ cmd_pull() {
   remote "tar -C '$REMOTE_DATA' -czf - --ignore-failed-read ${DATA_FILES[*]}" | tar -C "$LOCAL_DATA" -xzf -
   ok "Pulled into $LOCAL_DATA:"
   for f in "${DATA_FILES[@]}"; do
-    [ -f "$LOCAL_DATA/$f" ] && printf '    %s  (%s)\n' "$f" "$(du -h "$LOCAL_DATA/$f" | cut -f1)"
+    [ -e "$LOCAL_DATA/$f" ] && printf '    %s  (%s)\n' "$f" "$(du -sh "$LOCAL_DATA/$f" | cut -f1)"
   done
 }
 

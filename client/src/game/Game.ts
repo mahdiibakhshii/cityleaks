@@ -3,6 +3,7 @@ import {
   CLIENT_SEND_RATE,
   ANON_CHARACTER_ID,
   getCharacter,
+  noteImageUrl,
 } from '../../../shared/protocol';
 import { BACKGROUND_COLOR, PLAYER } from '../config';
 import { Camera } from './Camera';
@@ -51,16 +52,13 @@ export class Game {
   // Citywide kill "glitch": seconds elapsed into the map-fade pulse, or -1 idle.
   private glitchElapsed = -1;
   private readonly characterId: string;
-  private readonly adminToken?: string;
 
   constructor(
     spawnX: number,
     spawnY: number,
-    characterId: string = ANON_CHARACTER_ID,
-    adminToken?: string
+    characterId: string = ANON_CHARACTER_ID
   ) {
     this.characterId = characterId;
-    this.adminToken = adminToken;
     // Renderer.
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -247,7 +245,7 @@ export class Game {
       onConnectionChange: (connected) => {
         this.showStatus(connected ? 'Connected' : 'Reconnecting…', !connected);
       },
-    }, this.characterId, this.adminToken);
+    }, this.characterId);
   }
 
   start(): void {
@@ -296,7 +294,7 @@ export class Game {
     //     when we walk past the threshold (the "glitch" in the walk).
     const near = this.noteLayer.getRevealNote(this.player.x, this.player.y);
     if (near) {
-      this.noteUI.showReveal(near.text, near.id, near.admin === true);
+      this.noteUI.showReveal(near.text, near.id, near.admin === true, noteImageUrl(near));
       this.noteLayer.setRevealed(near.id);
     } else {
       this.noteUI.hideReveal();

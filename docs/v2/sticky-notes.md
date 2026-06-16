@@ -100,8 +100,54 @@ monitor. `/api/status` reports a `notes` count. TD does not receive notes.
 
 `MonitorApp` reuses `NoteLayer` (constructed with a larger icon size,
 `MAP_BOUNDS.width / 40`, so markers read when the whole city is fit to one
-screen) and listens for `note:existing` / `note:new`. No reveal overlay on the
-monitor — it has no local player.
+screen) and listens for `note:existing` / `note:new`. There's no walk-near
+reveal overlay (the monitor has no local player) — instead the notes are
+**clicked**:
+
+- **Zoom + pan** (`monitor/MapControls.ts`): mouse-wheel / trackpad zoom-to-
+  cursor, two-finger **pinch**, and drag-to-pan over the orthographic camera,
+  clamped so the map can't leave view. A window resize keeps the current
+  zoom/pan. It drives only `camera.zoom` + `camera.position` (the fit logic owns
+  the base zoom-1 frustum) and exposes `clientToWorld` / `worldToClient`
+  projection helpers + `focusOn(x,y,zoom)`.
+- **Click a note icon → popup.** A tap is hit-tested against every note's
+  on-screen icon (project each icon center + measure pixel distance to a
+  projected icon radius). The nearest hit opens a DOM popup (`#monitor-note-popup`)
+  anchored beside the icon — text + a `📍` Google Maps link — which **re-anchors
+  every frame** so it tracks the icon while you zoom/pan. A ×/click-away closes
+  it.
+- **Notes list** (right dock, `#monitor-notes`): compact, newest-first, each row
+  clickable — clicking a row `focusOn`s the map to that note (centers + zooms in)
+  and opens its popup, with a two-way **active-row highlight** (`.monitor-note.active`).
+  Each row also shows the `📍 lat, lng` Google Maps link.
+
+## Georeferencing — note location → real lat/long
+
+`shared/geo.ts` converts a note's IMAGE/DATA `(x,y)` to real-world `{lat,lng}`
+so its position can be opened in Google Maps. Model: a single **affine
+transform** (`lng = A·x + B·y + C`, `lat = D·x + E·y + F`) **least-squares-
+fitted** from `GEO_CONTROL_POINTS` — landmarks whose image px AND Google-Maps
+lat/long are both known. Affine captures translation + scale + rotation + shear,
+which is right because Vienna's aerial is essentially north-up at a uniform
+~0.147 m/px; the current 5 control points fit to **~7 m mean residual** (well
+within a building). The solver is dependency-free (normal equations solved by
+Cramer's rule), cached on first use.
+
+API: `imageToLatLng(x,y)`, `googleMapsUrl(x,y)`, `formatLatLng(x,y)`,
+`geoAvailable()`. All return `null` / `false` until there are ≥3 non-collinear
+control points, so the UI **gracefully omits the link** when uncalibrated.
+
+**Calibration workflow** (re-run if the map is ever re-shot):
+
+1. Open `/monitor?calibrate=1`. Clicking empty map (no note hit) prints the
+   clicked **image x,y** to a bottom-left readout (`#monitor-calibrate`) + the
+   console. Zoom in first for precision.
+2. Look up that exact spot in Google Maps ("right-click → What's here?") to get
+   its `lat,lng`.
+3. Add the `{ name, x, y, lat, lng }` pair to `GEO_CONTROL_POINTS` in
+   `shared/geo.ts`. Use **4–6 points spread across the city** for a good fit
+   (3 is the exact-solve minimum; more = least-squares, which averages out click
+   noise and lets you read residuals).
 
 ## Protocol events
 

@@ -12,6 +12,7 @@ import {
   type EnemyDie,
   type KillMarker,
   enemyDef,
+  noteImageUrl,
 } from '../../../shared/protocol';
 import { ASSETS, MONITOR } from '../config';
 import { PathLayer } from '../game/PathLayer';
@@ -19,6 +20,8 @@ import { NoteLayer } from '../game/NoteLayer';
 import { KillLayer } from '../game/KillLayer';
 import { ExplosionBurst } from '../game/EnemyDeathFx';
 import { RemotePlayer } from '../game/RemotePlayer';
+import { MapControls } from './MapControls';
+import { googleMapsUrl, formatLatLng } from '../../../shared/geo';
 
 // Explosion burst radius on the zoomed-out whole-map view (world units).
 const MONITOR_BURST_RADIUS = Math.round(MAP_BOUNDS.width / 26);
@@ -51,6 +54,11 @@ export class MonitorApp {
   private clock = new THREE.Clock();
   private running = false;
   private hud: HTMLElement | null;
+  // Map region the canvas lives in (top ~60% on mobile, full viewport on
+  // desktop). The renderer + camera are sized to THIS element, not the window,
+  // so the map shares the screen with the stacked notes panel on mobile.
+  private mapEl: HTMLElement;
+  private mapResizeObserver: ResizeObserver | null = null;
   private stats: GridStats | null = null;
   // Read-only notes side panel (text of every sticky note, live).
   private notes = new Map<string, Note>();
@@ -58,13 +66,31 @@ export class MonitorApp {
   // Background (overview) image opacity, controllable live from the admin page.
   private overviewMaterial: THREE.MeshBasicMaterial | null = null;
   private mapOpacity = 1;
+  // Zoom/pan over the map (wheel + drag + pinch).
+  private controls!: MapControls;
+  private viewInitialized = false;
+  // On-map note popup (click an icon to read it).
+  private popupEl!: HTMLDivElement;
+  private popupTextEl!: HTMLDivElement;
+  private popupGeoEl!: HTMLAnchorElement;
+  private popupThumbEl!: HTMLImageElement;
+  private activeNoteId: string | null = null;
+  // Fullscreen postcard lightbox (opened from a popup thumbnail).
+  private lightboxEl!: HTMLDivElement;
+  private lightboxImg!: HTMLImageElement;
+  private lightboxText!: HTMLDivElement;
+  // Calibration probe (/monitor?calibrate=1): prints image px of empty clicks.
+  private calibrate = new URLSearchParams(location.search).has('calibrate');
+  private calibrateEl: HTMLElement | null = null;
 
   constructor() {
+    this.mapEl = document.getElementById('monitor-map') ?? document.body;
+
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(this.mapEl.clientWidth, this.mapEl.clientHeight);
     this.renderer.setClearColor(MONITOR.BACKGROUND_COLOR);
-    document.body.appendChild(this.renderer.domElement);
+    this.mapEl.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
@@ -96,9 +122,32 @@ export class MonitorApp {
 
     this.hud = document.getElementById('monitor-hud');
     this.notesListEl = this.buildNotesPanel();
+    this.buildPopup();
+    if (this.calibrate) this.buildCalibrateReadout();
+
+    // Zoom + pan. Bounds are the map extent in THREE space (y is flipped).
+    this.controls = new MapControls(
+      this.camera,
+      this.renderer.domElement,
+      {
+        minX: MAP_BOUNDS.minX,
+        maxX: MAP_BOUNDS.maxX,
+        minY: -MAP_BOUNDS.maxY,
+        maxY: -MAP_BOUNDS.minY,
+      },
+      { minZoom: 1, maxZoom: 16, onTap: (cx, cy) => this.handleTap(cx, cy) }
+    );
+
     this.socket = this.connect();
 
     window.addEventListener('resize', this.onResize);
+    // The map pane's size is layout-derived (flex / aspect-ratio), so it can
+    // change without a window resize (initial settle, notes growing, rotation).
+    // Re-fit whenever it actually changes size to keep the map square + sharp.
+    if (typeof ResizeObserver !== 'undefined') {
+      this.mapResizeObserver = new ResizeObserver(() => this.onResize());
+      this.mapResizeObserver.observe(this.mapEl);
+    }
   }
 
   /** Build the read-only notes side panel; returns its scrollable list element. */
@@ -129,8 +178,247 @@ export class MonitorApp {
     for (const note of notes) {
       const item = document.createElement('div');
       item.className = 'monitor-note' + (note.admin ? ' monitor-note-creator' : '');
-      item.textContent = note.text;
+      if (note.id === this.activeNoteId) item.classList.add('active');
+      item.dataset.id = note.id;
+
+      // Card body: text + (optional) real-world location link.
+      const body = document.createElement('div');
+      body.className = 'monitor-note-body';
+
+      const textEl = document.createElement('span');
+      textEl.className = 'monitor-note-text';
+      textEl.textContent = note.text;
+      body.appendChild(textEl);
+
+      // Real-world location link (only once the geo transform is calibrated).
+      const url = googleMapsUrl(note.x, note.y);
+      if (url) {
+        const link = document.createElement('a');
+        link.className = 'monitor-note-geo';
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = `📍 ${formatLatLng(note.x, note.y)}`;
+        link.addEventListener('click', (e) => e.stopPropagation()); // don't refocus
+        body.appendChild(link);
+      }
+
+      item.appendChild(body);
+
+      // Actions row — reserved for upcoming per-note buttons (e.g. edit, delete,
+      // flag, share). Append `.monitor-note-btn` children to `actions` and add
+      // it to the card; styling is ready in main.css (`.monitor-note-actions`).
+      // Buttons should `stopPropagation()` so they don't trigger the row's
+      // focus-on-map click below. Left empty for now.
+      // const actions = document.createElement('div');
+      // actions.className = 'monitor-note-actions';
+      // item.appendChild(actions);
+
+      item.addEventListener('click', () => this.focusNote(note.id));
       this.notesListEl.appendChild(item);
+    }
+  }
+
+  /** Build the (hidden) on-map note popup once. */
+  private buildPopup(): void {
+    const popup = document.createElement('div');
+    popup.id = 'monitor-note-popup';
+
+    const close = document.createElement('span');
+    close.className = 'monitor-popup-close';
+    close.textContent = '×';
+    close.addEventListener('click', () => this.closePopup());
+
+    this.popupTextEl = document.createElement('div');
+    this.popupTextEl.className = 'monitor-popup-text';
+
+    // Thumbnail of the note's real-sticker photo (if any) — click to enlarge.
+    this.popupThumbEl = document.createElement('img');
+    this.popupThumbEl.className = 'monitor-popup-thumb';
+    this.popupThumbEl.alt = 'real sticker photo';
+    this.popupThumbEl.style.display = 'none';
+    this.popupThumbEl.addEventListener('click', () => {
+      const note = this.activeNoteId ? this.notes.get(this.activeNoteId) : null;
+      if (note) this.openLightbox(note);
+    });
+
+    this.popupGeoEl = document.createElement('a');
+    this.popupGeoEl.className = 'monitor-popup-geo';
+    this.popupGeoEl.target = '_blank';
+    this.popupGeoEl.rel = 'noopener';
+
+    popup.append(close, this.popupTextEl, this.popupThumbEl, this.popupGeoEl);
+    document.body.appendChild(popup);
+    this.popupEl = popup;
+
+    this.buildLightbox();
+  }
+
+  /** Fullscreen postcard: the real-sticker photo + the note text, big. */
+  private buildLightbox(): void {
+    const box = document.createElement('div');
+    box.id = 'monitor-note-lightbox';
+    box.className = 'note-lightbox';
+
+    const close = document.createElement('span');
+    close.className = 'note-lightbox-close';
+    close.textContent = '×';
+
+    const card = document.createElement('div');
+    card.className = 'note-card';
+    const figure = document.createElement('figure');
+    figure.className = 'note-card-photo';
+    this.lightboxImg = document.createElement('img');
+    this.lightboxImg.alt = '';
+    figure.appendChild(this.lightboxImg);
+    const body = document.createElement('div');
+    body.className = 'note-card-body';
+    this.lightboxText = document.createElement('div');
+    this.lightboxText.className = 'note-card-text';
+    const tag = document.createElement('div');
+    tag.className = 'note-card-tag';
+    tag.textContent = '📍 the real sticker, on a wall in the city';
+    body.append(this.lightboxText, tag);
+    card.append(figure, body);
+    box.append(close, card);
+    document.body.appendChild(box);
+    this.lightboxEl = box;
+
+    // Clicking the backdrop or the × closes it (but not clicks on the card).
+    box.addEventListener('click', (e) => {
+      if (e.target === box || e.target === close) this.closeLightbox();
+    });
+  }
+
+  private openLightbox(note: Note): void {
+    const url = noteImageUrl(note);
+    if (!url) return;
+    this.lightboxImg.src = url;
+    this.lightboxText.textContent = note.text;
+    this.lightboxEl.querySelector('.note-card')?.classList.toggle('admin', !!note.admin);
+    this.lightboxEl.classList.add('visible');
+  }
+
+  private closeLightbox(): void {
+    this.lightboxEl.classList.remove('visible');
+  }
+
+  /** Build the calibration coordinate readout (calibrate mode only). */
+  private buildCalibrateReadout(): void {
+    const el = document.createElement('div');
+    el.id = 'monitor-calibrate';
+    el.textContent = 'Calibrate: click a landmark to read its image x,y';
+    document.body.appendChild(el);
+    this.calibrateEl = el;
+  }
+
+  /**
+   * A click/tap on the map: open the popup for the note icon under the cursor;
+   * otherwise (in calibrate mode) report the clicked image coordinates; else
+   * dismiss any open popup.
+   */
+  private handleTap(clientX: number, clientY: number): void {
+    const note = this.noteAtScreen(clientX, clientY);
+    if (note) {
+      this.openPopup(note);
+      this.setActiveRow(note.id);
+      return;
+    }
+    if (this.calibrate) {
+      const w = this.controls.clientToWorld(clientX, clientY);
+      const dx = Math.round(w.x); // data x == world x
+      const dy = Math.round(-w.y); // data y == -world y
+      if (this.calibrateEl) {
+        this.calibrateEl.textContent =
+          `image x,y = ${dx}, ${dy}\n→ pair with this spot's lat,lng from Google Maps`;
+      }
+      console.log(`[calibrate] image x,y = ${dx}, ${dy}`);
+      return;
+    }
+    this.closePopup();
+  }
+
+  /** Nearest note whose icon is under the given screen point, or null. */
+  private noteAtScreen(clientX: number, clientY: number): Note | null {
+    const iconHalf = Math.round(MAP_BOUNDS.width / 40) / 2;
+    let best: Note | null = null;
+    let bestD = Infinity;
+    for (const note of this.notes.values()) {
+      const center = this.controls.worldToClient(note.x, -note.y);
+      const edge = this.controls.worldToClient(note.x + iconHalf, -note.y);
+      const radius = Math.max(16, Math.hypot(edge.x - center.x, edge.y - center.y));
+      const d = Math.hypot(clientX - center.x, clientY - center.y);
+      if (d <= radius && d < bestD) {
+        bestD = d;
+        best = note;
+      }
+    }
+    return best;
+  }
+
+  /** Center + zoom the map to a note and open its popup (from a list click). */
+  private focusNote(id: string): void {
+    const note = this.notes.get(id);
+    if (!note) return;
+    this.controls.focusOn(note.x, -note.y, 5);
+    this.openPopup(note);
+    this.setActiveRow(id);
+  }
+
+  private openPopup(note: Note): void {
+    this.activeNoteId = note.id;
+    this.popupTextEl.textContent = note.text;
+    this.popupEl.classList.toggle('admin', !!note.admin);
+    const imgUrl = noteImageUrl(note);
+    if (imgUrl) {
+      this.popupThumbEl.src = imgUrl;
+      this.popupThumbEl.style.display = '';
+    } else {
+      this.popupThumbEl.style.display = 'none';
+    }
+    const url = googleMapsUrl(note.x, note.y);
+    if (url) {
+      this.popupGeoEl.href = url;
+      this.popupGeoEl.textContent = `📍 ${formatLatLng(note.x, note.y)}`;
+      this.popupGeoEl.style.display = '';
+    } else {
+      this.popupGeoEl.style.display = 'none';
+    }
+    this.popupEl.classList.add('visible');
+    this.updatePopupPosition();
+  }
+
+  private closePopup(): void {
+    this.activeNoteId = null;
+    this.popupEl.classList.remove('visible');
+    this.setActiveRow(null);
+  }
+
+  /** Anchor the open popup to its note's current on-screen position. */
+  private updatePopupPosition(): void {
+    if (!this.activeNoteId) return;
+    const note = this.notes.get(this.activeNoteId);
+    if (!note) {
+      this.closePopup();
+      return;
+    }
+    const p = this.controls.worldToClient(note.x, -note.y);
+    const x = Math.max(90, Math.min(window.innerWidth - 90, p.x));
+    this.popupEl.style.left = `${x}px`;
+    this.popupEl.style.top = `${p.y}px`;
+  }
+
+  /**
+   * Toggle the .active highlight on the matching list row and scroll it into
+   * view, so selecting a note on the map also reveals it in the list.
+   */
+  private setActiveRow(id: string | null): void {
+    for (const row of this.notesListEl.querySelectorAll('.monitor-note')) {
+      const active = (row as HTMLElement).dataset.id === id;
+      row.classList.toggle('active', active);
+      if (active) {
+        (row as HTMLElement).scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
     }
   }
 
@@ -168,7 +456,7 @@ export class MonitorApp {
 
   /** Orthographic "contain" fit: the entire map is visible, centered, with bars. */
   private fitCamera(): void {
-    const aspect = window.innerWidth / window.innerHeight;
+    const aspect = this.mapEl.clientWidth / Math.max(1, this.mapEl.clientHeight);
     const margin = 1 + MONITOR.FIT_MARGIN * 2;
     const mapW = MAP_BOUNDS.width * margin;
     const mapH = MAP_BOUNDS.height * margin;
@@ -187,12 +475,18 @@ export class MonitorApp {
     this.camera.right = viewW / 2;
     this.camera.top = viewH / 2;
     this.camera.bottom = -viewH / 2;
-    this.camera.updateProjectionMatrix();
 
-    const cx = MAP_BOUNDS.minX + MAP_BOUNDS.width / 2;
-    const cy = MAP_BOUNDS.minY + MAP_BOUNDS.height / 2;
-    this.camera.position.set(cx, -cy, 10);
-    this.camera.lookAt(cx, -cy, 0);
+    // Only center on first fit — on resize, keep the user's zoom/pan (the base
+    // frustum changed above; MapControls re-clamps the position below).
+    if (!this.viewInitialized) {
+      const cx = MAP_BOUNDS.minX + MAP_BOUNDS.width / 2;
+      const cy = MAP_BOUNDS.minY + MAP_BOUNDS.height / 2;
+      this.camera.position.set(cx, -cy, 10);
+      this.camera.lookAt(cx, -cy, 0);
+      this.viewInitialized = true;
+    }
+    this.camera.updateProjectionMatrix();
+    this.controls?.onViewChanged();
   }
 
   private connect(): Socket {
@@ -232,6 +526,8 @@ export class MonitorApp {
       this.noteLayer.updateNote(note);
       this.notes.set(note.id, note);
       this.renderNotesList();
+      // Refresh the popup live if it's showing this note (e.g. photo attached).
+      if (this.activeNoteId === note.id) this.openPopup(note);
     });
     socket.on(EVENTS.NOTE_REMOVE, (data: { id: string }) => {
       this.noteLayer.removeNote(data.id);
@@ -298,6 +594,7 @@ export class MonitorApp {
     const dt = Math.min(this.clock.getDelta(), 0.1);
     this.pathLayer.update(dt);
     this.avatars.interpolate(dt);
+    if (this.activeNoteId) this.updatePopupPosition();
     if (this.bursts.length) {
       for (const b of this.bursts) b.update(dt);
       this.bursts = this.bursts.filter((b) => {
@@ -313,13 +610,15 @@ export class MonitorApp {
   };
 
   private onResize = (): void => {
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(this.mapEl.clientWidth, this.mapEl.clientHeight);
     this.fitCamera();
   };
 
   dispose(): void {
     this.running = false;
     window.removeEventListener('resize', this.onResize);
+    this.mapResizeObserver?.disconnect();
+    this.controls.dispose();
     this.socket.close();
   }
 }

@@ -28,7 +28,10 @@ import { KillStore } from './KillStore';
 import { TDRoom } from './TDRoom';
 import { EnemyManager } from './EnemyManager';
 import { AdminAuth } from './AdminAuth';
-import { MAP_BOUNDS, SPAWN, GRID_FILE, NOTES_FILE, KILLS_FILE } from './config';
+import { readAdminToken, auditLog, isValidNoteId } from './adminSecurity';
+import * as fs from 'fs';
+import * as path from 'path';
+import { MAP_BOUNDS, SPAWN, GRID_FILE, NOTES_FILE, KILLS_FILE, NOTE_IMAGES_DIR } from './config';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -179,8 +182,9 @@ export class GameServer {
    * socket is already authed.
    */
   private handleAdminConnection(socket: Socket): void {
-    const rawToken = socket.handshake.query.token;
-    const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+    // The admin token rides in the httpOnly cookie sent with the socket
+    // handshake (never in the query string).
+    const token = readAdminToken(socket.handshake.headers.cookie);
     if (!this.adminAuth.validate(token)) {
       socket.emit(EVENTS.ADMIN_DENIED);
       socket.disconnect(true);
@@ -189,7 +193,8 @@ export class GameServer {
 
     socket.join('admin');
     socket.emit(EVENTS.ADMIN_OK);
-    console.log('Admin connected:', socket.id);
+    const adminIp = socket.handshake.address;
+    auditLog('admin socket connected', `${socket.id} (${adminIp})`);
 
     // Initial snapshots so the dashboard populates immediately.
     socket.emit(EVENTS.NOTE_EXISTING, this.noteStore.getAll());
@@ -200,18 +205,38 @@ export class GameServer {
 
     // ─── Note moderation ───
     socket.on(EVENTS.ADMIN_NOTE_DELETE, (data: { id?: string }) => {
-      if (!data || typeof data.id !== 'string') return;
-      if (!this.noteStore.remove(data.id)) return;
-      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_REMOVE, { id: data.id });
+      const id = data?.id;
+      if (!isValidNoteId(id)) return;
+      if (!this.noteStore.remove(id)) return;
+      // The note's photo (if any) is now orphaned — delete it too.
+      fs.rm(path.join(NOTE_IMAGES_DIR, `${id}.webp`), { force: true }, () => {});
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_REMOVE, { id });
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
+      auditLog('note deleted', `${id} (${adminIp})`);
     });
 
     socket.on(EVENTS.ADMIN_NOTE_EDIT, (data: AdminNoteEdit) => {
-      if (!data || typeof data.id !== 'string') return;
-      const note = this.noteStore.edit(data.id, data.text);
+      const id = data?.id;
+      if (!isValidNoteId(id)) return;
+      const note = this.noteStore.edit(id, data.text);
       if (!note) return;
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
+      auditLog('note edited', `${id} (${adminIp})`);
+    });
+
+    // Detach a note's real-sticker photo (the upload itself is the HTTP endpoint
+    // POST /api/admin/note-image). Clears the pointer, deletes the file, and
+    // broadcasts the now-text-only note.
+    socket.on(EVENTS.ADMIN_NOTE_IMAGE_REMOVE, (data: { id?: string }) => {
+      const id = data?.id;
+      if (!isValidNoteId(id)) return;
+      const note = this.noteStore.clearImage(id);
+      if (!note) return;
+      fs.rm(path.join(NOTE_IMAGES_DIR, `${id}.webp`), { force: true }, () => {});
+      this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
+      void this.noteStore.saveToDiskAsync(NOTES_FILE);
+      auditLog('note image removed', `${id} (${adminIp})`);
     });
 
     // ─── Broadcast a message to every player (transient, distinct style) ───
@@ -224,30 +249,34 @@ export class GameServer {
         .emit(EVENTS.ADMIN_ANNOUNCE, { id: `a${Date.now()}`, text });
     });
 
-    // ─── Cleanups (fresh-run resets) ───
+    // ─── Cleanups (fresh-run resets) — destructive, so audited. ───
     socket.on(EVENTS.ADMIN_RESET_PATHS, () => {
       this.leakGrid.reset();
       void this.leakGrid.saveToDiskAsync(GRID_FILE);
       this.io.to('game').to('monitor').emit(EVENTS.GRID_RESET);
       this.tdRoom.sendReset(this.leakGrid);
+      auditLog('RESET all paths', adminIp);
     });
 
     socket.on(EVENTS.ADMIN_RESET_NOTES, () => {
       this.noteStore.clear();
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_RESET);
+      auditLog('RESET all notes', adminIp);
     });
 
     socket.on(EVENTS.ADMIN_RESET_KILLS, () => {
       this.killStore.clear();
       void this.killStore.saveToDiskAsync(KILLS_FILE);
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.KILL_RESET);
+      auditLog('RESET all kill markers', adminIp);
     });
 
     // ─── Kick a connected player ───
     socket.on(EVENTS.ADMIN_KICK, (data: AdminKick) => {
       if (!data || typeof data.id !== 'string') return;
       this.io.sockets.sockets.get(data.id)?.disconnect(true);
+      auditLog('player kicked', `${data.id} (${adminIp})`);
     });
 
     // ─── Monitor background-image opacity ───
@@ -299,11 +328,10 @@ export class GameServer {
     const charId = Array.isArray(rawCharId) ? rawCharId[0] : rawCharId;
 
     // Batman is privileged: only granted to a socket presenting a valid admin
-    // token (server-enforced). A bare ?character=batman with no/invalid token
-    // falls through to the anonymous circle. An authed Batman is also flagged so
-    // its notes are marked as "creator" notes.
-    const rawAdminToken = socket.handshake.query.adminToken;
-    const adminToken = Array.isArray(rawAdminToken) ? rawAdminToken[0] : rawAdminToken;
+    // session cookie (server-enforced). A bare ?character=batman with no/invalid
+    // cookie falls through to the anonymous circle. An authed Batman is also
+    // flagged so its notes are marked as "creator" notes.
+    const adminToken = readAdminToken(socket.handshake.headers.cookie);
     const isAuthedBatman =
       charId === ADMIN_CHARACTER_ID && this.adminAuth.validate(adminToken);
 
