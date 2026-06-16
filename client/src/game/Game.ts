@@ -294,7 +294,7 @@ export class Game {
     //     when we walk past the threshold (the "glitch" in the walk).
     const near = this.noteLayer.getRevealNote(this.player.x, this.player.y);
     if (near) {
-      this.noteUI.showReveal(near.text, near.id, near.admin === true, noteImageUrl(near));
+      this.noteUI.showReveal(near.text, near.id, near.admin === true, noteImageUrl(near), near.x, near.y);
       this.noteLayer.setRevealed(near.id);
     } else {
       this.noteUI.hideReveal();

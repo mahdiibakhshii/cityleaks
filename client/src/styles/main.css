@@ -86,8 +86,10 @@ body.admin-body canvas {
   inset: 0;
   z-index: 5;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   padding: 6vmin;
   pointer-events: none;
   opacity: 0;
@@ -208,6 +210,101 @@ body.admin-body canvas {
     align-items: center;
     text-align: center;
   }
+}
+
+/* ─── In-game note image thumbnail + lightbox ───
+   Thumbnail is an in-flow flex child of .note-reveal sitting above the text.
+   The whole group (thumbnail + text) is centered together, keeping the text
+   very close to the middle of the screen. display:none when absent so the
+   text alone is perfectly centered for text-only notes. */
+.note-img-thumbnail {
+  display: none;
+  flex-shrink: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.65);
+  transition: box-shadow 140ms ease;
+}
+.note-img-thumbnail.visible {
+  display: block;
+}
+.note-img-thumbnail:hover,
+.note-img-thumbnail:active {
+  box-shadow: 0 5px 22px rgba(0, 0, 0, 0.8);
+}
+.note-img-thumbnail img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(60vw, 400px);
+  max-height: min(14vh, 100px);
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Bare lightbox: no background layer. Covers the screen to capture
+   outside-clicks, but visually only the image + controls are visible. */
+.note-img-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+  background: transparent;
+}
+.note-img-lightbox.visible {
+  display: flex;
+}
+.note-img-lightbox-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 92vw;
+  pointer-events: auto;
+}
+.note-img-lightbox-content img {
+  display: block;
+  max-width: 92vw;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.75);
+}
+.note-img-lightbox-geo {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #9fd0ff;
+  text-decoration: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+.note-img-lightbox-geo:hover {
+  text-decoration: underline;
+}
+.note-img-lightbox-close {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 51;
+  font-size: 38px;
+  line-height: 1;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  padding: 4px 8px;
+  pointer-events: auto;
+}
+.note-img-lightbox-close:hover {
+  color: #9fd0ff;
 }
 
 /* Fullscreen photo lightbox (monitor): tapping a popup thumbnail opens the

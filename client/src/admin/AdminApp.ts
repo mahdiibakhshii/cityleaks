@@ -63,6 +63,15 @@ export class AdminApp {
   private selectedNoteId: string | null = null;
   private uploadStatus = '';
 
+  // Notes-map zoom / pan state (canvas-pixel space).
+  private notesZoom = 1;
+  private notesPanX = 0;
+  private notesPanY = 0;
+  private notesPrevCanvasSize = 0;
+  private notesPointers = new Map<number, { x: number; y: number }>();
+  private notesLastPinchDist = 0;
+  private notesMapDispose: (() => void) | null = null;
+
   constructor() {
     this.root = document.getElementById('admin-root') ?? document.body;
   }
@@ -250,6 +259,8 @@ export class AdminApp {
     // Leaving the notes view: drop its refs so its live-refresh no-ops.
     this.notesCanvas = null;
     this.notesDetailEl = null;
+    this.notesMapDispose?.();
+    this.notesMapDispose = null;
     this.root.innerHTML = '';
     const page = el('div', 'admin-page');
 
@@ -406,7 +417,6 @@ export class AdminApp {
     // Left: map pane
     const mapPane = el('div', 'admin-notes-map-pane');
     this.notesCanvas = el('canvas', 'admin-notes-map');
-    this.notesCanvas.addEventListener('click', (e) => this.handleNotesMapClick(e));
     mapPane.appendChild(this.notesCanvas);
     mapPane.appendChild(
       el('div', 'admin-notes-legend', '● note   ▲ creator   ◎ selected   📷 photo')
@@ -440,6 +450,7 @@ export class AdminApp {
       this.overviewImg.src = ASSETS.OVERVIEW_PATH;
     }
     this.renderNotesList();
+    this.initNotesMapControls();
     this.drawNotesMap();
     this.renderNoteDetail();
   }
@@ -507,12 +518,28 @@ export class AdminApp {
     // The canvas has aspect-ratio:1 CSS so clientWidth === clientHeight.
     // Use clientWidth as the square internal resolution (falls back to 640).
     const size = canvas.clientWidth || 640;
+
+    // Scale pan when the canvas pixel size changes (e.g. window resize).
+    if (this.notesPrevCanvasSize > 0 && this.notesPrevCanvasSize !== size) {
+      const scale = size / this.notesPrevCanvasSize;
+      this.notesPanX *= scale;
+      this.notesPanY *= scale;
+      this.clampNotesPan(size);
+    }
+    this.notesPrevCanvasSize = size;
+
     canvas.width = size;
     canvas.height = size;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Apply zoom/pan so the rest of the drawing happens in map-pixel space.
+    ctx.save();
+    ctx.translate(this.notesPanX, this.notesPanY);
+    ctx.scale(this.notesZoom, this.notesZoom);
+
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     } else {
@@ -523,10 +550,13 @@ export class AdminApp {
     const toX = (wx: number) => ((wx - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * canvas.width;
     const toY = (wy: number) => ((wy - MAP_BOUNDS.minY) / MAP_BOUNDS.height) * canvas.height;
 
+    // Draw pins in map-pixel space, but counter-scale their size so they stay
+    // the same number of screen pixels regardless of zoom level.
+    const invZ = 1 / this.notesZoom;
     for (const n of this.notes.values()) {
       const x = toX(n.x);
       const y = toY(n.y);
-      const r = n.id === this.selectedNoteId ? 7 : 4;
+      const r = (n.id === this.selectedNoteId ? 7 : 4) * invZ;
       if (n.admin) {
         ctx.fillStyle = '#ffd23f';
         ctx.beginPath();
@@ -543,28 +573,35 @@ export class AdminApp {
       }
       if (n.id === this.selectedNoteId) {
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 * invZ;
         ctx.beginPath();
-        ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+        ctx.arc(x, y, r + 4 * invZ, 0, Math.PI * 2);
         ctx.stroke();
       }
     }
+
+    ctx.restore();
   }
 
-  /** Select the nearest note to a click on the notes map (within a few px). */
-  private handleNotesMapClick(e: MouseEvent): void {
+  /** Select the nearest note to a tap on the notes map (within ~18 screen px). */
+  private handleNotesMapTap(clientX: number, clientY: number): void {
     const canvas = this.notesCanvas;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const px = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const py = ((e.clientY - rect.top) / rect.height) * canvas.height;
-    const toX = (wx: number) => ((wx - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * canvas.width;
-    const toY = (wy: number) => ((wy - MAP_BOUNDS.minY) / MAP_BOUNDS.height) * canvas.height;
+    // Screen-pixel position within the canvas element.
+    const rawPx = ((clientX - rect.left) / rect.width) * canvas.width;
+    const rawPy = ((clientY - rect.top) / rect.height) * canvas.height;
+
+    // Convert a note's world coord to screen-canvas px (accounting for zoom/pan).
+    const toScreenX = (wx: number) =>
+      this.notesPanX + ((wx - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * canvas.width * this.notesZoom;
+    const toScreenY = (wy: number) =>
+      this.notesPanY + ((wy - MAP_BOUNDS.minY) / MAP_BOUNDS.height) * canvas.height * this.notesZoom;
 
     let best: string | null = null;
-    let bestD = 18; // px hit radius
+    let bestD = 18; // screen-px hit radius
     for (const n of this.notes.values()) {
-      const d = Math.hypot(px - toX(n.x), py - toY(n.y));
+      const d = Math.hypot(rawPx - toScreenX(n.x), rawPy - toScreenY(n.y));
       if (d < bestD) {
         bestD = d;
         best = n.id;
@@ -574,6 +611,7 @@ export class AdminApp {
       this.selectedNoteId = best;
       this.uploadStatus = '';
       this.drawNotesMap();
+      this.renderNotesList();
       this.renderNoteDetail();
     }
   }
@@ -690,6 +728,149 @@ export class AdminApp {
       this.uploadStatus = 'Upload failed — could not read/encode the image.';
     }
     this.renderNoteDetail();
+  }
+
+  // ─── Notes-map zoom / pan ───
+
+  private initNotesMapControls(): void {
+    const canvas = this.notesCanvas;
+    if (!canvas) return;
+
+    // Reset transform state for a fresh notes-page visit.
+    this.notesZoom = 1;
+    this.notesPanX = 0;
+    this.notesPanY = 0;
+    this.notesPrevCanvasSize = 0;
+    this.notesPointers.clear();
+    this.notesLastPinchDist = 0;
+
+    canvas.style.touchAction = 'none';
+    canvas.style.cursor = 'grab';
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const step = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      this.applyNotesZoom(Math.exp(-step * 0.0015), e.clientX, e.clientY);
+    };
+
+    let downPos: { x: number; y: number } | null = null;
+    let moved = 0;
+    let pinched = false;
+
+    const onPointerDown = (e: PointerEvent) => {
+      canvas.setPointerCapture(e.pointerId);
+      this.notesPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (this.notesPointers.size === 1) {
+        downPos = { x: e.clientX, y: e.clientY };
+        moved = 0;
+        pinched = false;
+        canvas.style.cursor = 'grabbing';
+      } else if (this.notesPointers.size === 2) {
+        this.notesLastPinchDist = this.notesPinchDistance();
+        pinched = true;
+      }
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const prev = this.notesPointers.get(e.pointerId);
+      if (!prev) return;
+
+      if (this.notesPointers.size === 1) {
+        // Pan: one-finger drag in canvas pixels.
+        const rect = canvas.getBoundingClientRect();
+        this.notesPanX += (e.clientX - prev.x) * (canvas.width / rect.width);
+        this.notesPanY += (e.clientY - prev.y) * (canvas.height / rect.height);
+        this.clampNotesPan(canvas.width);
+        this.drawNotesMap();
+        moved += Math.hypot(e.clientX - prev.x, e.clientY - prev.y);
+      }
+
+      this.notesPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (this.notesPointers.size === 2) {
+        const dist = this.notesPinchDistance();
+        const mid = this.notesPinchMidpoint();
+        if (this.notesLastPinchDist > 0) {
+          this.applyNotesZoom(dist / this.notesLastPinchDist, mid.x, mid.y);
+        }
+        this.notesLastPinchDist = dist;
+        pinched = true;
+      }
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (!this.notesPointers.has(e.pointerId)) return;
+      canvas.releasePointerCapture(e.pointerId);
+      this.notesPointers.delete(e.pointerId);
+
+      if (this.notesPointers.size < 2) this.notesLastPinchDist = 0;
+      if (this.notesPointers.size === 0) {
+        canvas.style.cursor = 'grab';
+        if (!pinched && moved < 6 && downPos) {
+          this.handleNotesMapTap(downPos.x, downPos.y);
+        }
+        downPos = null;
+      }
+    };
+
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
+    canvas.addEventListener('pointerleave', onPointerUp);
+
+    this.notesMapDispose = () => {
+      canvas.removeEventListener('wheel', onWheel);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('pointercancel', onPointerUp);
+      canvas.removeEventListener('pointerleave', onPointerUp);
+    };
+  }
+
+  private applyNotesZoom(factor: number, clientX: number, clientY: number): void {
+    const canvas = this.notesCanvas;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    // Cursor position in canvas pixels.
+    const px = ((clientX - rect.left) / rect.width) * canvas.width;
+    const py = ((clientY - rect.top) / rect.height) * canvas.height;
+    const newZoom = Math.max(1, Math.min(14, this.notesZoom * factor));
+    // Keep the map point under the cursor fixed:
+    //   before: px = panX + mapX * oldZoom
+    //   after:  px = panX' + mapX * newZoom
+    const mapX = (px - this.notesPanX) / this.notesZoom;
+    const mapY = (py - this.notesPanY) / this.notesZoom;
+    this.notesPanX = px - mapX * newZoom;
+    this.notesPanY = py - mapY * newZoom;
+    this.notesZoom = newZoom;
+    this.clampNotesPan(canvas.width);
+    this.drawNotesMap();
+  }
+
+  /** Keep pan so the zoomed map image always fills/covers the canvas. */
+  private clampNotesPan(size: number): void {
+    if (this.notesZoom <= 1) {
+      this.notesPanX = 0;
+      this.notesPanY = 0;
+      return;
+    }
+    const minPan = size * (1 - this.notesZoom); // negative
+    this.notesPanX = Math.max(minPan, Math.min(0, this.notesPanX));
+    this.notesPanY = Math.max(minPan, Math.min(0, this.notesPanY));
+  }
+
+  private notesPinchDistance(): number {
+    const pts = [...this.notesPointers.values()];
+    if (pts.length < 2) return 0;
+    return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+  }
+
+  private notesPinchMidpoint(): { x: number; y: number } {
+    const pts = [...this.notesPointers.values()];
+    return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
   }
 
   private card(title: string): HTMLElement {
