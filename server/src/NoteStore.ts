@@ -110,6 +110,20 @@ export class NoteStore {
     return note;
   }
 
+  /**
+   * Mark (or clear) a note's "printed" flag. When `printed`, stamps `printedAt`
+   * with now so the current sticker version counts as printed (→ "stick queue");
+   * when false, clears it (→ back to "print queue"). Returns the updated Note, or
+   * null if the id is unknown or it has no sticker design to print.
+   */
+  setPrinted(id: string, printed: boolean): Note | null {
+    const note = this.notes.find((n) => n.id === id);
+    if (!note || !note.sticker) return null;
+    if (printed) note.printedAt = Date.now();
+    else delete note.printedAt;
+    return note;
+  }
+
   /** Delete a note by id. Returns true if a note was removed. */
   remove(id: string): boolean {
     const before = this.notes.length;

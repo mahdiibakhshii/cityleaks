@@ -44,6 +44,7 @@ export const EVENTS = {
   ADMIN_NOTE_EDIT: 'admin:note:edit', // admin → server: edit a note — {id,text}
   ADMIN_NOTE_IMAGE_REMOVE: 'admin:note:image:remove', // admin → server: detach a note's photo — {id}
   ADMIN_NOTE_STICKER: 'admin:note:sticker', // admin → server: save/clear a note's sticker design — {id, sticker|null}
+  ADMIN_NOTE_PRINTED: 'admin:note:printed', // admin → server: mark/unmark notes as printed — {ids, printed}
   ADMIN_BROADCAST: 'admin:broadcast', // admin → server: broadcast a message — {text}
   ADMIN_RESET_PATHS: 'admin:reset:paths', // admin → server: wipe the leak grid
   ADMIN_RESET_NOTES: 'admin:reset:notes', // admin → server: wipe all notes
@@ -487,6 +488,29 @@ export interface Note {
   // demand; kept SEPARATE from `image` (the real-sticker photo). Absent = no
   // design yet. See StickerDesign + ADMIN_NOTE_STICKER.
   sticker?: StickerDesign;
+  // Epoch ms when this note's CURRENT sticker design was committed to an A4 sheet
+  // the admin marked "printed". Drives the print lifecycle (see noteStickerStatus):
+  // a design is "in the print queue" until it's printed; editing the design bumps
+  // `sticker.updatedAt` past `printedAt`, which re-queues it for reprint. Absent =
+  // never printed. Set/cleared via ADMIN_NOTE_PRINTED.
+  printedAt?: number;
+}
+
+// The print lifecycle of a note's sticker, derived from its fields:
+//   'none'   — no sticker design.
+//   'print'  — has a design that needs printing (new, or edited since last print).
+//   'stick'  — current design was printed; go physically place the sticker.
+//   'sticked'— a real-sticker photo has been uploaded (the loop is closed).
+export type NoteStickerStatus = 'none' | 'print' | 'stick' | 'sticked';
+
+// Single source of truth for a note's print status. Used by the admin print queue
+// + status badges (and available server-side for stats). `image` wins (loop done);
+// otherwise compare the printed version against the current design version.
+export function noteStickerStatus(note: Note): NoteStickerStatus {
+  if (!note.sticker) return 'none';
+  if (note.image) return 'sticked';
+  if (note.printedAt && note.printedAt >= note.sticker.updatedAt) return 'stick';
+  return 'print';
 }
 
 // ─── Sticker designer ───
@@ -501,7 +525,19 @@ export const STICKER = {
   MAX_TEXT: 600, // allows the note text plus added spaces / newlines
   QR_MIN: 0.3, // QR may shrink to 30% of its auto slot (gives the text more room)
   QR_MAX: 1, // ...or fill the whole slot
+  BORDER_MAX_WIDTH: 200, // px stroke (design = print resolution)
+  BORDER_MAX_RADIUS: 600, // px corner radius (0 = square corners)
 } as const;
+
+// Optional decorative frame around a sticker: a stroked rectangle (rounded when
+// `radius > 0`) drawn just inside the sticker edge. Absent = no border (the
+// content padding only grows to clear the stroke when a border is present, so
+// existing borderless designs keep their exact layout).
+export interface StickerBorder {
+  width: number; // px stroke thickness (0 ⇒ treated as no border)
+  color: string; // hex
+  radius: number; // px corner radius; 0 = square
+}
 
 export type StickerAlign = 'left' | 'center' | 'right';
 // Where the chat QR sits relative to the text ('none' = text-only sticker).
@@ -593,12 +629,22 @@ export interface StickerDesign {
   style?: StickerTextStyle;
   seed?: number;
   spray?: StickerSpray;
+  // Optional decorative frame around the sticker (absent = none). See StickerBorder.
+  border?: StickerBorder;
 }
 
 // Admin → server: save (`sticker` set) or clear (`sticker: null`) a note's design.
 export interface AdminNoteSticker {
   id: string;
   sticker: StickerDesign | null;
+}
+
+// Admin → server: stamp (or clear) the "printed" flag on a batch of notes. Sent
+// when the admin marks a generated A4 sheet set as printed (printed:true → those
+// stickers move to the "stick queue"), or when manually re-queuing (printed:false).
+export interface AdminNotePrinted {
+  ids: string[];
+  printed: boolean;
 }
 
 // Validate + clamp an untrusted sticker design (from the admin socket). Returns a
@@ -626,6 +672,7 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
   const seed =
     typeof d.seed === 'number' && Number.isFinite(d.seed) ? Math.floor(d.seed) >>> 0 : undefined;
   const spray = d.spray !== undefined ? normalizeStickerSpray(d.spray) : undefined;
+  const border = d.border !== undefined ? normalizeStickerBorder(d.border) : undefined;
   return {
     template: typeof d.template === 'string' ? d.template.slice(0, 40) : 'custom',
     w: clamp(d.w, STICKER.MIN_SIZE, STICKER.MAX_SIZE, 760),
@@ -640,7 +687,27 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     style,
     ...(seed !== undefined ? { seed } : {}),
     ...(spray ? { spray } : {}),
+    ...(border ? { border } : {}),
   };
+}
+
+// Validate + clamp an untrusted sticker border. Returns undefined when there's no
+// (positive-width) border, so the field is simply omitted from the design.
+export function normalizeStickerBorder(raw: unknown): StickerBorder | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const d = raw as Record<string, unknown>;
+  const width =
+    typeof d.width === 'number' && Number.isFinite(d.width)
+      ? Math.max(0, Math.min(STICKER.BORDER_MAX_WIDTH, Math.round(d.width)))
+      : 0;
+  if (width <= 0) return undefined;
+  const radius =
+    typeof d.radius === 'number' && Number.isFinite(d.radius)
+      ? Math.max(0, Math.min(STICKER.BORDER_MAX_RADIUS, Math.round(d.radius)))
+      : 0;
+  const color =
+    typeof d.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(d.color) ? d.color : '#000000';
+  return { width, color, radius };
 }
 
 // Validate + clamp untrusted spray params to safe ranges (bounds the work the

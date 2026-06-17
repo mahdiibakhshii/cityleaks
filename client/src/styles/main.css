@@ -1490,6 +1490,24 @@ body.admin-body canvas {
 .admin-note-row-badge.sticker {
   color: #ffd23f;
 }
+/* Print-lifecycle status pill on note rows (and reused in the print page). */
+.admin-note-status {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid currentColor;
+}
+.status-print {
+  color: #ffb454;
+}
+.status-stick {
+  color: #2a9df4;
+}
+.status-sticked {
+  color: #3ad17a;
+}
 
 /* Detail panel for the selected note. */
 .admin-notes-detail {
@@ -1682,6 +1700,196 @@ body.admin-body canvas {
     width: 100%;
     flex: 0 0 auto;
     max-height: 50vh;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* ─── Print sheets page (A4 sticker layout) ───
+   Reuses .admin-notes-page / .admin-notes-header. A big preview pane on the left
+   shows candidate A4 layouts; a fixed sidebar on the right holds the queue +
+   controls. */
+.admin-print-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+}
+.admin-print-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #11131a;
+  padding: clamp(12px, 1.2vw, 26px);
+}
+.admin-print-side {
+  width: clamp(280px, 26vw, 400px);
+  flex-shrink: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(10, 11, 18, 0.96);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+.admin-print-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 0.7vw, 14px);
+  padding: clamp(12px, 1vw, 18px);
+}
+.admin-print-sidebar .admin-card-title {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.admin-print-sidebar .admin-card-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Lifecycle summary pills. */
+.admin-print-summary {
+  display: flex;
+  gap: 8px;
+}
+.admin-print-summary-pill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  background: rgba(255, 255, 255, 0.03);
+}
+.admin-print-summary-count {
+  font-size: 20px;
+  font-weight: 700;
+}
+.admin-print-summary-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.admin-print-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cfd3dc;
+  cursor: pointer;
+}
+.admin-print-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2a9df4;
+}
+
+/* The queue list. */
+.admin-print-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 32vh;
+  overflow-y: auto;
+}
+.admin-print-queue-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+}
+.admin-print-queue-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-print-queue-dims {
+  flex-shrink: 0;
+  color: #6c7a8a;
+  font-variant-numeric: tabular-nums;
+}
+.admin-print-actions {
+  margin-top: 6px;
+}
+.admin-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Preview pane. */
+.admin-print-empty {
+  color: #6c6c7c;
+  font-style: italic;
+  font-size: 14px;
+  text-align: center;
+  padding: 18%  10% 0;
+  line-height: 1.6;
+}
+.admin-print-candidates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.admin-print-chip {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cfd3dc;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+.admin-print-chip.selected {
+  border-color: #2a9df4;
+  background: rgba(42, 157, 244, 0.18);
+  color: #fff;
+}
+.admin-print-warn {
+  color: #ffb454;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.admin-print-sheets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 1.4vw, 28px);
+  align-items: flex-start;
+}
+.admin-print-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.admin-print-sheet-canvas {
+  display: block;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.admin-print-sheet-label {
+  font-size: 11px;
+  color: #8b93a3;
+}
+
+@media (max-width: 900px) {
+  .admin-print-content {
+    flex-direction: column;
+  }
+  .admin-print-side {
+    width: 100%;
+    flex: 0 0 auto;
     border-left: none;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }

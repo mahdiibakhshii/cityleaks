@@ -26,6 +26,10 @@ export interface StickerModalOpts {
   note: Note;
   chatUrl: string;
   initial: StickerDesign | null;
+  // The most recently saved sticker design (any note), used to seed the defaults
+  // of a BRAND-NEW sticker so the admin's last-used look carries over. Ignored
+  // when editing an existing design (`initial`).
+  defaults?: StickerDesign | null;
   onSave: (design: StickerDesign) => void;
   onRemove: () => void;
 }
@@ -60,9 +64,16 @@ function overridesToString(o?: Record<string, string>): string {
 }
 
 /** Make a fresh tag design for a note, or upgrade an existing/legacy one. */
-function makeDraft(note: Note, initial: StickerDesign | null): StickerDesign {
-  const base: StickerDesign = initial
-    ? { ...initial }
+function makeDraft(
+  note: Note,
+  initial: StickerDesign | null,
+  defaults: StickerDesign | null
+): StickerDesign {
+  // Editing → start from the existing design. New → start from the last-saved
+  // design (carry over the admin's last-used look), else hardcoded defaults.
+  const seedFrom = initial ?? defaults ?? null;
+  const base: StickerDesign = seedFrom
+    ? { ...seedFrom }
     : {
         template: 'tag',
         w: 900,
@@ -75,15 +86,21 @@ function makeDraft(note: Note, initial: StickerDesign | null): StickerDesign {
         text: note.text,
         updatedAt: Date.now(),
       };
+  // A new sticker (even one seeded from a prior design) gets THIS note's text.
+  if (!initial) base.text = note.text;
   // Force the tag style + ensure spray/seed exist (upgrades legacy 'plain' designs).
   base.style = 'tag';
-  base.spray = { ...STICKER_SPRAY_DEFAULT, ...(initial?.spray ?? {}) };
+  base.spray = { ...STICKER_SPRAY_DEFAULT, ...(seedFrom?.spray ?? {}) };
   base.seed = initial?.seed ?? (Math.random() * 0xffffffff) >>> 0;
+  // Carry over the border (incl. its absence) when editing; for a brand-new
+  // sticker with no inherited border, default to a 10px square black frame.
+  if (seedFrom?.border) base.border = { ...seedFrom.border };
+  if (!initial && !base.border) base.border = { width: 10, color: '#000000', radius: 0 };
   return base;
 }
 
 export function openStickerModal(opts: StickerModalOpts): void {
-  const draft = makeDraft(opts.note, opts.initial);
+  const draft = makeDraft(opts.note, opts.initial, opts.defaults ?? null);
   const spray = draft.spray as StickerSpray;
 
   let qrCanvas: HTMLCanvasElement | null = null;
@@ -293,6 +310,56 @@ export function openStickerModal(opts: StickerModalOpts): void {
     (v) => (draft.qrPos = v as StickerQrPos)
   );
   range(gQr, 'QR size', () => draft.qrScale, (v) => (draft.qrScale = v), STICKER.QR_MIN, STICKER.QR_MAX, 0.05, (v) => `${Math.round(v * 100)}%`);
+
+  // ── BORDER (frame) ──
+  const gBorder = group('Border (frame)');
+  const border = {
+    width: draft.border?.width ?? 0,
+    color: draft.border?.color ?? '#000000',
+    radius: draft.border?.radius ?? 0,
+  };
+  // The border only exists on the design when its thickness is > 0.
+  const syncBorder = (): void => {
+    draft.border = border.width > 0 ? { ...border } : undefined;
+  };
+  range(
+    gBorder,
+    'Thickness',
+    () => border.width,
+    (v) => {
+      border.width = v;
+      syncBorder();
+    },
+    0,
+    STICKER.BORDER_MAX_WIDTH,
+    1,
+    (v) => (v === 0 ? 'none' : `${v}px`)
+  );
+  range(
+    gBorder,
+    'Corner radius',
+    () => border.radius,
+    (v) => {
+      border.radius = v;
+      syncBorder();
+    },
+    0,
+    STICKER.BORDER_MAX_RADIUS,
+    2,
+    (v) => (v === 0 ? 'square' : `${v}px`)
+  );
+  const bColorRow = el('div', 'sticker-modal-row');
+  bColorRow.appendChild(el('label', 'sticker-modal-label', 'Colour'));
+  const bColor = el('input', 'sticker-modal-color') as HTMLInputElement;
+  bColor.type = 'color';
+  bColor.value = /^#[0-9a-fA-F]{6}$/.test(border.color) ? border.color : '#000000';
+  bColor.addEventListener('input', () => {
+    border.color = bColor.value;
+    syncBorder();
+    rerender();
+  });
+  bColorRow.appendChild(bColor);
+  gBorder.appendChild(bColorRow);
 
   // ── SPRAY LOOK ──
   const gSpray = group('Spray look');

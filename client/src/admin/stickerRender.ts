@@ -1,5 +1,10 @@
 import QRCode from 'qrcode';
-import { STICKER_SPRAY_DEFAULT, type StickerDesign, type StickerQrPos } from '../../../shared/protocol';
+import {
+  STICKER_SPRAY_DEFAULT,
+  type StickerDesign,
+  type StickerQrPos,
+  type StickerBorder,
+} from '../../../shared/protocol';
 import { drawSprayText, toSprayParams, hashSeed } from './spraytext';
 
 /**
@@ -151,7 +156,11 @@ interface StickerLayout {
  */
 function stickerLayout(design: StickerDesign): StickerLayout {
   const { w, h, qrPos, qrScale } = design;
-  const pad = Math.round(Math.min(w, h) * 0.07);
+  const base = Math.round(Math.min(w, h) * 0.07);
+  // A border eats into the content area: inset past the stroke (+ a small gap) so
+  // text/QR never collide with the frame. Borderless designs keep their exact pad.
+  const bw = design.border && design.border.width > 0 ? design.border.width : 0;
+  const pad = bw > 0 ? Math.max(base, bw + Math.round(Math.min(w, h) * 0.03)) : base;
   const layout: StickerLayout = {
     qr: null,
     textX: pad,
@@ -184,6 +193,37 @@ function stickerLayout(design: StickerDesign): StickerLayout {
 }
 
 /**
+ * Stroke the decorative frame just inside the sticker edge. The stroke's OUTER
+ * edge sits flush to the canvas edge (centerline inset by half the width); a
+ * positive `radius` rounds the corners (clamped so it can't exceed the half-side).
+ */
+function drawBorder(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  border: StickerBorder
+): void {
+  const bw = border.width;
+  const inset = bw / 2;
+  const rw = w - bw;
+  const rh = h - bw;
+  if (rw <= 0 || rh <= 0) return;
+  const r = Math.max(0, Math.min(border.radius, Math.min(rw, rh) / 2));
+  ctx.save();
+  ctx.strokeStyle = border.color;
+  ctx.lineWidth = bw;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  if (r > 0 && typeof ctx.roundRect === 'function') {
+    ctx.roundRect(inset, inset, rw, rh, r);
+  } else {
+    ctx.rect(inset, inset, rw, rh);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/**
  * Render a sticker design into `canvas` at its design pixel resolution. `qr` is
  * the pre-rendered QR canvas (ignored when qrPos==='none'). Pure + deterministic.
  */
@@ -201,6 +241,11 @@ export function renderSticker(
   // White sticker background.
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, w, h);
+
+  // Optional decorative frame, drawn just inside the sticker edge (under content).
+  if (design.border && design.border.width > 0) {
+    drawBorder(ctx, w, h, design.border);
+  }
 
   const { qr: qrRect, textX, textY, textW, textH } = stickerLayout(design);
   if (qr && qrRect) {

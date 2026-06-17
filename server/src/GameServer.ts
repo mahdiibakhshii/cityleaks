@@ -19,6 +19,7 @@ import {
   type AdminStats,
   type AdminNoteEdit,
   type AdminNoteSticker,
+  type AdminNotePrinted,
   type AdminBroadcast,
   type AdminKick,
   type AdminMapOpacity,
@@ -260,6 +261,26 @@ export class GameServer {
       this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
       void this.noteStore.saveToDiskAsync(NOTES_FILE);
       auditLog(data.sticker ? 'note sticker saved' : 'note sticker cleared', `${id} (${adminIp})`);
+    });
+
+    // Mark (or clear) a batch of notes as "printed" — sent when the admin commits
+    // a generated A4 sheet set. Stamps/clears printedAt per note (NoteStore guards
+    // that the note exists + has a sticker) and broadcasts each updated note.
+    socket.on(EVENTS.ADMIN_NOTE_PRINTED, (data: AdminNotePrinted) => {
+      const ids = Array.isArray(data?.ids) ? data.ids : [];
+      const printed = !!data?.printed;
+      let changed = 0;
+      for (const id of ids) {
+        if (!isValidNoteId(id)) continue;
+        const note = this.noteStore.setPrinted(id, printed);
+        if (!note) continue;
+        this.io.to('game').to('monitor').to('admin').emit(EVENTS.NOTE_UPDATE, note);
+        changed++;
+      }
+      if (changed > 0) {
+        void this.noteStore.saveToDiskAsync(NOTES_FILE);
+        auditLog(printed ? 'notes marked printed' : 'notes unmarked printed', `${changed} (${adminIp})`);
+      }
     });
 
     // ─── Broadcast a message to every player (transient, distinct style) ───

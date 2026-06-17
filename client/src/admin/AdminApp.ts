@@ -6,15 +6,35 @@ import {
   getCharacter,
   ANON_CHARACTER_ID,
   noteImageUrl,
+  noteStickerStatus,
   type Note,
   type KillMarker,
   type AdminStats,
   type AdminPlayerInfo,
   type StickerDesign,
+  type NoteStickerStatus,
 } from '../../../shared/protocol';
 import { ASSETS } from '../config';
 import { openStickerModal } from './stickerModal';
 import { renderSticker, makeQrCanvas, downloadStickerPng } from './stickerRender';
+import {
+  generateCandidates,
+  prepareStickers,
+  packItems,
+  renderSheetCanvas,
+  downloadSheetsPdf,
+  type Candidate,
+  type PreparedSticker,
+} from './printSheets';
+
+// Short human label + badge glyph per print-lifecycle status (shared by the
+// notes list badges + the print page).
+const STATUS_META: Record<NoteStickerStatus, { label: string; glyph: string }> = {
+  none: { label: 'No sticker', glyph: '' },
+  print: { label: 'Print queue', glyph: '🖨' },
+  stick: { label: 'Stick queue', glyph: '📍' },
+  sticked: { label: 'Sticked', glyph: '✅' },
+};
 
 /** Tiny DOM helper: create an element with class + optional text. */
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -69,6 +89,18 @@ export class AdminApp {
 
   // Sticker designer: the section host (the editor itself lives in a modal).
   private stickerSectionEl: HTMLElement | null = null;
+
+  // Print-sheets view (A4 sticker layout). Refs/state for the dedicated page.
+  private printRoot: HTMLElement | null = null;
+  private printPreviewEl: HTMLElement | null = null;
+  private printSidebarEl: HTMLElement | null = null;
+  private printPrepared: PreparedSticker[] = []; // stickers rendered once for reuse
+  private printCandidates: Candidate[] = [];
+  private printSelected = 0; // index into printCandidates
+  private printSeed = 1; // re-roll on "Regenerate"
+  private printRotate = true; // allow 90° rotation when packing
+  private printBusy = false;
+  private printIncludePrinted = false; // also reprint already-printed stickers
 
   // Notes-map zoom / pan state (canvas-pixel space).
   private notesZoom = 1;
@@ -263,7 +295,8 @@ export class AdminApp {
   // ─── Dashboard layout ───
 
   private renderDashboard(): void {
-    // Leaving the notes view: drop its refs so its live-refresh no-ops.
+    // Leaving the notes/print views: drop their refs so live-refresh no-ops.
+    this.printRoot = null;
     this.notesCanvas = null;
     this.notesDetailEl = null;
     this.notesMapDispose?.();
@@ -276,6 +309,9 @@ export class AdminApp {
     const notesPageBtn = el('button', 'admin-btn', '🗒 Manage notes');
     notesPageBtn.addEventListener('click', () => this.renderNotesPage());
     header.appendChild(notesPageBtn);
+    const printPageBtn = el('button', 'admin-btn', '🖨 Print sheets');
+    printPageBtn.addEventListener('click', () => this.renderPrintPage());
+    header.appendChild(printPageBtn);
     const batman = el('button', 'admin-btn admin-btn-batman', '🦇 Play as Batman');
     batman.addEventListener('click', () => {
       // Same-origin: the admin session cookie authorizes Batman server-side.
@@ -392,7 +428,8 @@ export class AdminApp {
    * below. In-page view swap — no new route.
    */
   private renderNotesPage(): void {
-    // Null dashboard refs so their renderers no-op while we're on this view.
+    // Null dashboard/print refs so their renderers no-op while we're on this view.
+    this.printRoot = null;
     this.statsEl = null;
     this.playersEl = null;
     this.notesEl = null;
@@ -408,6 +445,14 @@ export class AdminApp {
     // Header bar
     const header = el('div', 'admin-notes-header');
     header.appendChild(el('div', 'admin-title', 'Notes'));
+    const printBtn = el('button', 'admin-btn', '🖨 Print sheets');
+    printBtn.addEventListener('click', () => {
+      this.selectedNoteId = null;
+      this.notesMapRO?.disconnect();
+      this.notesMapRO = null;
+      this.renderPrintPage();
+    });
+    header.appendChild(printBtn);
     const back = el('button', 'admin-btn', '← Dashboard');
     back.addEventListener('click', () => {
       this.selectedNoteId = null;
@@ -466,6 +511,7 @@ export class AdminApp {
 
   /** Live-refresh the notes page (if open) after a NOTE_* event. */
   private refreshNotesView(): void {
+    this.refreshPrintView();
     if (!this.notesCanvas) return;
     if (this.selectedNoteId && !this.notes.has(this.selectedNoteId)) {
       this.selectedNoteId = null;
@@ -503,6 +549,11 @@ export class AdminApp {
       const meta = el('div', 'admin-note-row-meta');
       if (note.image) meta.appendChild(el('span', 'admin-note-row-badge photo', '📷'));
       if (note.sticker) meta.appendChild(el('span', 'admin-note-row-badge sticker', '🏷'));
+      const status = noteStickerStatus(note);
+      if (status !== 'none') {
+        const m = STATUS_META[status];
+        meta.appendChild(el('span', `admin-note-status status-${status}`, `${m.glyph} ${m.label}`));
+      }
       meta.appendChild(el('span', 'admin-note-row-kind', note.admin ? 'Creator' : 'Note'));
       row.appendChild(meta);
 
@@ -816,6 +867,7 @@ export class AdminApp {
         note,
         chatUrl,
         initial: note.sticker ?? null,
+        defaults: this.lastSavedSticker(),
         onSave: (design: StickerDesign) => {
           this.emit(EVENTS.ADMIN_NOTE_STICKER, { id: note.id, sticker: design });
         },
@@ -825,6 +877,18 @@ export class AdminApp {
       });
     });
     host.appendChild(open);
+  }
+
+  /** The most recently updated sticker design across all notes (or null). Seeds a
+   *  new sticker's defaults so the admin's last-used look carries over. */
+  private lastSavedSticker(): StickerDesign | null {
+    let best: StickerDesign | null = null;
+    for (const note of this.notes.values()) {
+      if (note.sticker && (!best || note.sticker.updatedAt > best.updatedAt)) {
+        best = note.sticker;
+      }
+    }
+    return best;
   }
 
   /** Open a file picker, then upload the chosen image to the given note. */
@@ -1005,6 +1069,303 @@ export class AdminApp {
   private notesPinchMidpoint(): { x: number; y: number } {
     const pts = [...this.notesPointers.values()];
     return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+  }
+
+  // ─── Print sheets (A4 sticker alignment) ───
+
+  /**
+   * Dedicated page: bin-packs the saved sticker designs onto A4 sheets, previews
+   * generative layout candidates, lets the admin regenerate / download a print-
+   * ready PDF, and "mark as printed" to advance those notes to the stick queue.
+   */
+  private renderPrintPage(): void {
+    // Null dashboard + notes refs so their renderers/observers no-op here.
+    this.statsEl = null;
+    this.playersEl = null;
+    this.notesEl = null;
+    this.overview = null;
+    this.opacityInput = null;
+    this.opacityLabel = null;
+    this.notesCanvas = null;
+    this.notesDetailEl = null;
+    this.notesMapRO?.disconnect();
+    this.notesMapRO = null;
+    this.notesMapDispose?.();
+    this.notesMapDispose = null;
+
+    // Fresh state for a new visit.
+    this.printCandidates = [];
+    this.printPrepared = [];
+    this.printSelected = 0;
+    this.printBusy = false;
+
+    this.root.innerHTML = '';
+    const page = el('div', 'admin-notes-page');
+
+    const header = el('div', 'admin-notes-header');
+    header.appendChild(el('div', 'admin-title', 'Print sheets'));
+    const notesBtn = el('button', 'admin-btn', '🗒 Manage notes');
+    notesBtn.addEventListener('click', () => {
+      this.printRoot = null;
+      this.renderNotesPage();
+    });
+    header.appendChild(notesBtn);
+    const back = el('button', 'admin-btn', '← Dashboard');
+    back.addEventListener('click', () => {
+      this.printRoot = null;
+      this.renderDashboard();
+    });
+    header.appendChild(back);
+    page.appendChild(header);
+
+    const content = el('div', 'admin-print-content');
+    const main = el('div', 'admin-print-main');
+    this.printPreviewEl = el('div', 'admin-print-preview');
+    main.appendChild(this.printPreviewEl);
+    content.appendChild(main);
+
+    const side = el('div', 'admin-print-side');
+    this.printSidebarEl = el('div', 'admin-print-sidebar');
+    side.appendChild(this.printSidebarEl);
+    content.appendChild(side);
+
+    page.appendChild(content);
+    this.root.appendChild(page);
+    this.printRoot = page;
+
+    this.renderPrintSidebar();
+    this.renderPrintPreview();
+  }
+
+  /** All notes currently eligible for printing (status print, or print+stick if reprinting). */
+  private printQueueNotes(): Note[] {
+    const allowed: NoteStickerStatus[] = this.printIncludePrinted ? ['print', 'stick'] : ['print'];
+    return [...this.notes.values()]
+      .filter((n) => allowed.includes(noteStickerStatus(n)))
+      .sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  /** Live-refresh the print page (queue/summary) when notes change. */
+  private refreshPrintView(): void {
+    if (!this.printRoot) return;
+    this.renderPrintSidebar();
+  }
+
+  /** Sidebar: status summary, options, the print queue, and action buttons. */
+  private renderPrintSidebar(): void {
+    const host = this.printSidebarEl;
+    if (!host) return;
+    host.innerHTML = '';
+
+    // Lifecycle summary across all notes.
+    const counts: Record<NoteStickerStatus, number> = { none: 0, print: 0, stick: 0, sticked: 0 };
+    for (const n of this.notes.values()) counts[noteStickerStatus(n)]++;
+
+    host.appendChild(el('div', 'admin-card-title', 'Sticker pipeline'));
+    const summary = el('div', 'admin-print-summary');
+    for (const s of ['print', 'stick', 'sticked'] as NoteStickerStatus[]) {
+      const m = STATUS_META[s];
+      const pill = el('div', `admin-print-summary-pill status-${s}`);
+      pill.appendChild(el('span', 'admin-print-summary-count', String(counts[s])));
+      pill.appendChild(el('span', 'admin-print-summary-label', `${m.glyph} ${m.label}`));
+      summary.appendChild(pill);
+    }
+    host.appendChild(summary);
+
+    // Options.
+    host.appendChild(el('div', 'admin-card-title', 'Options'));
+    const rotate = this.checkbox('Allow 90° rotation (tighter packing)', this.printRotate, (v) => {
+      this.printRotate = v;
+    });
+    const reprint = this.checkbox('Also re-print already-printed stickers', this.printIncludePrinted, (v) => {
+      this.printIncludePrinted = v;
+      this.renderPrintSidebar();
+    });
+    host.append(rotate, reprint);
+
+    // The print queue itself.
+    const queue = this.printQueueNotes();
+    host.appendChild(el('div', 'admin-card-title', `Print queue (${queue.length})`));
+    if (queue.length === 0) {
+      host.appendChild(
+        el(
+          'div',
+          'admin-notes-detail-empty',
+          this.printIncludePrinted
+            ? 'No stickers to print. Design stickers on the Notes page first.'
+            : 'No new stickers awaiting print. Edited or new designs appear here.'
+        )
+      );
+    } else {
+      const list = el('div', 'admin-print-queue');
+      for (const n of queue) {
+        const row = el('div', 'admin-print-queue-row');
+        const dims = n.sticker ? `${n.sticker.w}×${n.sticker.h}` : '';
+        row.appendChild(el('span', 'admin-print-queue-text', n.text));
+        row.appendChild(el('span', 'admin-print-queue-dims', dims));
+        list.appendChild(row);
+      }
+      host.appendChild(list);
+    }
+
+    // Actions.
+    const actions = el('div', 'admin-note-actions admin-print-actions');
+    const genLabel = this.printCandidates.length > 0 ? 'Regenerate layouts' : 'Generate sheets';
+    const gen = el('button', 'admin-btn admin-btn-small admin-btn-primary', genLabel);
+    gen.disabled = this.printBusy || queue.length === 0;
+    gen.addEventListener('click', () => void this.runGenerate(this.printCandidates.length > 0));
+    actions.appendChild(gen);
+
+    if (this.printCandidates.length > 0) {
+      const cand = this.printCandidates[this.printSelected];
+      const ids = cand ? cand.pages.flatMap((p) => p.placements.map((pl) => pl.id)) : [];
+
+      const dl = el('button', 'admin-btn admin-btn-small', '⬇ Download PDF');
+      dl.disabled = this.printBusy || !cand;
+      dl.addEventListener('click', () => this.downloadSelectedPdf());
+      actions.appendChild(dl);
+
+      const mark = el('button', 'admin-btn admin-btn-small admin-btn-primary', `✓ Mark ${ids.length} printed`);
+      mark.disabled = this.printBusy || ids.length === 0;
+      mark.addEventListener('click', () => this.markSelectedPrinted());
+      actions.appendChild(mark);
+    }
+    host.appendChild(actions);
+  }
+
+  /** Preview pane: candidate selector chips + the selected layout's A4 pages. */
+  private renderPrintPreview(): void {
+    const host = this.printPreviewEl;
+    if (!host) return;
+    host.innerHTML = '';
+
+    if (this.printBusy) {
+      host.appendChild(el('div', 'admin-print-empty', 'Rendering stickers + packing sheets…'));
+      return;
+    }
+    if (this.printCandidates.length === 0) {
+      host.appendChild(
+        el(
+          'div',
+          'admin-print-empty',
+          'Generate sheets to see candidate A4 layouts. The packer fits as many stickers per page as it can; regenerate for alternative arrangements.'
+        )
+      );
+      return;
+    }
+
+    // Candidate chips (each a different arrangement).
+    const chips = el('div', 'admin-print-candidates');
+    this.printCandidates.forEach((cand, i) => {
+      const pages = cand.pageCount;
+      const fill = Math.round(cand.fill * 100);
+      const chip = el(
+        'button',
+        `admin-print-chip ${i === this.printSelected ? 'selected' : ''}`,
+        `${cand.strategy} · ${pages} page${pages === 1 ? '' : 's'} · ${fill}% full`
+      );
+      chip.addEventListener('click', () => {
+        this.printSelected = i;
+        this.renderPrintPreview();
+        this.renderPrintSidebar();
+      });
+      chips.appendChild(chip);
+    });
+    host.appendChild(chips);
+
+    const cand = this.printCandidates[this.printSelected];
+    if (!cand) return;
+    if (cand.dropped.length > 0) {
+      host.appendChild(
+        el(
+          'div',
+          'admin-print-warn',
+          `${cand.dropped.length} sticker(s) too large for a single A4 — skipped. Shrink their design.`
+        )
+      );
+    }
+
+    // Render each page as an A4 thumbnail (downscaled from print resolution).
+    const sheets = el('div', 'admin-print-sheets');
+    const scale = 0.16;
+    cand.pages.forEach((pageLayout, i) => {
+      const wrap = el('div', 'admin-print-sheet');
+      const canvas = renderSheetCanvas(pageLayout, this.printPrepared, scale);
+      canvas.className = 'admin-print-sheet-canvas';
+      wrap.appendChild(canvas);
+      wrap.appendChild(
+        el('div', 'admin-print-sheet-label', `Page ${i + 1} · ${pageLayout.placements.length} stickers`)
+      );
+      sheets.appendChild(wrap);
+    });
+    host.appendChild(sheets);
+  }
+
+  /** Render the queued stickers, then compute generative packing candidates. */
+  private async runGenerate(regenerate: boolean): Promise<void> {
+    if (this.printBusy) return;
+    const queue = this.printQueueNotes();
+    if (queue.length === 0) return;
+
+    if (regenerate) {
+      // Advance the seed (LCG) so shuffled candidates change.
+      this.printSeed = (Math.imul(this.printSeed, 1664525) + 1013904223) >>> 0 || 1;
+    }
+    this.printBusy = true;
+    this.renderPrintSidebar();
+    this.renderPrintPreview();
+    try {
+      this.printPrepared = await prepareStickers(queue, window.location.origin);
+      const items = packItems(this.printPrepared);
+      this.printCandidates = generateCandidates(items, this.printRotate, this.printSeed);
+      this.printSelected = 0;
+    } catch (err) {
+      console.error('Sheet generation failed:', err);
+      this.printCandidates = [];
+    } finally {
+      this.printBusy = false;
+      this.renderPrintSidebar();
+      this.renderPrintPreview();
+    }
+  }
+
+  private downloadSelectedPdf(): void {
+    const cand = this.printCandidates[this.printSelected];
+    if (!cand) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadSheetsPdf(cand.pages, this.printPrepared, `cityleaks-stickers-${stamp}.pdf`);
+  }
+
+  private markSelectedPrinted(): void {
+    const cand = this.printCandidates[this.printSelected];
+    if (!cand) return;
+    const ids = [...new Set(cand.pages.flatMap((p) => p.placements.map((pl) => pl.id)))];
+    if (ids.length === 0) return;
+    if (
+      !window.confirm(
+        `Mark ${ids.length} sticker(s) as printed? They move to the "stick queue" — go place the physical stickers, then upload a photo to finish.`
+      )
+    ) {
+      return;
+    }
+    this.emit(EVENTS.ADMIN_NOTE_PRINTED, { ids, printed: true });
+    // Server echoes NOTE_UPDATE per note → refreshPrintView updates the queue.
+    // Clear the now-consumed candidates so the preview reflects the new state.
+    this.printCandidates = [];
+    this.printPrepared = [];
+    this.printSelected = 0;
+    this.renderPrintPreview();
+  }
+
+  /** Labelled checkbox row helper (used by the print options). */
+  private checkbox(label: string, checked: boolean, onChange: (v: boolean) => void): HTMLElement {
+    const row = el('label', 'admin-print-check');
+    const box = el('input') as HTMLInputElement;
+    box.type = 'checkbox';
+    box.checked = checked;
+    box.addEventListener('change', () => onChange(box.checked));
+    row.append(box, el('span', '', label));
+    return row;
   }
 
   private card(title: string): HTMLElement {
