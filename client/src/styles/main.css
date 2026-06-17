@@ -8,6 +8,16 @@
   src: url('/fonts/DesimateStonger-Regular.otf') format('opentype');
   font-display: swap;
 }
+@font-face {
+  font-family: 'ImpactLeak';
+  src: url('/fonts/impact.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Walnut';
+  src: url('/fonts/Walnut Regular.ttf') format('truetype');
+  font-display: swap;
+}
 
 * {
   margin: 0;

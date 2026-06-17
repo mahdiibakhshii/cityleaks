@@ -18,8 +18,16 @@ import {
   type StickerSpray,
   type StickerQrPos,
   type StickerAlign,
+  type StickerTextStyle,
 } from '../../../shared/protocol';
-import { renderSticker, makeQrCanvas, downloadStickerPng } from './stickerRender';
+import {
+  renderSticker,
+  makeQrCanvas,
+  downloadStickerPng,
+  ensureFont,
+  fontById,
+  STICKER_FONTS,
+} from './stickerRender';
 import { hersheyFaces } from './spraytext';
 
 export interface StickerModalOpts {
@@ -88,8 +96,8 @@ function makeDraft(
       };
   // A new sticker (even one seeded from a prior design) gets THIS note's text.
   if (!initial) base.text = note.text;
-  // Force the tag style + ensure spray/seed exist (upgrades legacy 'plain' designs).
-  base.style = 'tag';
+  // Keep the generative styles; upgrade legacy 'plain' designs to 'tag'.
+  base.style = base.style === 'fill' ? 'fill' : 'tag';
   base.spray = { ...STICKER_SPRAY_DEFAULT, ...(seedFrom?.spray ?? {}) };
   base.seed = initial?.seed ?? (Math.random() * 0xffffffff) >>> 0;
   // Carry over the border (incl. its absence) when editing; for a brand-new
@@ -253,6 +261,37 @@ export function openStickerModal(opts: StickerModalOpts): void {
     rerender();
   });
   gText.appendChild(useNote);
+
+  // ── LETTER STYLE ──
+  const gStyle = group('Letter style');
+  chips(
+    gStyle,
+    'Style',
+    [
+      { value: 'tag', label: 'Spray strokes' },
+      { value: 'fill', label: 'Solid font (Impact…)' },
+    ],
+    () => (draft.style === 'fill' ? 'fill' : 'tag'),
+    (v) => {
+      draft.style = v as StickerTextStyle;
+      if (v === 'fill') {
+        // Default to a real solid typeface if the design still carries a tag face.
+        if (!STICKER_FONTS.some((f) => f.id === draft.fontId)) draft.fontId = 'impact';
+        void ensureFont(fontById(draft.fontId), draft.fontSize).then(rerender);
+      }
+    }
+  );
+  // Solid typeface for the 'fill' style (spray-filled TTF letterforms like Impact).
+  chips(
+    gStyle,
+    'Solid font',
+    STICKER_FONTS.map((f) => ({ value: f.id, label: f.label })),
+    () => fontById(draft.fontId).id,
+    (v) => {
+      draft.fontId = v;
+      void ensureFont(fontById(v), draft.fontSize).then(rerender);
+    }
+  );
 
   // ── BASE FONT (face) ──
   const gFont = group('Base font (letter structure)');
@@ -457,11 +496,13 @@ export function openStickerModal(opts: StickerModalOpts): void {
 
   document.body.appendChild(overlay);
 
-  // Build the QR (if needed), then do the first render.
-  void makeQrCanvas(opts.chatUrl)
-    .then((c) => {
-      qrCanvas = c;
-    })
-    .catch(() => undefined)
-    .finally(rerender);
+  // Build the QR + load the solid font (if any), then do the first render.
+  void Promise.all([
+    makeQrCanvas(opts.chatUrl)
+      .then((c) => {
+        qrCanvas = c;
+      })
+      .catch(() => undefined),
+    ensureFont(fontById(draft.fontId), draft.fontSize).catch(() => undefined),
+  ]).finally(rerender);
 }

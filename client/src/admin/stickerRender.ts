@@ -5,7 +5,7 @@ import {
   type StickerQrPos,
   type StickerBorder,
 } from '../../../shared/protocol';
-import { drawSprayText, toSprayParams, hashSeed } from './spraytext';
+import { drawSprayText, sprayFill, toSprayParams, hashSeed } from './spraytext';
 
 /**
  * Sticker designer rendering. A "sticker" is the printable artwork for a note: a
@@ -27,6 +27,8 @@ export interface StickerFont {
 export const STICKER_FONTS: StickerFont[] = [
   { id: 'seikora',   label: 'Seikora',          family: '"Seikora", Arial, sans-serif',          weight: '400' },
   { id: 'desimate',  label: 'Desimate Stonger',  family: '"DesimateStonger", Arial, sans-serif',  weight: '400' },
+  { id: 'impact',    label: 'Impact',            family: '"ImpactLeak", Impact, "Arial Narrow", sans-serif', weight: '400' },
+  { id: 'walnut',    label: 'Walnut',            family: '"Walnut", Georgia, serif',              weight: '400' },
   { id: 'default',   label: 'Default (Arial)',   family: '"Arial Narrow", Arial, sans-serif',     weight: '700' },
 ];
 
@@ -259,6 +261,27 @@ export function renderSticker(
     drawSprayText(
       ctx,
       { text: design.text, x: textX, y: textY, w: textW, h: textH, fontSize: design.fontSize, align },
+      toSprayParams(spray, seed)
+    );
+    return;
+  }
+
+  // Spray-FILLED solid font (e.g. Impact): fat TTF letterforms filled with spray
+  // + an overspray halo. Uses `fontId` for the typeface and the spray look params.
+  if (design.style === 'fill') {
+    const spray = design.spray ?? STICKER_SPRAY_DEFAULT;
+    const seed = design.seed ?? hashSeed(design.text);
+    const font = fontById(design.fontId);
+    const fontStr = fontString(font, design.fontSize);
+    ctx.font = fontStr;
+    ctx.textBaseline = 'alphabetic';
+    const lines = layoutLines(ctx, design.text, textW);
+    const lineH = design.fontSize * Math.max(spray.lineSpacing, 1); // solid lines mustn't overlap
+    const blockH = lines.length * lineH;
+    const startY = textY + Math.max(0, (textH - blockH) / 2);
+    sprayFill(
+      ctx,
+      { x: textX, y: startY, w: textW, h: textH, fontSize: design.fontSize, lineH, align, font: fontStr, lines },
       toSprayParams(spray, seed)
     );
     return;

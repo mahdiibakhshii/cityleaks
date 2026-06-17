@@ -835,6 +835,7 @@ export function sprayFill(
   const dab = bakeDab(params.color);
   const r = mulberry32(params.seed ^ 0xc3c3c3);
   const fadeNoise = new Noise1D(params.seed ^ 0x9090, 256);
+  const pressNoise = new Noise1D(params.seed ^ 0x2468, 256);
   const bw = maxX - minX;
   const bh = maxY - minY;
   ctx.save();
@@ -856,6 +857,9 @@ export function sprayFill(
   ctx.restore();
 
   // 3) Spray-fill: rejection-sample points inside the mask, stamp core dabs.
+  // `scatter` feathers each dab outward (paint creeping past the edge); `pressure`
+  // adds coherent uneven coverage so the fill isn't flat — both mirror the tag
+  // brush so the same sliders read on a solid font.
   const area = bw * bh;
   const samples = Math.floor(area * 0.08 * params.density);
   for (let i = 0; i < samples; i++) {
@@ -864,7 +868,65 @@ export function sprayFill(
     if (!inside(x, y)) continue;
     const tGlobal = bw > 0 ? (x - minX) / bw : 0;
     const cov = fadeFactor(tGlobal, params.fade, params.fadeAmount, fadeNoise, 0);
-    stamp(ctx, dab, x, y, params.coreRadius * (0.6 + r() * 0.8), (0.3 + r() * 0.5) * cov);
+    const press = 1 + pressNoise.fbm(x * 0.012 + y * 0.017) * params.pressure;
+    const ox = params.scatter > 0 ? gaussian(r) * params.scatter : 0;
+    const oy = params.scatter > 0 ? gaussian(r) * params.scatter : 0;
+    stamp(
+      ctx,
+      dab,
+      x + ox,
+      y + oy,
+      params.coreRadius * (0.6 + r() * 0.8) * press,
+      (0.3 + r() * 0.5) * cov
+    );
+  }
+
+  // 3b) Letter-bottom seeds: the lowest inside pixel per column = the underside of
+  // the letterforms — where paint pools (bleed) and drips run (just like the tag
+  // style drips from heavy spots).
+  if (params.bleed > 0 || params.drips > 0) {
+    const bottoms: { x: number; y: number }[] = [];
+    for (let x = minX; x <= maxX; x += 2) {
+      for (let y = maxY; y >= minY; y--) {
+        if (inside(x, y)) {
+          bottoms.push({ x, y });
+          break;
+        }
+      }
+    }
+
+    // BLEED — pooled paint along the underside of the letters.
+    if (params.bleed > 0) {
+      for (const p of bottoms) {
+        if (r() >= 0.12 + params.bleed * 0.3) continue;
+        const tGlobal = bw > 0 ? (p.x - minX) / bw : 0;
+        const cov = fadeFactor(tGlobal, params.fade, params.fadeAmount, fadeNoise, 0);
+        stamp(
+          ctx,
+          dab,
+          p.x,
+          p.y,
+          params.coreRadius * (1 + params.bleed * 1.5) * (0.7 + r() * 0.5),
+          (0.3 + 0.4 * params.bleed) * cov
+        );
+      }
+    }
+
+    // DRIPS — gravity streaks tapering downward (length scaled by dripLength).
+    if (params.drips > 0) {
+      for (const p of bottoms) {
+        if (r() >= params.drips * 0.06) continue;
+        const length = (10 + r() * 55) * (0.5 + params.coreRadius / 3) * params.dripLength;
+        if (length < 1) continue;
+        const steps = Math.max(4, Math.floor(length / 2));
+        let wander = 0;
+        for (let s = 0; s < steps; s++) {
+          const t = s / steps;
+          wander += (r() - 0.5) * 0.6;
+          stamp(ctx, dab, p.x + wander, p.y + t * length, params.coreRadius * (0.9 - 0.5 * t), 0.5 * (1 - t * 0.5));
+        }
+      }
+    }
   }
 
   // 4) Grain mist over the bbox.

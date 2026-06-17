@@ -543,9 +543,11 @@ export type StickerAlign = 'left' | 'center' | 'right';
 // Where the chat QR sits relative to the text ('none' = text-only sticker).
 export type StickerQrPos = 'right' | 'left' | 'bottom' | 'none';
 
-// How the sticker text is rendered. 'plain' = a normal TTF (legacy designs);
-// 'tag' = the generative spray-paint engine (centerline stroke font + spray).
-export type StickerTextStyle = 'plain' | 'tag';
+// How the sticker text is rendered. 'plain' = a normal TTF, drawn solid (legacy
+// designs); 'tag' = the generative spray-paint engine (centerline stroke font +
+// spray); 'fill' = fat TTF letterforms (e.g. Impact) spray-FILLED with an
+// overspray halo (uses `fontId` for the typeface + the `spray` look params).
+export type StickerTextStyle = 'plain' | 'tag' | 'fill';
 
 /**
  * Serializable parameters for the spray-paint ("tag") text engine. Plain data so
@@ -668,7 +670,8 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     d.qrPos === 'right' || d.qrPos === 'left' || d.qrPos === 'bottom' || d.qrPos === 'none'
       ? d.qrPos
       : 'right';
-  const style: StickerTextStyle = d.style === 'tag' || d.style === 'plain' ? d.style : 'plain';
+  const style: StickerTextStyle =
+    d.style === 'tag' || d.style === 'plain' || d.style === 'fill' ? d.style : 'plain';
   const seed =
     typeof d.seed === 'number' && Number.isFinite(d.seed) ? Math.floor(d.seed) >>> 0 : undefined;
   const spray = d.spray !== undefined ? normalizeStickerSpray(d.spray) : undefined;
