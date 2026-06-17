@@ -507,6 +507,71 @@ export type StickerAlign = 'left' | 'center' | 'right';
 // Where the chat QR sits relative to the text ('none' = text-only sticker).
 export type StickerQrPos = 'right' | 'left' | 'bottom' | 'none';
 
+// How the sticker text is rendered. 'plain' = a normal TTF (legacy designs);
+// 'tag' = the generative spray-paint engine (centerline stroke font + spray).
+export type StickerTextStyle = 'plain' | 'tag';
+
+/**
+ * Serializable parameters for the spray-paint ("tag") text engine. Plain data so
+ * it persists in a StickerDesign and travels over the wire; the client maps it to
+ * its richer render type. `fontKey` selects the base centerline face (a Hershey
+ * key today, e.g. 'futural'/'scripts'; arbitrary so hand-drawn faces can be added
+ * later) and `glyphOverrides` swaps individual letters to another face.
+ */
+export interface StickerSpray {
+  color: string;
+  fontKey: string;
+  alternates: boolean;
+  density: number;
+  coreRadius: number;
+  haloRadius: number;
+  haloStrength: number;
+  scatter: number;
+  fade: string; // 'none' | 'tail' | 'global' | 'patchy'
+  fadeAmount: number;
+  drips: number;
+  dripLength: number;
+  wobble: number;
+  roughness: number;
+  slantVar: number;
+  stretch: number;
+  jitter: number;
+  tracking: number;
+  lineSpacing: number;
+  pressure: number;
+  taper: number;
+  bleed: number;
+  grain: number;
+  glyphOverrides?: Record<string, string>;
+}
+
+// Tag-sans starting point (matches the engine's DEFAULT_SPRAY, fontKey = Sans).
+export const STICKER_SPRAY_DEFAULT: StickerSpray = {
+  color: '#0b0b0b',
+  fontKey: 'futural',
+  alternates: false,
+  density: 3,
+  coreRadius: 1.8,
+  haloRadius: 6.5,
+  haloStrength: 0.22,
+  scatter: 0.9,
+  fade: 'global',
+  fadeAmount: 0.5,
+  drips: 0.25,
+  dripLength: 0.9,
+  wobble: 2,
+  roughness: 0.6,
+  slantVar: 0,
+  stretch: 0.32,
+  jitter: 0.2,
+  tracking: 8,
+  lineSpacing: 0.8,
+  pressure: 0.05,
+  taper: 0.35,
+  bleed: 0.3,
+  grain: 0.35,
+};
+
 // A fully self-describing sticker layout. `template` is just the preset the admin
 // last picked (so the UI can re-highlight it); the actual render is driven by the
 // explicit w/h/fontSize/align/qrPos/text so it stays stable even if preset
@@ -522,6 +587,12 @@ export interface StickerDesign {
   fontId: string; // key into STICKER_FONTS (client-side list); persisted so design re-opens correctly
   text: string; // editable sticker text (may add spaces / newlines vs note.text)
   updatedAt: number; // epoch ms
+  // Generative spray-paint text. `style:'tag'` + `spray` drive the stroke-font
+  // spray engine; absent/`'plain'` = the legacy TTF render (back-compat). `seed`
+  // makes the generative result deterministic but re-rollable ("new seed").
+  style?: StickerTextStyle;
+  seed?: number;
+  spray?: StickerSpray;
 }
 
 // Admin → server: save (`sticker` set) or clear (`sticker: null`) a note's design.
@@ -551,6 +622,10 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     d.qrPos === 'right' || d.qrPos === 'left' || d.qrPos === 'bottom' || d.qrPos === 'none'
       ? d.qrPos
       : 'right';
+  const style: StickerTextStyle = d.style === 'tag' || d.style === 'plain' ? d.style : 'plain';
+  const seed =
+    typeof d.seed === 'number' && Number.isFinite(d.seed) ? Math.floor(d.seed) >>> 0 : undefined;
+  const spray = d.spray !== undefined ? normalizeStickerSpray(d.spray) : undefined;
   return {
     template: typeof d.template === 'string' ? d.template.slice(0, 40) : 'custom',
     w: clamp(d.w, STICKER.MIN_SIZE, STICKER.MAX_SIZE, 760),
@@ -562,6 +637,58 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     fontId: typeof d.fontId === 'string' && d.fontId.length > 0 ? d.fontId.slice(0, 40) : 'seikora',
     text,
     updatedAt: Date.now(),
+    style,
+    ...(seed !== undefined ? { seed } : {}),
+    ...(spray ? { spray } : {}),
+  };
+}
+
+// Validate + clamp untrusted spray params to safe ranges (bounds the work the
+// client renderer will do and keeps the payload sane).
+export function normalizeStickerSpray(raw: unknown): StickerSpray | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const d = raw as Record<string, unknown>;
+  const num = (v: unknown, lo: number, hi: number, dflt: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : dflt;
+  const D = STICKER_SPRAY_DEFAULT;
+  const fade =
+    d.fade === 'none' || d.fade === 'tail' || d.fade === 'global' || d.fade === 'patchy'
+      ? d.fade
+      : D.fade;
+  let glyphOverrides: Record<string, string> | undefined;
+  if (d.glyphOverrides && typeof d.glyphOverrides === 'object') {
+    glyphOverrides = {};
+    let n = 0;
+    for (const [k, v] of Object.entries(d.glyphOverrides as Record<string, unknown>)) {
+      if (n++ >= 64) break;
+      if (k.length === 1 && typeof v === 'string' && v.length <= 24) glyphOverrides[k] = v;
+    }
+  }
+  return {
+    color: typeof d.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(d.color) ? d.color : D.color,
+    fontKey: typeof d.fontKey === 'string' && d.fontKey.length > 0 ? d.fontKey.slice(0, 40) : D.fontKey,
+    alternates: typeof d.alternates === 'boolean' ? d.alternates : D.alternates,
+    density: num(d.density, 0.1, 4, D.density),
+    coreRadius: num(d.coreRadius, 0.3, 24, D.coreRadius),
+    haloRadius: num(d.haloRadius, 0, 60, D.haloRadius),
+    haloStrength: num(d.haloStrength, 0, 1, D.haloStrength),
+    scatter: num(d.scatter, 0, 24, D.scatter),
+    fade,
+    fadeAmount: num(d.fadeAmount, 0, 1, D.fadeAmount),
+    drips: num(d.drips, 0, 1, D.drips),
+    dripLength: num(d.dripLength, 0, 5, D.dripLength),
+    wobble: num(d.wobble, 0, 16, D.wobble),
+    roughness: num(d.roughness, 0, 4, D.roughness),
+    slantVar: num(d.slantVar, 0, 1.2, D.slantVar),
+    stretch: num(d.stretch, 0, 1, D.stretch),
+    jitter: num(d.jitter, 0, 1, D.jitter),
+    tracking: num(d.tracking, -10, 60, D.tracking),
+    lineSpacing: num(d.lineSpacing, 0.6, 3.5, D.lineSpacing),
+    pressure: num(d.pressure, 0, 1, D.pressure),
+    taper: num(d.taper, 0, 1, D.taper),
+    bleed: num(d.bleed, 0, 1, D.bleed),
+    grain: num(d.grain, 0, 1, D.grain),
+    ...(glyphOverrides ? { glyphOverrides } : {}),
   };
 }
 

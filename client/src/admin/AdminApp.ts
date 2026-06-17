@@ -11,22 +11,10 @@ import {
   type AdminStats,
   type AdminPlayerInfo,
   type StickerDesign,
-  STICKER,
 } from '../../../shared/protocol';
 import { ASSETS } from '../config';
-import {
-  STICKER_PRESETS,
-  STICKER_FONTS,
-  designFromPreset,
-  suggestPreset,
-  fontById,
-  fontString,
-  ensureFont,
-  makeQrCanvas,
-  renderSticker,
-  fitFontSize,
-  downloadStickerPng,
-} from './stickerRender';
+import { openStickerModal } from './stickerModal';
+import { renderSticker, makeQrCanvas, downloadStickerPng } from './stickerRender';
 
 /** Tiny DOM helper: create an element with class + optional text. */
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -79,14 +67,8 @@ export class AdminApp {
   private selectedNoteId: string | null = null;
   private uploadStatus = '';
 
-  // Sticker designer (per-selected-note working draft + cached render bits).
+  // Sticker designer: the section host (the editor itself lives in a modal).
   private stickerSectionEl: HTMLElement | null = null;
-  private stickerDraft: StickerDesign | null = null;
-  private stickerDraftNoteId: string | null = null;
-  private stickerPreviewCanvas: HTMLCanvasElement | null = null;
-  private stickerQrCanvas: HTMLCanvasElement | null = null;
-  private stickerQrUrl: string | null = null;
-  private stickerStatus = '';
 
   // Notes-map zoom / pan state (canvas-pixel space).
   private notesZoom = 1;
@@ -444,7 +426,7 @@ export class AdminApp {
     this.notesCanvas = el('canvas', 'admin-notes-map');
     mapPane.appendChild(this.notesCanvas);
     mapPane.appendChild(
-      el('div', 'admin-notes-legend', '● note   ▲ creator   ◎ selected   📷 photo')
+      el('div', 'admin-notes-legend', '● note   ▲ creator   ◎ selected   📷 photo   🏷 sticker')
     );
     content.appendChild(mapPane);
 
@@ -537,8 +519,6 @@ export class AdminApp {
     if (this.selectedNoteId !== id) {
       this.selectedNoteId = id;
       this.uploadStatus = '';
-      this.stickerStatus = '';
-      this.stickerDraft = null; // re-init the sticker draft for the new note
     }
     this.drawNotesMap();
     this.renderNotesList();
@@ -601,7 +581,8 @@ export class AdminApp {
         ctx.closePath();
         ctx.fill();
       } else {
-        ctx.fillStyle = n.image ? '#3ad17a' : '#2a9df4'; // green once it has a photo
+        // Violet once a sticker is designed; green once it has a photo; else blue.
+        ctx.fillStyle = n.sticker ? '#b06cff' : n.image ? '#3ad17a' : '#2a9df4';
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
@@ -721,16 +702,31 @@ export class AdminApp {
       host.appendChild(el('div', 'admin-upload-status', this.uploadStatus));
     }
 
-    // QR code for the note's chat room — print and stick next to the sticker.
-    host.appendChild(el('div', 'admin-card-title', 'Chat QR code'));
+    // Chat QR — plus, if the note has a saved sticker, show the sticker artwork
+    // here instead of the bare QR (the QR buttons below still print/copy the QR).
+    host.appendChild(el('div', 'admin-card-title', note.sticker ? 'Sticker & chat QR' : 'Chat QR code'));
     const qrSection = el('div', 'admin-qr-section');
 
     const chatUrl = `${window.location.origin}/c/${note.id}`;
     const urlLabel = el('div', 'admin-qr-url', chatUrl);
     qrSection.appendChild(urlLabel);
 
+    // The QR canvas backs the Print/Copy buttons; it's only shown directly when
+    // there's no sticker to display in its place. Rendered async below.
     const canvas = el('canvas', 'admin-qr-canvas') as HTMLCanvasElement;
-    qrSection.appendChild(canvas);
+    let stickerCanvas: HTMLCanvasElement | null = null;
+    if (note.sticker) {
+      stickerCanvas = el('canvas', 'admin-sticker-thumb') as HTMLCanvasElement;
+      qrSection.appendChild(stickerCanvas);
+      const sticker = note.sticker;
+      const sc = stickerCanvas;
+      void (async () => {
+        const qr = sticker.qrPos !== 'none' ? await makeQrCanvas(chatUrl) : null;
+        renderSticker(sc, sticker, qr);
+      })();
+    } else {
+      qrSection.appendChild(canvas);
+    }
 
     const qrActions = el('div', 'admin-note-actions');
     const printBtn = el('button', 'admin-btn admin-btn-small', 'Print QR');
@@ -763,6 +759,13 @@ export class AdminApp {
       });
     });
     qrActions.append(printBtn, copyBtn);
+    // Download the rendered sticker PNG — only when a design exists.
+    if (stickerCanvas) {
+      const sc = stickerCanvas;
+      const dlSticker = el('button', 'admin-btn admin-btn-small', 'Download sticker');
+      dlSticker.addEventListener('click', () => downloadStickerPng(sc, note.id));
+      qrActions.appendChild(dlSticker);
+    }
     qrSection.appendChild(qrActions);
     host.appendChild(qrSection);
 
@@ -782,243 +785,46 @@ export class AdminApp {
   // ─── Sticker designer ───
 
   /**
-   * Build (or rebuild) the sticker-design panel for the selected note: a live
-   * preview, a template picker, font-size / alignment / QR-position controls, an
-   * editable text field, and Save / Download / Remove actions. Operates on a
-   * working `stickerDraft` so edits aren't persisted until "Save".
+   * Render the sticker-design section for the selected note: a short status line
+   * + a button that opens the full designer modal (live preview + all controls).
+   * The design itself is edited in the modal (openStickerModal); here we only
+   * show whether one exists and provide the entry point.
    */
   private renderStickerSection(note: Note, chatUrl: string): void {
     const host = this.stickerSectionEl;
     if (!host) return;
     host.innerHTML = '';
 
-    // Initialize the draft once per selected note (clone so edits stay local).
-    if (!this.stickerDraft || this.stickerDraftNoteId !== note.id) {
-      // Clone so edits stay local; default qrScale for designs saved pre-slider.
-      this.stickerDraft = note.sticker
-        ? { ...note.sticker, qrScale: note.sticker.qrScale ?? 1, fontId: note.sticker.fontId ?? 'seikora' }
-        : null;
-      this.stickerDraftNoteId = note.id;
-    }
-    const draft = this.stickerDraft;
-
     host.appendChild(el('div', 'admin-card-title', 'Sticker design'));
-
-    // Template picker — always visible; clicking applies a preset (keeping text).
-    const tpl = el('div', 'admin-sticker-templates');
-    for (const preset of STICKER_PRESETS) {
-      const active = draft?.template === preset.id;
-      const btn = el('button', `admin-chip${active ? ' active' : ''}`, preset.label);
-      btn.addEventListener('click', () => {
-        const text = this.stickerDraft?.text ?? note.text;
-        const fontId = this.stickerDraft?.fontId ?? 'seikora';
-        this.stickerDraft = designFromPreset(preset, text, fontId);
-        this.stickerStatus = '';
-        this.renderStickerSection(note, chatUrl);
-      });
-      tpl.appendChild(btn);
-    }
-    host.appendChild(tpl);
-
-    if (!draft) {
-      const hint = el(
+    host.appendChild(
+      el(
         'div',
         'admin-sticker-hint',
-        `Pick a template to start. Suggested: ${suggestPreset(note.text).label}.`
-      );
-      host.appendChild(hint);
-      return;
-    }
+        note.sticker
+          ? 'A sticker design is saved for this note. Open the designer to edit it.'
+          : 'No sticker yet. Open the designer to create the printable tag artwork.'
+      )
+    );
 
-    // Live preview canvas (rendered after the QR is ready).
-    const preview = el('canvas', 'admin-sticker-preview') as HTMLCanvasElement;
-    this.stickerPreviewCanvas = preview;
-    host.appendChild(preview);
-
-    // ── Controls ──
-    const controls = el('div', 'admin-sticker-controls');
-
-    // Editable sticker text (independent of the note text; spaces/newlines kept).
-    const textRow = el('div', 'admin-sticker-row');
-    textRow.appendChild(el('label', 'admin-sticker-label', 'Text'));
-    const ta = el('textarea', 'admin-textarea admin-sticker-text') as HTMLTextAreaElement;
-    ta.value = draft.text;
-    ta.addEventListener('input', () => {
-      draft.text = ta.value;
-      this.updateStickerPreview();
-    });
-    textRow.appendChild(ta);
-    const useNote = el('button', 'admin-btn admin-btn-small', 'Use note text');
-    useNote.addEventListener('click', () => {
-      draft.text = note.text;
-      this.renderStickerSection(note, chatUrl);
-    });
-    textRow.appendChild(useNote);
-    controls.appendChild(textRow);
-
-    // Font picker.
-    const fontPickRow = el('div', 'admin-sticker-row');
-    fontPickRow.appendChild(el('label', 'admin-sticker-label', 'Font'));
-    const fontPickWrap = el('div', 'admin-sticker-inline');
-    for (const sf of STICKER_FONTS) {
-      const active = draft.fontId === sf.id;
-      const b = el('button', `admin-chip${active ? ' active' : ''}`);
-      b.textContent = sf.label;
-      b.style.fontFamily = sf.family;
-      b.addEventListener('click', () => {
-        draft.fontId = sf.id;
-        this.renderStickerSection(note, chatUrl);
+    const open = el(
+      'button',
+      'admin-btn admin-btn-small admin-btn-primary',
+      note.sticker ? '🎨 Edit sticker design' : '🎨 Design sticker'
+    );
+    open.addEventListener('click', () => {
+      openStickerModal({
+        note,
+        chatUrl,
+        initial: note.sticker ?? null,
+        onSave: (design: StickerDesign) => {
+          this.emit(EVENTS.ADMIN_NOTE_STICKER, { id: note.id, sticker: design });
+        },
+        onRemove: () => {
+          this.emit(EVENTS.ADMIN_NOTE_STICKER, { id: note.id, sticker: null });
+        },
       });
-      fontPickWrap.appendChild(b);
-    }
-    fontPickRow.appendChild(fontPickWrap);
-    controls.appendChild(fontPickRow);
-
-    // Font size slider + Fit button.
-    const fontRow = el('div', 'admin-sticker-row');
-    fontRow.appendChild(el('label', 'admin-sticker-label', 'Font size'));
-    const fontWrap = el('div', 'admin-sticker-inline');
-    const font = el('input', 'admin-range') as HTMLInputElement;
-    font.type = 'range';
-    font.min = '12';
-    font.max = '320';
-    font.step = '2';
-    font.value = String(draft.fontSize);
-    const fontVal = el('span', 'admin-stat-val', `${draft.fontSize}px`);
-    font.addEventListener('input', () => {
-      draft.fontSize = Number(font.value);
-      fontVal.textContent = `${draft.fontSize}px`;
-      this.updateStickerPreview();
     });
-    const fit = el('button', 'admin-btn admin-btn-small', 'Fit');
-    fit.addEventListener('click', () => {
-      draft.fontSize = fitFontSize(draft);
-      font.value = String(draft.fontSize);
-      fontVal.textContent = `${draft.fontSize}px`;
-      this.updateStickerPreview();
-    });
-    fontWrap.append(font, fontVal, fit);
-    fontRow.appendChild(fontWrap);
-    controls.appendChild(fontRow);
-
-    // Alignment.
-    const alignRow = el('div', 'admin-sticker-row');
-    alignRow.appendChild(el('label', 'admin-sticker-label', 'Align'));
-    const alignWrap = el('div', 'admin-sticker-inline');
-    for (const a of ['left', 'center', 'right'] as const) {
-      const b = el('button', `admin-chip${draft.align === a ? ' active' : ''}`, a);
-      b.addEventListener('click', () => {
-        draft.align = a;
-        this.renderStickerSection(note, chatUrl);
-      });
-      alignWrap.appendChild(b);
-    }
-    alignRow.appendChild(alignWrap);
-    controls.appendChild(alignRow);
-
-    // QR position.
-    const qrRow = el('div', 'admin-sticker-row');
-    qrRow.appendChild(el('label', 'admin-sticker-label', 'QR'));
-    const qrWrap = el('div', 'admin-sticker-inline');
-    const qrLabels: Record<string, string> = {
-      right: 'Right',
-      left: 'Left',
-      bottom: 'Bottom',
-      none: 'None',
-    };
-    for (const q of ['right', 'left', 'bottom', 'none'] as const) {
-      const b = el('button', `admin-chip${draft.qrPos === q ? ' active' : ''}`, qrLabels[q]);
-      b.addEventListener('click', () => {
-        draft.qrPos = q;
-        this.renderStickerSection(note, chatUrl);
-      });
-      qrWrap.appendChild(b);
-    }
-    qrRow.appendChild(qrWrap);
-    controls.appendChild(qrRow);
-
-    // QR size slider — only meaningful when a QR is shown.
-    if (draft.qrPos !== 'none') {
-      const sizeRow = el('div', 'admin-sticker-row');
-      sizeRow.appendChild(el('label', 'admin-sticker-label', 'QR size'));
-      const sizeWrap = el('div', 'admin-sticker-inline');
-      const qrSize = el('input', 'admin-range') as HTMLInputElement;
-      qrSize.type = 'range';
-      qrSize.min = String(STICKER.QR_MIN);
-      qrSize.max = String(STICKER.QR_MAX);
-      qrSize.step = '0.05';
-      qrSize.value = String(draft.qrScale);
-      const qrSizeVal = el('span', 'admin-stat-val', `${Math.round(draft.qrScale * 100)}%`);
-      qrSize.addEventListener('input', () => {
-        draft.qrScale = Number(qrSize.value);
-        qrSizeVal.textContent = `${Math.round(draft.qrScale * 100)}%`;
-        this.updateStickerPreview();
-      });
-      sizeWrap.append(qrSize, qrSizeVal);
-      sizeRow.appendChild(sizeWrap);
-      controls.appendChild(sizeRow);
-    }
-
-    host.appendChild(controls);
-
-    // ── Actions ──
-    const actions = el('div', 'admin-note-actions');
-    const saved = !!note.sticker;
-    const save = el('button', 'admin-btn admin-btn-small admin-btn-primary', saved ? 'Update sticker' : 'Save sticker');
-    save.addEventListener('click', () => {
-      const payload: StickerDesign = { ...draft, updatedAt: Date.now() };
-      this.emit(EVENTS.ADMIN_NOTE_STICKER, { id: note.id, sticker: payload });
-      this.stickerStatus = 'Saved.';
-      this.renderStickerSection(note, chatUrl);
-    });
-    const download = el('button', 'admin-btn admin-btn-small', 'Download PNG');
-    download.addEventListener('click', () => {
-      if (this.stickerPreviewCanvas) downloadStickerPng(this.stickerPreviewCanvas, note.id);
-    });
-    actions.append(save, download);
-    if (saved) {
-      const remove = el('button', 'admin-btn admin-btn-small admin-btn-danger', 'Remove');
-      remove.addEventListener('click', () => {
-        if (!window.confirm('Remove this sticker design?')) return;
-        this.emit(EVENTS.ADMIN_NOTE_STICKER, { id: note.id, sticker: null });
-        this.stickerDraft = null;
-        this.stickerStatus = '';
-        this.renderStickerSection(note, chatUrl);
-      });
-      actions.appendChild(remove);
-    }
-    host.appendChild(actions);
-
-    if (this.stickerStatus) {
-      host.appendChild(el('div', 'admin-upload-status', this.stickerStatus));
-    }
-
-    // Load the selected font + build the QR, then render the preview.
-    void Promise.all([
-      this.ensureStickerQr(chatUrl),
-      ensureFont(fontById(draft.fontId), draft.fontSize),
-    ]).then(() => this.updateStickerPreview());
-  }
-
-  /** Lazily build + cache the QR canvas for the current chat URL. */
-  private async ensureStickerQr(url: string): Promise<void> {
-    if (this.stickerQrCanvas && this.stickerQrUrl === url) return;
-    this.stickerQrCanvas = await makeQrCanvas(url);
-    this.stickerQrUrl = url;
-  }
-
-  /** Re-render the live preview from the current draft (cheap; no DOM rebuild). */
-  private updateStickerPreview(): void {
-    const canvas = this.stickerPreviewCanvas;
-    const draft = this.stickerDraft;
-    if (!canvas || !draft) return;
-    const font = fontById(draft.fontId);
-    // Ensure the font is loaded; if it isn't yet, wait then re-render.
-    void document.fonts.load(fontString(font, draft.fontSize) ?? '').then(() => {
-      if (this.stickerPreviewCanvas === canvas && this.stickerDraft === draft) {
-        renderSticker(canvas, draft, this.stickerQrCanvas);
-      }
-    });
+    host.appendChild(open);
   }
 
   /** Open a file picker, then upload the chosen image to the given note. */

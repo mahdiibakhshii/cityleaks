@@ -1,5 +1,6 @@
 import QRCode from 'qrcode';
-import type { StickerDesign, StickerQrPos } from '../../../shared/protocol';
+import { STICKER_SPRAY_DEFAULT, type StickerDesign, type StickerQrPos } from '../../../shared/protocol';
+import { drawSprayText, toSprayParams, hashSeed } from './spraytext';
 
 /**
  * Sticker designer rendering. A "sticker" is the printable artwork for a note: a
@@ -206,7 +207,19 @@ export function renderSticker(
     ctx.drawImage(qr, qrRect.x, qrRect.y, qrRect.size, qrRect.size);
   }
 
-  // Text block, vertically centered within the text region.
+  // Generative spray-paint ("tag") text — the stroke-font spray engine.
+  if (design.style === 'tag') {
+    const spray = design.spray ?? STICKER_SPRAY_DEFAULT;
+    const seed = design.seed ?? hashSeed(design.text);
+    drawSprayText(
+      ctx,
+      { text: design.text, x: textX, y: textY, w: textW, h: textH, fontSize: design.fontSize, align },
+      toSprayParams(spray, seed)
+    );
+    return;
+  }
+
+  // Plain text block (legacy TTF), vertically centered within the text region.
   const font = fontById(design.fontId);
   ctx.fillStyle = '#000000';
   ctx.textBaseline = 'alphabetic';
