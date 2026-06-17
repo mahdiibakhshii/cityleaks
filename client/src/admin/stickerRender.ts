@@ -254,13 +254,17 @@ export function renderSticker(
     ctx.drawImage(qr, qrRect.x, qrRect.y, qrRect.size, qrRect.size);
   }
 
+  // Vertical nudge of the first text row, as a fraction of sticker height (0 ⇒
+  // each style's default position). Shifts every render path uniformly.
+  const offY = (design.textOffsetY ?? 0) * h;
+
   // Generative spray-paint ("tag") text — the stroke-font spray engine.
   if (design.style === 'tag') {
     const spray = design.spray ?? STICKER_SPRAY_DEFAULT;
     const seed = design.seed ?? hashSeed(design.text);
     drawSprayText(
       ctx,
-      { text: design.text, x: textX, y: textY, w: textW, h: textH, fontSize: design.fontSize, align },
+      { text: design.text, x: textX, y: textY + offY, w: textW, h: textH, fontSize: design.fontSize, align },
       toSprayParams(spray, seed)
     );
     return;
@@ -278,7 +282,7 @@ export function renderSticker(
     const lines = layoutLines(ctx, design.text, textW);
     const lineH = design.fontSize * Math.max(spray.lineSpacing, 1); // solid lines mustn't overlap
     const blockH = lines.length * lineH;
-    const startY = textY + Math.max(0, (textH - blockH) / 2);
+    const startY = textY + Math.max(0, (textH - blockH) / 2) + offY;
     sprayFill(
       ctx,
       { x: textX, y: startY, w: textW, h: textH, fontSize: design.fontSize, lineH, align, font: fontStr, lines },
@@ -297,7 +301,7 @@ export function renderSticker(
   const lines = layoutLines(ctx, design.text, textW);
   const lineH = design.fontSize * 1.12;
   const blockH = lines.length * lineH;
-  let cy = textY + (textH - blockH) / 2 + design.fontSize * 0.82; // first baseline
+  let cy = textY + (textH - blockH) / 2 + design.fontSize * 0.82 + offY; // first baseline
 
   const anchorX =
     align === 'left' ? textX : align === 'right' ? textX + textW : textX + textW / 2;

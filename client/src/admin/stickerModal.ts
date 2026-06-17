@@ -333,6 +333,16 @@ export function openStickerModal(opts: StickerModalOpts): void {
     () => draft.align,
     (v) => (draft.align = v as StickerAlign)
   );
+  range(
+    gSize,
+    'First row ↕ (from top)',
+    () => draft.textOffsetY ?? 0,
+    (v) => (draft.textOffsetY = v),
+    -0.5,
+    1,
+    0.01,
+    (v) => `${Math.round(v * 100)}%`
+  );
 
   // ── QR ──
   const gQr = group('QR code');

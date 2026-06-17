@@ -620,6 +620,10 @@ export interface StickerDesign {
   h: number; // sticker pixel height
   fontSize: number; // px
   align: StickerAlign;
+  // Vertical nudge of the text block from its default position, as a fraction of
+  // the sticker height (0 = unchanged; negative = up, positive = down). Lets the
+  // admin place the first row anywhere relative to the top. Absent ⇒ 0.
+  textOffsetY?: number;
   qrPos: StickerQrPos;
   qrScale: number; // QR size as a fraction of its auto-computed slot (STICKER.QR_MIN..QR_MAX)
   fontId: string; // key into STICKER_FONTS (client-side list); persisted so design re-opens correctly
@@ -676,12 +680,17 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     typeof d.seed === 'number' && Number.isFinite(d.seed) ? Math.floor(d.seed) >>> 0 : undefined;
   const spray = d.spray !== undefined ? normalizeStickerSpray(d.spray) : undefined;
   const border = d.border !== undefined ? normalizeStickerBorder(d.border) : undefined;
+  const textOffsetY =
+    typeof d.textOffsetY === 'number' && Number.isFinite(d.textOffsetY)
+      ? Math.max(-1, Math.min(1, d.textOffsetY))
+      : 0;
   return {
     template: typeof d.template === 'string' ? d.template.slice(0, 40) : 'custom',
     w: clamp(d.w, STICKER.MIN_SIZE, STICKER.MAX_SIZE, 760),
     h: clamp(d.h, STICKER.MIN_SIZE, STICKER.MAX_SIZE, 240),
     fontSize: clamp(d.fontSize, STICKER.MIN_FONT, STICKER.MAX_FONT, 64),
     align,
+    textOffsetY,
     qrPos,
     qrScale,
     fontId: typeof d.fontId === 'string' && d.fontId.length > 0 ? d.fontId.slice(0, 40) : 'seikora',
