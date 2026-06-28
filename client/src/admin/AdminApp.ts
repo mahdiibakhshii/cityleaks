@@ -16,7 +16,7 @@ import {
 } from '../../../shared/protocol';
 import { ASSETS } from '../config';
 import { openStickerModal } from './stickerModal';
-import { renderSticker, makeQrCanvas, downloadStickerPng, ensureFont, fontById } from './stickerRender';
+import { renderSticker, makeQrCanvas, downloadStickerPng, ensureDesignFont } from './stickerRender';
 import {
   generateCandidates,
   prepareStickers,
@@ -772,7 +772,7 @@ export class AdminApp {
       const sticker = note.sticker;
       const sc = stickerCanvas;
       void (async () => {
-        await ensureFont(fontById(sticker.fontId), sticker.fontSize);
+        await ensureDesignFont(sticker);
         const qr = sticker.qrPos !== 'none' ? await makeQrCanvas(chatUrl) : null;
         renderSticker(sc, sticker, qr);
       })();

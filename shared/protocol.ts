@@ -527,6 +527,12 @@ export const STICKER = {
   QR_MAX: 1, // ...or fill the whole slot
   BORDER_MAX_WIDTH: 200, // px stroke (design = print resolution)
   BORDER_MAX_RADIUS: 600, // px corner radius (0 = square corners)
+  BG_MIN_PIXEL: 2, // smallest generative-background cell (px)
+  BG_MAX_PIXEL: 120, // largest generative-background cell (px)
+  BG_MIN_COUNT: 1, // fewest data-viz cells (one per text)
+  BG_MAX_COUNT: 100000, // safety cap on data-viz cells
+  TEXT_STROKE_MAX: 160, // px outline width around the letters
+  FELT_LEN_MAX: 80, // px max felt-fibre length
 } as const;
 
 // Optional decorative frame around a sticker: a stroked rectangle (rounded when
@@ -539,9 +545,61 @@ export interface StickerBorder {
   radius: number; // px corner radius; 0 = square
 }
 
+// Optional generative pixel-art background painted UNDER the sticker content
+// (text + QR + border), replacing the plain white fill. `kind:'water'` mimics the
+// in-game "leak" water: chunky cells shaded from a banded deep→mid→light blue
+// palette by a per-cell hash. Deterministic from `seed` so it re-renders
+// identically and re-rolls to a new pattern. Absent = the classic white
+// background (back-compat).
+//
+// Two layout MODES:
+//  • 'count' — a DATA VISUALIZATION: the background is tiled into EXACTLY `count`
+//    cells (one pixel per submitted text — `count` = how many texts existed when
+//    this note was written). Cells are made as square / equal as possible, but
+//    since `count` rarely tiles W×H evenly, rows may hold one more/fewer column
+//    (slightly different widths) — the exact count is the priority. Fills fully.
+//  • 'size' — a plain uniform grid of `pixelSize`-px cells, with optional patchy
+//    `coverage` + a `foam` rim (the free-form decorative look).
+export interface StickerBackground {
+  kind: 'water';
+  mode: 'count' | 'size';
+  count: number; // cells when mode==='count' (one per text; BG_MIN/MAX_COUNT)
+  pixelSize: number; // px per cell when mode==='size' (BG_MIN_PIXEL..BG_MAX_PIXEL)
+  seed: number; // re-rollable pattern seed
+  coverage: number; // 0..1 fraction of cells painted water (size mode only)
+  variation: number; // 0..1 how much per-cell brightness spreads across the palette
+  opacity: number; // 0..1 water alpha over the base colour
+  foam: number; // 0..1 foam-rim strength on patch edges (size mode, coverage<1)
+  base: string; // base/background hex (the "dry" colour; default white)
+  deep: string; // darkest water band hex
+  mid: string; // mid water band hex
+  light: string; // highlight water band hex
+  foamColor: string; // foam-rim hex
+}
+
+// Water background starting point — palette matches the in-game PATH water.
+export const STICKER_WATER_DEFAULT: StickerBackground = {
+  kind: 'water',
+  mode: 'count',
+  count: 64,
+  pixelSize: 16,
+  seed: 1,
+  coverage: 1,
+  variation: 0.5,
+  opacity: 1,
+  foam: 0.5,
+  base: '#ffffff',
+  deep: '#1a5fb4',
+  mid: '#2a9df4',
+  light: '#6fc8ff',
+  foamColor: '#d4f1ff',
+};
+
 export type StickerAlign = 'left' | 'center' | 'right';
 // Where the chat QR sits relative to the text ('none' = text-only sticker).
-export type StickerQrPos = 'right' | 'left' | 'bottom' | 'none';
+// 'corner' = QR anchored bottom-right as a small logo; the text keeps the FULL
+// sticker area (it flows across the whole width, incl. to the left of the QR).
+export type StickerQrPos = 'right' | 'left' | 'bottom' | 'corner' | 'none';
 
 // How the sticker text is rendered. 'plain' = a normal TTF, drawn solid (legacy
 // designs); 'tag' = the generative spray-paint engine (centerline stroke font +
@@ -610,6 +668,36 @@ export const STICKER_SPRAY_DEFAULT: StickerSpray = {
   grain: 0.35,
 };
 
+// Letter-treatment effects, applied on top of whichever letter `style` is active
+// (tag / fill / plain). All optional + independently toggled:
+//  • bold  — thickens the letterforms (dilates the glyph silhouette / spray weight)
+//  • stroke — a coloured outline traced around the letters
+//  • felt  — a fuzzy "felt"/woolly texture stamped inside the letters (short fibres
+//            in `feltColor`, clipped to the glyph shape) for a fabric-ish fill
+export interface StickerTextFx {
+  bold: boolean;
+  boldAmount: number; // 0..1 how heavy the bold dilation is
+  strokeWidth: number; // px outline width (0 = no outline)
+  strokeColor: string; // outline hex
+  felt: boolean;
+  feltDensity: number; // 0..1 fibre coverage
+  feltLength: number; // px fibre length
+  feltColor: string; // fibre hex
+  feltFuzz: number; // 0..1 fibre softness / direction randomness
+}
+
+export const STICKER_TEXTFX_DEFAULT: StickerTextFx = {
+  bold: false,
+  boldAmount: 0.5,
+  strokeWidth: 0,
+  strokeColor: '#000000',
+  felt: false,
+  feltDensity: 0.5,
+  feltLength: 10,
+  feltColor: '#ffffff',
+  feltFuzz: 0.5,
+};
+
 // A fully self-describing sticker layout. `template` is just the preset the admin
 // last picked (so the UI can re-highlight it); the actual render is driven by the
 // explicit w/h/fontSize/align/qrPos/text so it stays stable even if preset
@@ -637,6 +725,10 @@ export interface StickerDesign {
   spray?: StickerSpray;
   // Optional decorative frame around the sticker (absent = none). See StickerBorder.
   border?: StickerBorder;
+  // Optional generative pixel-art background (absent = plain white). See StickerBackground.
+  background?: StickerBackground;
+  // Optional letter treatments: bold / outline / felt texture. See StickerTextFx.
+  textFx?: StickerTextFx;
 }
 
 // Admin → server: save (`sticker` set) or clear (`sticker: null`) a note's design.
@@ -671,7 +763,7 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
   const align: StickerAlign =
     d.align === 'left' || d.align === 'center' || d.align === 'right' ? d.align : 'left';
   const qrPos: StickerQrPos =
-    d.qrPos === 'right' || d.qrPos === 'left' || d.qrPos === 'bottom' || d.qrPos === 'none'
+    d.qrPos === 'right' || d.qrPos === 'left' || d.qrPos === 'bottom' || d.qrPos === 'corner' || d.qrPos === 'none'
       ? d.qrPos
       : 'right';
   const style: StickerTextStyle =
@@ -680,6 +772,8 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     typeof d.seed === 'number' && Number.isFinite(d.seed) ? Math.floor(d.seed) >>> 0 : undefined;
   const spray = d.spray !== undefined ? normalizeStickerSpray(d.spray) : undefined;
   const border = d.border !== undefined ? normalizeStickerBorder(d.border) : undefined;
+  const background = d.background !== undefined ? normalizeStickerBackground(d.background) : undefined;
+  const textFx = d.textFx !== undefined ? normalizeStickerTextFx(d.textFx) : undefined;
   const textOffsetY =
     typeof d.textOffsetY === 'number' && Number.isFinite(d.textOffsetY)
       ? Math.max(-1, Math.min(1, d.textOffsetY))
@@ -700,6 +794,71 @@ export function normalizeStickerDesign(raw: unknown): StickerDesign | null {
     ...(seed !== undefined ? { seed } : {}),
     ...(spray ? { spray } : {}),
     ...(border ? { border } : {}),
+    ...(background ? { background } : {}),
+    ...(textFx ? { textFx } : {}),
+  };
+}
+
+// Validate + clamp untrusted letter-effect params. Returns undefined when nothing
+// is enabled (bold off, no outline, felt off), so the field is simply omitted.
+export function normalizeStickerTextFx(raw: unknown): StickerTextFx | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const d = raw as Record<string, unknown>;
+  const D = STICKER_TEXTFX_DEFAULT;
+  const num = (v: unknown, lo: number, hi: number, dflt: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : dflt;
+  const hex = (v: unknown, dflt: string) =>
+    typeof v === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(v) ? v : dflt;
+  const fx: StickerTextFx = {
+    bold: typeof d.bold === 'boolean' ? d.bold : D.bold,
+    boldAmount: num(d.boldAmount, 0, 1, D.boldAmount),
+    strokeWidth: Math.round(num(d.strokeWidth, 0, STICKER.TEXT_STROKE_MAX, D.strokeWidth)),
+    strokeColor: hex(d.strokeColor, D.strokeColor),
+    felt: typeof d.felt === 'boolean' ? d.felt : D.felt,
+    feltDensity: num(d.feltDensity, 0, 1, D.feltDensity),
+    feltLength: num(d.feltLength, 0, STICKER.FELT_LEN_MAX, D.feltLength),
+    feltColor: hex(d.feltColor, D.feltColor),
+    feltFuzz: num(d.feltFuzz, 0, 1, D.feltFuzz),
+  };
+  // Drop the field entirely when no effect is active (keeps designs clean).
+  if (!fx.bold && fx.strokeWidth <= 0 && !fx.felt) return undefined;
+  return fx;
+}
+
+// Validate + clamp an untrusted generative background. Returns undefined when the
+// background is absent/invalid, so the field is simply omitted (⇒ white sticker).
+export function normalizeStickerBackground(raw: unknown): StickerBackground | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const d = raw as Record<string, unknown>;
+  if (d.kind !== 'water') return undefined;
+  const D = STICKER_WATER_DEFAULT;
+  const num = (v: unknown, lo: number, hi: number, dflt: number) =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : dflt;
+  const hex = (v: unknown, dflt: string) =>
+    typeof v === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(v) ? v : dflt;
+  // Mode: explicit wins; else infer ('count' if a count was supplied) for any
+  // older background that predates the mode field.
+  const mode: 'count' | 'size' =
+    d.mode === 'count' || d.mode === 'size'
+      ? d.mode
+      : typeof d.count === 'number'
+        ? 'count'
+        : 'size';
+  return {
+    kind: 'water',
+    mode,
+    count: Math.round(num(d.count, STICKER.BG_MIN_COUNT, STICKER.BG_MAX_COUNT, D.count)),
+    pixelSize: Math.round(num(d.pixelSize, STICKER.BG_MIN_PIXEL, STICKER.BG_MAX_PIXEL, D.pixelSize)),
+    seed: typeof d.seed === 'number' && Number.isFinite(d.seed) ? Math.floor(d.seed) >>> 0 : D.seed,
+    coverage: num(d.coverage, 0, 1, D.coverage),
+    variation: num(d.variation, 0, 1, D.variation),
+    opacity: num(d.opacity, 0, 1, D.opacity),
+    foam: num(d.foam, 0, 1, D.foam),
+    base: hex(d.base, D.base),
+    deep: hex(d.deep, D.deep),
+    mid: hex(d.mid, D.mid),
+    light: hex(d.light, D.light),
+    foamColor: hex(d.foamColor, D.foamColor),
   };
 }
 

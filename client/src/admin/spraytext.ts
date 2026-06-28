@@ -117,7 +117,7 @@ export const DEFAULT_SPRAY: SprayParams = {
   seed: 1,
 };
 
-interface Pt {
+export interface Pt {
   x: number;
   y: number;
 }
@@ -196,7 +196,7 @@ export function hersheyFaces(): { key: HersheyKey; label: string }[] {
 // Seeded RNG (mulberry32) + 1-D coherent value noise (smooth "shaky hand").
 // ---------------------------------------------------------------------------
 
-function mulberry32(seed: number): () => number {
+export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
     a |= 0;
@@ -239,7 +239,7 @@ class Noise1D {
   }
 }
 
-function gaussian(r: () => number): number {
+export function gaussian(r: () => number): number {
   // Box–Muller (one value).
   let u = 0;
   let v = 0;
@@ -287,6 +287,12 @@ export interface SprayLayoutOpts {
   fontSize: number;
   lineH: number;
   align: 'left' | 'center' | 'right';
+  /**
+   * Optional per-line placement box (x + width). Lets an L-shaped layout (a
+   * corner QR) align each line within its own narrowed region instead of the full
+   * width. Falls back to the full `x`/`w` region when absent.
+   */
+  lineBox?: (li: number) => { x: number; w: number };
 }
 
 /**
@@ -331,23 +337,28 @@ function lineWidth(
   return adv * scale;
 }
 
-/** Wrap text to the text region width using the stroke-font metrics. */
+/**
+ * Wrap text to the text region width using the stroke-font metrics. `maxWidth`
+ * may be a constant or a per-line function (`li` = the line index being built) so
+ * an L-shaped (corner-QR) layout can narrow the lines beside the logo.
+ */
 export function wrapSprayText(
   text: string,
   fontKey: HersheyKey,
   scale: number,
   alts: HersheyKey[],
-  maxWidth: number,
+  maxWidth: number | ((li: number) => number),
   tracking = 0,
   overrides?: Partial<Record<string, HersheyKey>>
 ): string[] {
+  const widthFor = typeof maxWidth === 'function' ? maxWidth : () => maxWidth;
   const out: string[] = [];
   for (const raw of text.split('\n')) {
     const words = raw.split(' ');
     let line = '';
     for (const word of words) {
       const cand = line ? `${line} ${word}` : word;
-      if (lineWidth(cand, fontKey, scale, alts, tracking, overrides) <= maxWidth || !line) line = cand;
+      if (lineWidth(cand, fontKey, scale, alts, tracking, overrides) <= widthFor(out.length) || !line) line = cand;
       else {
         out.push(line);
         line = word;
@@ -387,12 +398,13 @@ export function layoutSprayStrokes(
   lines.forEach((line, li) => {
     const baseY = opts.y + li * opts.lineH + opts.fontSize * 0.78;
     const lw = lineWidth(line, params.fontKey, scale, alts, params.tracking, params.glyphOverrides);
+    const box = opts.lineBox ? opts.lineBox(li) : { x: opts.x, w: opts.w };
     let penX =
       opts.align === 'left'
-        ? opts.x
+        ? box.x
         : opts.align === 'right'
-          ? opts.x + opts.w - lw
-          : opts.x + (opts.w - lw) / 2;
+          ? box.x + box.w - lw
+          : box.x + (box.w - lw) / 2;
 
     for (const c of line) {
       if (c === ' ') {
@@ -734,16 +746,24 @@ export interface SprayTextRegion {
   h: number;
   fontSize: number;
   align: 'left' | 'center' | 'right';
+  /** Optional per-line wrap width (L-shaped corner-QR layout); default = full `w`. */
+  lineWidth?: (li: number) => number;
+  /** Optional per-line placement box (L-shaped corner-QR layout); default = full region. */
+  lineBox?: (li: number) => { x: number; w: number };
 }
 
 const SCRIPT_ALTS: HersheyKey[] = ['scripts', 'cursive', 'scriptc'];
 
-/** Wrap, lay out and spray a text block into a region (used by the sticker render). */
-export function drawSprayText(
-  ctx: CanvasRenderingContext2D,
+/**
+ * Wrap + lay out a tag text block into centerline strokes, WITHOUT spraying. Lets
+ * a caller build a glyph mask from the strokes (e.g. for the outline / felt
+ * effects) and then spray the same strokes via sprayStrokes — deterministic, so
+ * the mask matches the painted result.
+ */
+export function layoutSprayText(
   region: SprayTextRegion,
   params: SprayParams
-): void {
+): { strokes: Pt[][]; bbox: { x: number; y: number; w: number; h: number } } {
   const scale = region.fontSize / HERSHEY_EM;
   const alts = params.alternates ? SCRIPT_ALTS.filter((k) => k in HERSHEY) : [];
   const lines = wrapSprayText(
@@ -751,11 +771,11 @@ export function drawSprayText(
     params.fontKey,
     scale,
     alts,
-    region.w,
+    region.lineWidth ?? region.w,
     params.tracking,
     params.glyphOverrides
   );
-  const { strokes, bbox } = layoutSprayStrokes(
+  return layoutSprayStrokes(
     lines,
     {
       x: region.x,
@@ -765,9 +785,19 @@ export function drawSprayText(
       fontSize: region.fontSize,
       lineH: region.fontSize * params.lineSpacing,
       align: region.align,
+      lineBox: region.lineBox,
     },
     params
   );
+}
+
+/** Wrap, lay out and spray a text block into a region (used by the sticker render). */
+export function drawSprayText(
+  ctx: CanvasRenderingContext2D,
+  region: SprayTextRegion,
+  params: SprayParams
+): void {
+  const { strokes, bbox } = layoutSprayText(region, params);
   sprayStrokes(ctx, strokes, bbox, params);
 }
 
@@ -779,6 +809,12 @@ export interface FillTextOpts extends SprayLayoutOpts {
   /** CSS font string for the mask text, e.g. '700 96px "Arial Narrow"'. */
   font: string;
   lines: string[];
+  /** Bold dilation: extra px stroked onto the glyph mask to fatten letterforms. */
+  boldPx?: number;
+  /** Text direction for the glyph mask — 'rtl' for Persian/Arabic. */
+  direction?: CanvasDirection;
+  // `lineBox` (inherited from SprayLayoutOpts) places each line in its own box for
+  // an L-shaped corner-QR layout; absent ⇒ every line uses the full `x`/`w` region.
 }
 
 /**
@@ -803,10 +839,23 @@ export function sprayFill(
   mctx.font = opts.font;
   mctx.textBaseline = 'alphabetic';
   mctx.textAlign = opts.align;
-  const anchorX =
-    opts.align === 'left' ? opts.x : opts.align === 'right' ? opts.x + opts.w : opts.x + opts.w / 2;
+  if (opts.direction) mctx.direction = opts.direction;
+  const anchorFor = (li: number): number => {
+    const box = opts.lineBox ? opts.lineBox(li) : { x: opts.x, w: opts.w };
+    return opts.align === 'left' ? box.x : opts.align === 'right' ? box.x + box.w : box.x + box.w / 2;
+  };
+  // Bold: stroke the same glyphs onto the mask to fatten the silhouette before
+  // it's sprayed (so the fill, halo + bbox all use the emboldened shape).
+  if (opts.boldPx && opts.boldPx > 0) {
+    mctx.strokeStyle = '#fff';
+    mctx.lineJoin = 'round';
+    mctx.lineWidth = opts.boldPx;
+  }
   opts.lines.forEach((line, li) => {
-    mctx.fillText(line, anchorX, opts.y + li * opts.lineH + opts.fontSize * 0.78);
+    const by = opts.y + li * opts.lineH + opts.fontSize * 0.78;
+    const ax = anchorFor(li);
+    mctx.fillText(line, ax, by);
+    if (opts.boldPx && opts.boldPx > 0) mctx.strokeText(line, ax, by);
   });
 
   const md = mctx.getImageData(0, 0, w, h).data;

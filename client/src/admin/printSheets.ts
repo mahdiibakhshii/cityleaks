@@ -1,8 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { Note } from '../../../shared/protocol';
 import {
-  ensureFont,
-  fontById,
+  ensureDesignFont,
   makeQrCanvas,
   renderSticker,
 } from './stickerRender';
@@ -303,7 +302,7 @@ export async function prepareStickers(notes: Note[], origin: string): Promise<Pr
   for (const note of notes) {
     const design = note.sticker;
     if (!design) continue;
-    await ensureFont(fontById(design.fontId), design.fontSize);
+    await ensureDesignFont(design);
     const qr = design.qrPos !== 'none' ? await makeQrCanvas(`${origin}/c/${note.id}`) : null;
     const canvas = document.createElement('canvas');
     renderSticker(canvas, design, qr);
